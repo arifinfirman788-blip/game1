@@ -288,7 +288,7 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
     while (groups.length > 0) {
       combo += 1;
       const matches = flattenGroups(groups);
-      const rewardCell = combo === 1 ? createRewardFromGroups(groups, sourceCells) : null;
+      const rewardCell = createRewardFromGroups(groups, combo === 1 ? sourceCells : []);
       const clearCells = rewardCell ? matches.filter((cell) => cell !== rewardCell) : matches;
       const expandedCells = expandSpecials(clearCells);
       playMatchEffects(expandedCells, combo);

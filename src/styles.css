@@ -175,8 +175,10 @@ button {
 }
 
 .hud-side .vant-round {
-  width: clamp(37px, 9.8vw, 46px);
-  height: clamp(37px, 9.8vw, 46px);
+  width: clamp(19px, 4.9vw, 23px);
+  min-width: 0;
+  height: clamp(19px, 4.9vw, 23px);
+  padding: 0;
   border: 0;
   background-color: transparent;
   background-size: contain;
@@ -1008,6 +1010,7 @@ button {
   background: transparent;
   border: 0;
   overflow: visible;
+  transform: translateY(11px);
 }
 
 .meter-fill {
@@ -1276,6 +1279,10 @@ button {
   animation: cell-pulse 320ms ease-out both;
 }
 
+.asset-board .cell.clearing {
+  animation: asset-cell-pulse 320ms ease-out both;
+}
+
 .match-ring {
   position: absolute;
   inset: 8%;
@@ -1484,6 +1491,18 @@ button {
   }
 }
 
+@keyframes asset-cell-pulse {
+  0% {
+    filter: brightness(1);
+  }
+  42% {
+    filter: brightness(1.28) drop-shadow(0 0 8px rgba(255, 231, 109, 0.58));
+  }
+  100% {
+    filter: brightness(1);
+  }
+}
+
 @keyframes match-ring {
   from {
     opacity: 0.95;
@@ -1628,7 +1647,7 @@ button {
   min-width: 0;
   margin: 0 0 clamp(30px, 7vw, 42px) -12px;
   min-height: clamp(58px, 14vw, 74px);
-  padding: 14px 16px 14px 27px;
+  padding: 14px 16px 14px 37px;
   border-radius: 0;
   background-image: url("../assets/detail/ui/dialog-bubble.png");
   background-size: 100% 100%;
@@ -1684,6 +1703,7 @@ button {
   box-shadow: none;
   --van-button-default-background: transparent;
   --van-button-default-border-color: transparent;
+  transform: translateY(-6px);
 }
 
 .booster.van-button::before,
@@ -1712,7 +1732,7 @@ button {
   filter:
     drop-shadow(0 0 5px rgba(255, 236, 126, 0.92))
     drop-shadow(0 0 11px rgba(255, 197, 54, 0.62));
-  transform: translateY(-2px) scale(1.04);
+  transform: translateY(-8px) scale(1.04);
 }
 
 .booster-icon {
