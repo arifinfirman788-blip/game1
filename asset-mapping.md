@@ -48,9 +48,6 @@ public/assets/detail/
 | --- | --- | --- |
 | 图层 12.png | `public/assets/detail/characters/huangxiaoxi.png` | 黄小西角色 |
 | 图层 11.png | `public/assets/detail/ui/board.png` | 棋盘框 |
-| 图层 10.png | `public/assets/detail/ui/booster-bar.png` | 底部道具栏 |
-| 图层 9.png | `public/assets/detail/ui/title-bar.png` | 顶部标题牌 |
-| 图层 28.png | `public/assets/detail/ui/tassel-top.png` | 流苏装饰预留 |
 | 图层 43.png | `public/assets/detail/ui/chapter-building.png` | 章节建筑图标预留 |
 
 ## 代码接入位置
@@ -72,4 +69,4 @@ public/assets/detail/
 未接入或预留：
 
 - 冰块、木箱、银链障碍物暂无明确切图，当前继续使用 CSS 占位效果。
-- 背景图暂无详情页完整背景切图，当前继续使用 CSS 贵州山水占位背景。
+- 黄果树详情页背景已接入移动端压缩版 `public/assets/detail/backgrounds/huangguoshu-detail-bg-mobile.jpg`，由原始 15MB PNG 优化为约 276KB JPG。

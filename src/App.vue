@@ -269,7 +269,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from "vue";
+import { computed, ref, watch, watchEffect } from "vue";
 import { showDialog, showLoadingToast, showToast } from "vant";
 import { blockers, chapters, LEVELS_PER_CHAPTER, pieces, TOTAL_LEVELS } from "./config/levels";
 import { assetManifest } from "./config/assets";
@@ -346,6 +346,17 @@ const currentSceneImage = computed(() => {
 const sceneStyle = computed(() =>
   currentSceneImage.value ? { "--scene-image": `url("${currentSceneImage.value}")` } : {},
 );
+const preloadedImages = new Set();
+
+watchEffect(() => {
+  if (!currentSceneImage.value || preloadedImages.has(currentSceneImage.value)) return;
+  preloadedImages.add(currentSceneImage.value);
+  const link = document.createElement("link");
+  link.rel = "preload";
+  link.as = "image";
+  link.href = currentSceneImage.value;
+  document.head.appendChild(link);
+});
 const mapRules = [
   { index: 1, title: "通关策略", text: "匹配3个或更多美食，完成目标即可通关。" },
   { index: 2, title: "星级回显", text: "历史星级会显示在关卡节点下方。" },
