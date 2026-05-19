@@ -882,7 +882,7 @@ button {
 
 .score-card {
   left: 61.2%;
-  top: calc(34.5% + 7px);
+  top: 31%;
   width: 29.7%;
   height: 31%;
   align-content: start;
@@ -1013,8 +1013,8 @@ button {
 .meter-fill {
   position: absolute;
   left: calc(3% - 7px);
-  top: calc(23% + 3px);
-  bottom: calc(23% - 3px);
+  top: calc(23% + 6px);
+  bottom: calc(23% - 6px);
   width: 0%;
   border-radius: inherit;
   background: linear-gradient(90deg, #10a793, #3de0c7);
@@ -1628,7 +1628,7 @@ button {
   min-width: 0;
   margin: 0 0 clamp(30px, 7vw, 42px) -12px;
   min-height: clamp(58px, 14vw, 74px);
-  padding: 14px 16px 14px 22px;
+  padding: 14px 16px 14px 27px;
   border-radius: 0;
   background-image: url("../assets/detail/ui/dialog-bubble.png");
   background-size: 100% 100%;

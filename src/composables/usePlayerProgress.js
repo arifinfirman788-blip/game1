@@ -1,6 +1,7 @@
 import { computed, reactive, watch } from "vue";
 
 const STORAGE_KEY = "guizhou-match3-progress";
+const PROGRESS_VERSION = 2;
 const BOOSTER_REWARD_TABLE = {
   3: { hammer: 1 },
   10: { hammer: 1, bottle: 1 },
@@ -18,16 +19,17 @@ const BOOSTER_REWARD_TABLE = {
 
 function createDefaultProgress() {
   return {
+    version: PROGRESS_VERSION,
     unlockedLevel: 1,
     currentLevel: 1,
     levelStars: {},
     claimedRewards: {},
     inventory: {
-      hammer: 12,
-      bottle: 8,
-      flower: 6,
-      mask: 5,
-      hand: 7,
+      hammer: 0,
+      bottle: 0,
+      flower: 0,
+      mask: 0,
+      hand: 0,
     },
   };
 }
@@ -37,12 +39,15 @@ function loadProgress() {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return createDefaultProgress();
     const parsed = JSON.parse(raw);
+    const baseProgress = createDefaultProgress();
+    const shouldResetStarterInventory = Number(parsed.version || 1) < PROGRESS_VERSION;
     return {
-      ...createDefaultProgress(),
+      ...baseProgress,
       ...parsed,
+      version: PROGRESS_VERSION,
       inventory: {
-        ...createDefaultProgress().inventory,
-        ...(parsed.inventory || {}),
+        ...baseProgress.inventory,
+        ...(shouldResetStarterInventory ? {} : parsed.inventory || {}),
       },
     };
   } catch {
