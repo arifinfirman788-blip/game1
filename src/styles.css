@@ -23,13 +23,14 @@
 
 body {
   width: 100vw;
-  height: 100vh;
-  height: 100dvh;
   min-height: 100vh;
+  min-height: 100dvh;
   margin: 0;
   display: grid;
-  place-items: center;
-  overflow: hidden;
+  justify-items: center;
+  align-items: start;
+  overflow-x: hidden;
+  overflow-y: auto;
   background:
     radial-gradient(circle at 50% 15%, rgba(255, 255, 255, 0.36), transparent 28rem),
     linear-gradient(180deg, #2f86d7 0%, #9ed6ff 38%, #234a35 100%);
@@ -38,9 +39,8 @@ body {
 
 #app {
   width: min(100vw, 430px);
-  height: 100vh;
-  height: 100dvh;
-  min-height: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .van-button {
@@ -83,20 +83,19 @@ button {
 
 .phone-shell {
   width: min(100vw, 430px);
-  height: 100vh;
-  height: 100dvh;
-  min-height: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
   display: grid;
-  place-items: center;
+  align-items: stretch;
 }
 
 .game-scene {
   position: relative;
   width: min(100vw, 430px);
-  height: 100vh;
-  height: 100dvh;
-  min-height: 0;
-  overflow: hidden;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
   display: grid;
   grid-template-rows: auto 1fr auto;
   padding: max(6px, env(safe-area-inset-top)) 12px max(8px, env(safe-area-inset-bottom));
@@ -200,8 +199,11 @@ button {
 
 .play-screen {
   min-height: calc(100vh - 22px);
+  min-height: calc(100dvh - 22px);
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-rows: auto auto auto auto;
+  align-content: start;
+  row-gap: 8px;
 }
 
 .icon-button,
@@ -1069,7 +1071,7 @@ button {
   position: relative;
   z-index: 2;
   align-self: start;
-  margin-top: clamp(18px, 3.8vh, 38px);
+  margin-top: clamp(8px, 2vh, 18px);
   display: grid;
   place-items: center;
 }
@@ -1550,21 +1552,23 @@ button {
 }
 
 .guide-wrap {
-  position: absolute;
+  position: relative;
   z-index: 4;
-  left: 0;
-  bottom: clamp(146px, 19vh, 178px);
-  width: min(86vw, 410px);
+  left: auto;
+  bottom: auto;
+  width: min(90vw, 410px);
   display: grid;
-  grid-template-columns: clamp(116px, 31vw, 150px) 1fr;
+  grid-template-columns: clamp(96px, 25vw, 124px) 1fr;
   align-items: end;
+  justify-self: start;
+  margin: -4px 0 -10px -2px;
   pointer-events: none;
 }
 
 .guide-character {
   position: relative;
-  width: clamp(130px, 34vw, 170px);
-  height: clamp(178px, 46vw, 238px);
+  width: clamp(108px, 28vw, 136px);
+  height: clamp(148px, 37vw, 188px);
   background-image: var(--guide-image);
   background-size: contain;
   background-position: bottom center;
@@ -1622,9 +1626,9 @@ button {
 
 .guide-bubble {
   min-width: 0;
-  margin: 0 0 clamp(42px, 9vw, 56px) -14px;
-  min-height: clamp(66px, 16vw, 86px);
-  padding: 17px 18px 16px 25px;
+  margin: 0 0 clamp(30px, 7vw, 42px) -12px;
+  min-height: clamp(58px, 14vw, 74px);
+  padding: 14px 16px 14px 22px;
   border-radius: 0;
   background-image: url("../assets/detail/ui/dialog-bubble.png");
   background-size: 100% 100%;
@@ -1644,6 +1648,7 @@ button {
   display: grid;
   gap: 5px;
   justify-items: center;
+  padding-bottom: max(8px, env(safe-area-inset-bottom));
 }
 
 .booster-bar {
@@ -1991,15 +1996,10 @@ button {
 }
 
 @media (max-height: 760px) {
-  .mission-panel {
-    min-height: 112px;
-    padding: 9px 9px 22px;
-  }
-
   .guide-wrap {
     transform: scale(0.82);
     transform-origin: left bottom;
-    bottom: 142px;
+    margin-block: -18px -22px;
   }
 
   .booster-bar {
