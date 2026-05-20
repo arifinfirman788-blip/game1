@@ -688,7 +688,7 @@ button {
   justify-content: center;
   overflow: visible;
   margin-top: 4px;
-  transform: translate(25px, -35px);
+  transform: translate(25px, -30px);
 }
 
 .chapter-highlight-item {
@@ -822,7 +822,7 @@ button {
 }
 
 .chapter-speed .van-progress {
-  width: 74px;
+  width: 59px;
   height: 8px !important;
   border-radius: 999px;
   overflow: hidden;
