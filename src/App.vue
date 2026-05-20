@@ -174,10 +174,8 @@
           <aside class="footer-guide-rules">
             <img class="footer-guide-bg" :src="assetManifest.map.rulesPanelNew" alt="" decoding="async" />
             <div class="footer-guide-content">
-              <h3>玩法说明</h3>
               <div class="footer-rule-list">
-                <div v-for="rule in mapRules.slice(0, 3)" :key="rule.title" class="footer-rule-item">
-                  <strong>{{ rule.title }}</strong>
+                <div v-for="rule in mapRules" :key="rule.title" class="footer-rule-item">
                   <p>{{ rule.text }}</p>
                 </div>
               </div>

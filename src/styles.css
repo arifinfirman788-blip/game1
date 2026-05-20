@@ -1218,9 +1218,9 @@ button {
 .footer-guide-rules {
   position: absolute;
   z-index: 2;
-  right: 2%;
-  top: 15%;
-  height: 70%;
+  right: 4%;
+  top: 25%;
+  height: 50%;
   aspect-ratio: 473 / 182;
   display: grid;
   place-items: center;
@@ -1244,23 +1244,15 @@ button {
   width: 80%;
   height: 70%;
   display: grid;
-  grid-template-rows: auto 1fr;
+  grid-template-rows: 1fr;
   align-content: start;
   padding: 0;
   overflow: hidden;
 }
 
-.footer-guide-content h3 {
-  margin: 0 0 1px;
-  text-align: center;
-  font-size: clamp(6px, 1.8vw, 8px);
-  color: #7b351f;
-  line-height: 1.1;
-}
-
 .footer-rule-list {
   display: grid;
-  gap: 1px;
+  gap: 2px;
   overflow-y: auto;
   scrollbar-width: none;
 }
@@ -1273,24 +1265,16 @@ button {
   display: grid;
   grid-template-columns: 1fr;
   gap: 0;
-  padding: 1px 0;
-  border-top: 1px solid rgba(102, 72, 42, 0.1);
-}
-
-.footer-rule-item strong {
-  display: block;
-  font-size: clamp(5px, 1.5vw, 7px);
-  text-align: center;
-  color: #5b351f;
-  line-height: 1.1;
+  padding: 2px 0;
+  border-bottom: 1px solid rgba(102, 72, 42, 0.1);
 }
 
 .footer-rule-item p {
   margin: 0;
-  font-size: clamp(4px, 1.2vw, 6px);
-  line-height: 1.1;
+  font-size: clamp(5px, 1.4vw, 7px);
+  line-height: 1.2;
   text-align: center;
-  color: #6a4a31;
+  color: #5b351f;
 }
 
 .map-rules-mask {
