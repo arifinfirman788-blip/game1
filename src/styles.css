@@ -1247,17 +1247,18 @@ button {
 .footer-guide-content {
   position: relative;
   z-index: 1;
-  width: 94%;
+  width: 90%;
   height: 85%;
   display: block;
   padding-top: 18%;
   overflow: hidden;
+  transform: translateY(-5px);
 }
 
 .footer-rule-list {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 2px;
+  gap: 0;
   justify-items: center;
   align-items: start;
   width: 100%;
@@ -1271,7 +1272,7 @@ button {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  width: 100%;
+  width: 95%;
   padding: 0;
   border: none;
 }
