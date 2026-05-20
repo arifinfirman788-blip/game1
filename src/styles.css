@@ -402,7 +402,7 @@ button {
   height: auto;
   min-height: var(--app-height, 100dvh);
   margin: 0;
-  padding: 0 0 80px;
+  padding: 0;
   overflow-x: hidden;
   overflow-y: auto;
   background-image: var(--map-bg);
@@ -865,7 +865,7 @@ button {
   min-height: 400px;
   display: block;
   overflow: visible;
-  padding-bottom: 20px;
+  padding-bottom: clamp(220px, 35vh, 280px);
 }
 
 .map-guide-half {
@@ -916,7 +916,7 @@ button {
   min-height: 300px;
   max-height: none;
   overflow: hidden;
-  touch-action: pan-x;
+  touch-action: pan-y;
   border-radius: 0;
   background: transparent;
 }
@@ -1185,9 +1185,9 @@ button {
 }
 
 .map-footer-action.reward {
-  left: 20%;
+  left: 6%;
   top: 25%;
-  width: 17%;
+  width: 15%;
   height: 42%;
 }
 
@@ -1199,9 +1199,9 @@ button {
 }
 
 .map-footer-action.rules {
-  left: 42%;
+  left: 24%;
   top: 25%;
-  width: 17%;
+  width: 15%;
   height: 42%;
   padding: 0;
   border: 0;
@@ -1252,7 +1252,8 @@ button {
 
 .footer-rule-list {
   display: grid;
-  gap: 2px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
   overflow-y: auto;
   scrollbar-width: none;
 }
@@ -1265,13 +1266,13 @@ button {
   display: grid;
   grid-template-columns: 1fr;
   gap: 0;
-  padding: 2px 0;
-  border-bottom: 1px solid rgba(102, 72, 42, 0.1);
+  padding: 0;
+  border: none;
 }
 
 .footer-rule-item p {
   margin: 0;
-  font-size: clamp(5px, 1.4vw, 7px);
+  font-size: clamp(4px, 1.2vw, 6px);
   line-height: 1.2;
   text-align: center;
   color: #5b351f;

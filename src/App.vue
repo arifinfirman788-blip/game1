@@ -175,7 +175,7 @@
             <img class="footer-guide-bg" :src="assetManifest.map.rulesPanelNew" alt="" decoding="async" />
             <div class="footer-guide-content">
               <div class="footer-rule-list">
-                <div v-for="rule in mapRules" :key="rule.title" class="footer-rule-item">
+                <div v-for="rule in mapRules.slice(0, 3)" :key="rule.title" class="footer-rule-item">
                   <p>{{ rule.text }}</p>
                 </div>
               </div>
