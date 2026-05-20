@@ -10,9 +10,17 @@
   },
   "dependencies": {
     "@vitejs/plugin-vue": "^5.2.4",
+    "vant": "^4.9.20",
     "vite": "^5.4.19",
-    "vue": "3.2.47",
-    "vant": "^4.9.20"
+    "vue": "3.2.47"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "imagemin-gifsicle": "^7.0.0",
+    "imagemin-mozjpeg": "^10.0.0",
+    "imagemin-optipng": "^8.0.0",
+    "imagemin-pngquant": "^10.0.0",
+    "imagemin-svgo": "^12.0.0",
+    "imagemin-webp": "^8.0.0",
+    "vite-plugin-imagemin": "^0.6.1"
+  }
 }
