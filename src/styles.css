@@ -1219,9 +1219,9 @@ button {
   position: absolute;
   z-index: 2;
   right: 2%;
-  top: 12%;
-  width: 30%;
-  height: 76%;
+  top: 15%;
+  height: 70%;
+  aspect-ratio: 473 / 182;
   display: grid;
   place-items: center;
   color: #3f2e1e;
@@ -1233,7 +1233,7 @@ button {
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: fill;
+  object-fit: contain;
   pointer-events: none;
   z-index: 0;
 }
@@ -1241,19 +1241,19 @@ button {
 .footer-guide-content {
   position: relative;
   z-index: 1;
-  width: 86%;
-  height: 82%;
+  width: 80%;
+  height: 70%;
   display: grid;
   grid-template-rows: auto 1fr;
   align-content: start;
-  padding: 2px 4px;
+  padding: 0;
   overflow: hidden;
 }
 
 .footer-guide-content h3 {
-  margin: 0 0 2px;
+  margin: 0 0 1px;
   text-align: center;
-  font-size: clamp(7px, 2vw, 9px);
+  font-size: clamp(6px, 1.8vw, 8px);
   color: #7b351f;
   line-height: 1.1;
 }
@@ -1279,7 +1279,7 @@ button {
 
 .footer-rule-item strong {
   display: block;
-  font-size: clamp(6px, 1.6vw, 8px);
+  font-size: clamp(5px, 1.5vw, 7px);
   text-align: center;
   color: #5b351f;
   line-height: 1.1;
@@ -1287,7 +1287,7 @@ button {
 
 .footer-rule-item p {
   margin: 0;
-  font-size: clamp(5px, 1.3vw, 7px);
+  font-size: clamp(4px, 1.2vw, 6px);
   line-height: 1.1;
   text-align: center;
   color: #6a4a31;
