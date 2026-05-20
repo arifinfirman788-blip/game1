@@ -869,10 +869,10 @@ button {
 }
 
 .map-guide-half {
-  position: absolute;
-  z-index: 5;
+  position: fixed;
+  z-index: 8;
   left: 4px;
-  bottom: clamp(80px, 14vh, 110px);
+  bottom: clamp(90px, 16vh, 130px);
   width: min(32vw, 120px);
   height: auto;
   pointer-events: none;
@@ -880,10 +880,10 @@ button {
 }
 
 .map-guide-dialog {
-  position: absolute;
-  z-index: 6;
+  position: fixed;
+  z-index: 8;
   left: clamp(70px, 22vw, 100px);
-  bottom: clamp(110px, 18vh, 150px);
+  bottom: clamp(120px, 20vh, 170px);
   width: min(50vw, 200px);
   aspect-ratio: 473 / 182;
   display: grid;
@@ -915,24 +915,17 @@ button {
   height: auto;
   min-height: 300px;
   max-height: none;
-  overflow: visible;
-  touch-action: pan-y;
+  overflow: hidden;
+  touch-action: pan-x;
   border-radius: 0;
   background: transparent;
 }
 
-.route-map::-webkit-scrollbar {
-  display: none;
-}
-
 .route-map-track {
   position: relative;
-  display: grid;
-  justify-items: center;
+  display: flex;
   width: 100%;
-  padding-bottom: 26px;
-  transform: translate3d(0, var(--map-page-y, 0px), 0);
-  transition: transform 260ms ease;
+  padding-bottom: 0;
   will-change: transform;
   user-select: none;
   pointer-events: none;
@@ -940,17 +933,12 @@ button {
 
 .route-segment {
   position: relative;
-  width: min(92vw, 360px, calc(100vh - 330px));
-  width: min(92vw, 360px, calc(var(--app-height, 100dvh) - 330px));
-  min-width: 306px;
+  width: 100%;
+  min-width: 100%;
+  flex: 0 0 100%;
   aspect-ratio: 1;
   overflow: hidden;
   opacity: 1;
-  margin-top: -1px;
-}
-
-.route-segment:first-child {
-  margin-top: 0;
 }
 
 .route-art {
@@ -1104,7 +1092,7 @@ button {
   padding: 16px 6px 14px;
   border-radius: 8px;
   border: 0;
-  background-image: url("../assets/map/rules-panel.png");
+  background-image: url("../assets/map/rules-panel-new.png");
   background-size: 100% 100%;
   background-position: center;
   background-repeat: no-repeat;

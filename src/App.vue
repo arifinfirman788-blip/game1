@@ -353,12 +353,13 @@ const mapPage = ref(0);
 const viewportHeight = ref(window.innerHeight);
 const mapDragState = ref({
   dragging: false,
+  startX: 0,
+  currentX: 0,
   startY: 0,
   currentY: 0,
 });
 const SWIPE_THRESHOLD = 18;
-const MAP_PAGE_HEIGHT = 360;
-const MAP_PAGE_SWIPE_THRESHOLD = 70;
+const MAP_PAGE_SWIPE_THRESHOLD = 50;
 const appViewportStyle = computed(() => ({
   "--app-height": `${viewportHeight.value}px`,
 }));
@@ -409,14 +410,15 @@ const detailTreasureStatus = computed(() => {
   if (player.isRewardClaimable(game.state.levelConfig.chapterIndex, nextLevel)) return "claimable";
   return "locked";
 });
-const mapSegments = computed(() => Array.from({ length: Math.ceil(LEVELS_PER_CHAPTER / 20) }, (_, index) => index));
+const mapSegments = computed(() => [mapPage.value]);
 const maxUnlockedMapPage = computed(() => {
   const chapterStart = game.state.selectedChapterIndex * LEVELS_PER_CHAPTER + 1;
   const unlockedInChapter = Math.max(1, Math.min(LEVELS_PER_CHAPTER, player.progress.unlockedLevel - chapterStart + 1));
   return Math.floor((unlockedInChapter - 1) / 20);
 });
 const mapTrackStyle = computed(() => ({
-  "--map-page-y": `${-mapPage.value * MAP_PAGE_HEIGHT}px`,
+  transform: `translateX(${-mapPage.value * 100}%)`,
+  transition: "transform 300ms ease",
 }));
 const chapterStarTotal = computed(() =>
   chapterLevels.value.reduce((sum, level) => sum + player.getStars(level.globalLevel), 0),
@@ -592,6 +594,8 @@ function handleLevelNode(level) {
 function resetMapDrag() {
   mapDragState.value = {
     dragging: false,
+    startX: 0,
+    currentX: 0,
     startY: 0,
     currentY: 0,
   };
@@ -601,6 +605,8 @@ function handleMapPointerDown(event) {
   if (event.pointerType === "mouse" && event.button !== 0) return;
   mapDragState.value = {
     dragging: true,
+    startX: event.clientX,
+    currentX: event.clientX,
     startY: event.clientY,
     currentY: event.clientY,
   };
@@ -611,6 +617,7 @@ function handleMapPointerMove(event) {
   if (!mapDragState.value.dragging) return;
   mapDragState.value = {
     ...mapDragState.value,
+    currentX: event.clientX,
     currentY: event.clientY,
   };
 }
@@ -618,9 +625,15 @@ function handleMapPointerMove(event) {
 function handleMapPointerUp(event) {
   if (!mapDragState.value.dragging) return;
   event.currentTarget.releasePointerCapture?.(event.pointerId);
+  const deltaX = mapDragState.value.currentX - mapDragState.value.startX;
   const deltaY = mapDragState.value.currentY - mapDragState.value.startY;
-  const wantsNextPage = deltaY < -MAP_PAGE_SWIPE_THRESHOLD;
-  const wantsPrevPage = deltaY > MAP_PAGE_SWIPE_THRESHOLD;
+  const isHorizontalSwipe = Math.abs(deltaX) > Math.abs(deltaY);
+  if (!isHorizontalSwipe) {
+    resetMapDrag();
+    return;
+  }
+  const wantsNextPage = deltaX < -MAP_PAGE_SWIPE_THRESHOLD;
+  const wantsPrevPage = deltaX > MAP_PAGE_SWIPE_THRESHOLD;
   if (wantsNextPage) {
     if (mapPage.value < maxUnlockedMapPage.value) {
       mapPage.value += 1;
