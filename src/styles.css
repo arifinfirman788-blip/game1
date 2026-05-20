@@ -882,6 +882,7 @@ button {
   height: clamp(150px, 25vh, 200px);
   margin-top: -30px;
   pointer-events: none;
+  transform: translateY(15px);
 }
 
 .map-guide-half {
