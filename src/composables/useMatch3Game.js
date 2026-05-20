@@ -191,6 +191,37 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
     await trySwap(state.selected, cell);
   }
 
+  async function swipeCell(cell, direction) {
+    if (state.busy) return;
+    if (state.activeBooster) {
+      await useBooster(cell);
+      return;
+    }
+    if (!canSelect(cell)) {
+      state.guideText = "这个格子暂时不能移动，先从旁边寻找机会。";
+      return;
+    }
+    const target = {
+      row: cell.row + direction.row,
+      col: cell.col + direction.col,
+    };
+    if (
+      target.row < 0 ||
+      target.row >= BOARD_SIZE ||
+      target.col < 0 ||
+      target.col >= BOARD_SIZE
+    ) {
+      return;
+    }
+    const targetCell = state.board[target.row][target.col];
+    if (!canSelect(targetCell)) {
+      state.guideText = "相邻格子暂时不能移动，换个方向试试。";
+      return;
+    }
+    state.selected = { row: cell.row, col: cell.col };
+    await trySwap(cell, targetCell);
+  }
+
   async function trySwap(a, b) {
     state.busy = true;
     swapTypes(a, b);
@@ -786,6 +817,7 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
     blockers,
     getGoalConfig,
     selectCell,
+    swipeCell,
     activateBooster,
     resetGame,
     changeLevel,

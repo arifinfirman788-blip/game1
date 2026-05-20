@@ -192,7 +192,11 @@
               class="cell"
               :class="{ selected: isSelected(cell), clearing: game.state.effects.clearing.has(cellKey(cell)) }"
               :disabled="game.state.busy"
-              @click="game.selectCell(cell)"
+              @click="handleCellClick(cell)"
+              @pointerdown="handleCellPointerDown($event, cell)"
+              @pointerup="handleCellPointerUp($event, cell)"
+              @pointercancel="clearSwipeStart"
+              @pointerleave="handleCellPointerLeave($event, cell)"
             >
               <span v-if="cell.type" class="piece" :class="[cell.type, specialClass(cell), pieceEffectClass(cell)]" :style="pieceStyle(cell)">
                 {{ pieceText(cell.type) }}
@@ -284,6 +288,9 @@ const game = useMatch3Game(initialLevel, {
   onLevelComplete: handleLevelComplete,
   getBoosterCount: (booster) => player.progress.inventory[booster] || 0,
 });
+const swipeStart = ref(null);
+const didSwipe = ref(false);
+const SWIPE_THRESHOLD = 18;
 if (!params.has("level")) {
   game.changeLevel(player.progress.currentLevel);
 }
@@ -511,6 +518,53 @@ function openLevelInfo() {
     title: config.chapter.title,
     message: `${config.chapter.scenicSpot} · 第 ${config.localLevel}/100 关。目标：${goalText}。`,
   });
+}
+
+function handleCellPointerDown(event, cell) {
+  if (event.pointerType === "mouse" && event.button !== 0) return;
+  swipeStart.value = {
+    row: cell.row,
+    col: cell.col,
+    x: event.clientX,
+    y: event.clientY,
+  };
+  didSwipe.value = false;
+}
+
+async function handleCellPointerUp(event, cell) {
+  const start = swipeStart.value;
+  swipeStart.value = null;
+  if (!start || start.row !== cell.row || start.col !== cell.col) return;
+  const deltaX = event.clientX - start.x;
+  const deltaY = event.clientY - start.y;
+  const absX = Math.abs(deltaX);
+  const absY = Math.abs(deltaY);
+  if (Math.max(absX, absY) < SWIPE_THRESHOLD) return;
+  didSwipe.value = true;
+  const direction =
+    absX > absY
+      ? { row: 0, col: deltaX > 0 ? 1 : -1 }
+      : { row: deltaY > 0 ? 1 : -1, col: 0 };
+  await game.swipeCell(cell, direction);
+}
+
+async function handleCellPointerLeave(event, cell) {
+  if (!swipeStart.value || event.buttons !== 1) return;
+  await handleCellPointerUp(event, cell);
+}
+
+function handleCellClick(cell) {
+  if (didSwipe.value) {
+    didSwipe.value = false;
+    return;
+  }
+  if (game.state.activeBooster) {
+    game.selectCell(cell);
+  }
+}
+
+function clearSwipeStart() {
+  swipeStart.value = null;
 }
 
 function isSelected(cell) {
