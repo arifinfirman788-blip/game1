@@ -726,7 +726,7 @@ button {
   color: #6a3c1f;
   text-align: center;
   pointer-events: none;
-  transform: translateY(-20px);
+  transform: translate(15px, -20px);
 }
 
 .chapter-highlight-desc strong {
