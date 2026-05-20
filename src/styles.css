@@ -1227,18 +1227,67 @@ button {
   display: block;
 }
 
-.map-footer-action.guide-info {
-  left: 64%;
-  top: 25%;
-  width: 17%;
-  height: 42%;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: #fff8d8;
-  font-size: clamp(12px, 3.5vw, 16px);
-  font-weight: 900;
-  text-shadow: 0 2px 0 rgba(12, 28, 44, 0.58);
+.footer-guide-rules {
+  position: absolute;
+  z-index: 2;
+  right: 2%;
+  top: 8%;
+  width: 46%;
+  height: 84%;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  align-content: start;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background-image: url("../assets/map/rules-panel.png");
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  color: #3f2e1e;
+  overflow: hidden;
+}
+
+.footer-guide-rules h3 {
+  margin: 0 0 4px;
+  text-align: center;
+  font-size: clamp(10px, 3vw, 13px);
+  color: #7b351f;
+  line-height: 1.2;
+}
+
+.footer-rule-list {
+  display: grid;
+  gap: 2px;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.footer-rule-list::-webkit-scrollbar {
+  display: none;
+}
+
+.footer-rule-item {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+  padding: 2px 0;
+  border-top: 1px solid rgba(102, 72, 42, 0.15);
+}
+
+.footer-rule-item strong {
+  display: block;
+  font-size: clamp(9px, 2.5vw, 11px);
+  text-align: center;
+  color: #5b351f;
+  line-height: 1.2;
+}
+
+.footer-rule-item p {
+  margin: 0;
+  font-size: clamp(8px, 2.2vw, 10px);
+  line-height: 1.25;
+  text-align: center;
+  color: #6a4a31;
 }
 
 .map-rules-mask {

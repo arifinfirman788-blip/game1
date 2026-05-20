@@ -171,9 +171,15 @@
           <button type="button" class="map-footer-action rules" aria-label="玩法说明" @click="openMapInfo">
             <img :src="assetManifest.map.buttons.footerRules" alt="" decoding="async" />
           </button>
-          <button type="button" class="map-footer-action guide-info" aria-label="玩法说明详情" @click="openMapInfo">
-            <span>玩法</span>
-          </button>
+          <aside class="footer-guide-rules">
+            <h3>玩法说明</h3>
+            <div class="footer-rule-list">
+              <div v-for="rule in mapRules.slice(0, 4)" :key="rule.title" class="footer-rule-item">
+                <strong>{{ rule.title }}</strong>
+                <p>{{ rule.text }}</p>
+              </div>
+            </div>
+          </aside>
         </footer>
 
         <div v-if="showMapRules" class="map-rules-mask" @click="showMapRules = false">
