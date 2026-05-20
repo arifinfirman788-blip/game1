@@ -934,7 +934,7 @@ button {
   touch-action: pan-y;
   border-radius: 0;
   background: transparent;
-  transform: translateY(-20px);
+  transform: translateY(-40px);
 }
 
 .route-map-track {
