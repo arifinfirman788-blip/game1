@@ -875,10 +875,10 @@ button {
 }
 
 .map-guide-half {
-  position: absolute;
+  position: fixed;
   z-index: 8;
   left: 4px;
-  bottom: 0;
+  bottom: clamp(65px, 11vh, 90px);
   width: min(32vw, 120px);
   height: auto;
   pointer-events: none;
@@ -886,10 +886,10 @@ button {
 }
 
 .map-guide-dialog {
-  position: absolute;
+  position: fixed;
   z-index: 8;
   left: clamp(70px, 22vw, 100px);
-  bottom: clamp(30px, 4vh, 40px);
+  bottom: clamp(110px, 18vh, 140px);
   width: min(50vw, 200px);
   aspect-ratio: 473 / 182;
   display: grid;
@@ -1247,21 +1247,20 @@ button {
 .footer-guide-content {
   position: relative;
   z-index: 1;
-  width: 88%;
-  height: 80%;
-  display: grid;
-  align-content: center;
-  padding: 0;
+  width: 94%;
+  height: 85%;
+  display: block;
+  padding-top: 18%;
   overflow: hidden;
 }
 
 .footer-rule-list {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
-  align-items: center;
-  overflow-y: auto;
-  scrollbar-width: none;
+  gap: 2px;
+  justify-items: center;
+  align-items: start;
+  width: 100%;
 }
 
 .footer-rule-list::-webkit-scrollbar {
@@ -1269,21 +1268,22 @@ button {
 }
 
 .footer-rule-item {
-  display: grid;
-  align-items: center;
-  gap: 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
   padding: 0;
   border: none;
 }
 
 .footer-rule-item p {
   margin: 0;
-  font-size: clamp(8px, 2vw, 10px);
+  font-size: clamp(8px, 1.8vw, 10px);
   line-height: 1.3;
   text-align: left;
   color: #5b351f;
   font-weight: 600;
-  width: 6em;
+  width: 6.5em;
   word-wrap: break-word;
 }
 
