@@ -396,7 +396,7 @@ button {
 .map-screen {
   position: relative;
   display: grid;
-  grid-template-rows: clamp(140px, 22vh, 180px) minmax(0, 1fr);
+  grid-template-rows: calc(min(100vw, 430px) * 474 / 760) minmax(0, 1fr);
   align-content: stretch;
   gap: 0;
   height: auto;
@@ -424,8 +424,8 @@ button {
 .map-icon-btn {
   position: absolute;
   z-index: 2;
-  width: 31px;
-  height: 31px;
+  width: 9%;
+  aspect-ratio: 1;
   padding: 0;
   border: 0;
   background: transparent;
@@ -439,22 +439,22 @@ button {
 }
 
 .map-icon-btn.back {
-  left: 6px;
-  top: 8px;
+  left: 2%;
+  top: 5%;
 }
 
 .map-icon-btn.setting {
-  right: 6px;
-  top: 8px;
+  right: 2%;
+  top: 5%;
 }
 
 .map-page-title {
   position: absolute;
   z-index: 2;
-  left: calc(29% - 4px);
-  right: calc(27% - 2px);
-  top: 16px;
-  height: 26px;
+  left: 28%;
+  right: 26%;
+  top: 8%;
+  height: 15%;
   display: grid;
   place-items: center;
   color: #ffe8b4;
@@ -534,13 +534,11 @@ button {
 
 .chapter-panel-bg {
   position: absolute;
-  inset: 50% auto auto 50%;
+  inset: 0;
   z-index: 0;
-  width: 112%;
+  width: 100%;
   height: 100%;
-  object-fit: fill;
-  object-position: center;
-  transform: translate(-50%, -50%);
+  object-fit: contain;
   pointer-events: none;
 }
 
@@ -551,9 +549,9 @@ button {
 .chapter-list {
   position: absolute;
   z-index: 2;
-  left: 4px;
-  top: 47px;
-  width: 104px;
+  left: 2%;
+  top: 30%;
+  width: 25%;
   display: grid;
   gap: 0;
   align-content: start;
@@ -564,7 +562,7 @@ button {
 }
 
 .chapter-list-button.van-button {
-  height: 22px;
+  height: clamp(18px, 5.5vw, 24px);
   padding: 0 4px 0 4px;
   justify-content: flex-start;
   text-align: left;
@@ -579,7 +577,7 @@ button {
   background-position: center;
   background-repeat: no-repeat;
   border: 0;
-  font-size: 9px;
+  font-size: clamp(8px, 2vw, 10px);
   line-height: 1;
   font-weight: 900;
   text-shadow: 0 1px 0 rgba(54, 22, 10, 0.58);
@@ -640,10 +638,10 @@ button {
 .chapter-visual {
   position: absolute;
   z-index: 2;
-  left: 85px;
-  top: 45px;
-  width: 180px;
-  min-height: 102px;
+  left: 28%;
+  top: 30%;
+  width: 48%;
+  height: 60%;
   display: block;
   padding: 0 4px;
   border-radius: 8px;
@@ -791,9 +789,9 @@ button {
 .chapter-speed {
   position: absolute;
   z-index: 2;
-  right: 3px;
-  top: 60px;
-  width: 84px;
+  right: 2%;
+  top: 36%;
+  width: 20%;
   display: grid;
   align-content: center;
   gap: 4px;
@@ -1241,11 +1239,10 @@ button {
 .footer-guide-content {
   position: relative;
   z-index: 1;
-  width: 80%;
-  height: 70%;
+  width: 88%;
+  height: 80%;
   display: grid;
-  grid-template-rows: 1fr;
-  align-content: start;
+  align-content: center;
   padding: 0;
   overflow: hidden;
 }
@@ -1253,7 +1250,8 @@ button {
 .footer-rule-list {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 4px;
+  gap: 6px;
+  align-items: center;
   overflow-y: auto;
   scrollbar-width: none;
 }
@@ -1264,7 +1262,7 @@ button {
 
 .footer-rule-item {
   display: grid;
-  grid-template-columns: 1fr;
+  align-items: center;
   gap: 0;
   padding: 0;
   border: none;
@@ -1272,10 +1270,11 @@ button {
 
 .footer-rule-item p {
   margin: 0;
-  font-size: clamp(4px, 1.2vw, 6px);
-  line-height: 1.2;
+  font-size: clamp(8px, 2vw, 10px);
+  line-height: 1.3;
   text-align: center;
   color: #5b351f;
+  font-weight: 600;
 }
 
 .map-rules-mask {
