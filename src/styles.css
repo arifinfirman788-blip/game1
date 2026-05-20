@@ -453,12 +453,12 @@ button {
   z-index: 2;
   left: 28%;
   right: 26%;
-  top: 8%;
+  top: 15%;
   height: 15%;
   display: grid;
   place-items: center;
   color: #ffe8b4;
-  font-size: clamp(13px, 4.3vw, 17px);
+  font-size: clamp(14px, 4.8vw, 20px);
   font-weight: 900;
   letter-spacing: 0;
   text-shadow:
@@ -549,9 +549,10 @@ button {
 .chapter-list {
   position: absolute;
   z-index: 2;
-  left: 2%;
-  top: 30%;
-  width: 25%;
+  left: 5%;
+  top: 38%;
+  width: 26%;
+  height: 50%;
   display: grid;
   gap: 0;
   align-content: start;
@@ -638,12 +639,15 @@ button {
 .chapter-visual {
   position: absolute;
   z-index: 2;
-  left: 28%;
-  top: 30%;
-  width: 48%;
+  left: 33%;
+  top: 36%;
+  width: 44%;
   height: 60%;
-  display: block;
-  padding: 0 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0;
   border-radius: 8px;
   color: #fff3ce;
   background: transparent;
@@ -651,11 +655,11 @@ button {
 }
 
 .chapter-visual-copy {
-  display: grid;
-  justify-items: center;
-  align-content: start;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   width: 100%;
-  transform: translateX(15px);
+  transform: none;
 }
 
 .chapter-visual-copy span {
@@ -677,11 +681,11 @@ button {
 .chapter-highlight-strip {
   width: max-content;
   display: flex;
-  gap: 5px;
+  gap: 2%;
   align-items: center;
   justify-content: center;
   overflow: visible;
-  transform: translate(30px, 2px);
+  margin-top: 4px;
 }
 
 .chapter-highlight-item {
@@ -710,13 +714,12 @@ button {
 }
 
 .chapter-highlight-desc {
-  position: absolute;
-  left: -2px;
-  right: -106px;
-  top: 108px;
+  width: 140%;
+  margin-top: 6px;
   min-height: 30px;
-  display: grid;
-  align-content: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   color: #6a3c1f;
   text-align: center;
   pointer-events: none;
