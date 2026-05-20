@@ -146,12 +146,13 @@
             </div>
           </div>
 
-          <img class="map-guide-half" :src="assetManifest.map.guideHalf" alt="" loading="lazy" decoding="async" />
-          <div class="map-guide-dialog">
-            <img :src="assetManifest.map.guideDialog" alt="" loading="lazy" decoding="async" />
-            <p>晚饭时间到啦！一起解锁更多美味吧。</p>
+          <div class="map-guide-half-container">
+            <img class="map-guide-half" :src="assetManifest.map.guideHalf" alt="" loading="lazy" decoding="async" />
+            <div class="map-guide-dialog">
+              <img :src="assetManifest.map.guideDialog" alt="" loading="lazy" decoding="async" />
+              <p>晚饭时间到啦！一起解锁更多美味吧。</p>
+            </div>
           </div>
-
         </section>
 
         <aside class="map-guide">

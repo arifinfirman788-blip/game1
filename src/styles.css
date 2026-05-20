@@ -869,16 +869,25 @@ button {
   position: relative;
   height: auto;
   min-height: 400px;
-  display: block;
+  display: flex;
+  flex-direction: column;
   overflow: visible;
-  padding-bottom: clamp(220px, 35vh, 280px);
+  padding-bottom: 0;
+}
+
+.map-guide-half-container {
+  position: relative;
+  width: 100%;
+  height: clamp(150px, 25vh, 200px);
+  margin-top: -30px;
+  pointer-events: none;
 }
 
 .map-guide-half {
-  position: fixed;
+  position: absolute;
   z-index: 8;
   left: 4px;
-  bottom: clamp(65px, 11vh, 90px);
+  bottom: 0;
   width: min(32vw, 120px);
   height: auto;
   pointer-events: none;
@@ -886,10 +895,10 @@ button {
 }
 
 .map-guide-dialog {
-  position: fixed;
+  position: absolute;
   z-index: 8;
   left: clamp(70px, 22vw, 100px);
-  bottom: clamp(110px, 18vh, 140px);
+  bottom: clamp(30px, 4vh, 40px);
   width: min(50vw, 200px);
   aspect-ratio: 473 / 182;
   display: grid;
@@ -1153,16 +1162,14 @@ button {
 }
 
 .map-footer {
-  position: fixed;
+  position: relative;
   z-index: 7;
-  left: 50%;
-  right: auto;
-  bottom: max(0px, calc(env(safe-area-inset-bottom)));
-  width: min(100vw, 430px);
+  width: 100%;
   aspect-ratio: 756 / 354;
   display: block;
-  transform: translateX(-50%);
   padding: 0;
+  margin-top: -10px;
+  pointer-events: auto;
   border-radius: 0;
   border: 0;
   background: transparent;
