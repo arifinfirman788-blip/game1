@@ -2,7 +2,10 @@ export const BOARD_SIZE = 8;
 export const LEVELS_PER_CHAPTER = 100;
 export const TOTAL_CHAPTERS = 7;
 export const TOTAL_LEVELS = LEVELS_PER_CHAPTER * TOTAL_CHAPTERS;
-export const REWARD_LEVELS = [3, 10, 16, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+export const REWARD_LEVELS = Array.from({ length: LEVELS_PER_CHAPTER / 20 }, (_, groupIndex) => {
+  const offset = groupIndex * 20;
+  return [3, 10, 16, 20].map((level) => level + offset);
+}).flat();
 
 export const pieces = [
   { id: "chili", name: "肠旺辣椒", text: "椒", aria: "红色辣椒棋子" },

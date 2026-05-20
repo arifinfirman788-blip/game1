@@ -42,13 +42,13 @@
 
       <section v-else-if="screen === 'map'" class="map-screen" :style="mapSceneStyle">
         <section class="chapter-panel">
-          <img class="chapter-panel-bg" :src="assetManifest.map.titleFrame" alt="" />
+          <img class="chapter-panel-bg" :src="assetManifest.map.titleFrame" alt="" decoding="async" fetchpriority="high" />
           <button type="button" class="map-icon-btn back" aria-label="返回首页" @click="goHome">
-            <img :src="assetManifest.map.buttons.back" alt="" />
+            <img :src="assetManifest.map.buttons.back" alt="" decoding="async" />
           </button>
           <div class="map-page-title">黄小西带你游贵州</div>
           <button type="button" class="map-icon-btn setting" aria-label="设置" @click="openSettings">
-            <img :src="assetManifest.map.buttons.setting" alt="" />
+            <img :src="assetManifest.map.buttons.setting" alt="" decoding="async" />
           </button>
           <div class="chapter-list" aria-label="7大关">
             <van-button
@@ -80,7 +80,7 @@
                 :aria-label="item.title"
                 @click="selectedHighlightIndex = index"
               >
-                <img :src="item.image" :alt="item.title" />
+                <img :src="item.image" :alt="item.title" loading="lazy" decoding="async" />
               </button>
             </div>
             <div class="chapter-highlight-desc">
@@ -110,7 +110,7 @@
               :style="mapTrackStyle"
             >
               <div v-for="segment in mapSegments" :key="segment" class="route-segment">
-                <img class="route-art" :src="assetManifest.map.route" alt="" />
+                <img class="route-art" :src="assetManifest.map.route" alt="" loading="lazy" decoding="async" />
                 <button
                   v-for="level in levelsForSegment(segment)"
                   :key="level.globalLevel"
@@ -119,30 +119,36 @@
                   :class="{
                     'is-current': level.globalLevel === game.state.currentLevel,
                     'is-boss': level.localLevel % 10 === 0,
-                    'has-reward': rewardForLevel(level),
-                    claimable: rewardForLevel(level) && player.isRewardClaimable(game.state.selectedChapterIndex, level.localLevel),
-                    claimed: rewardForLevel(level) && player.isRewardClaimed(game.state.selectedChapterIndex, level.localLevel),
                     [`stars-${player.getStars(level.globalLevel)}`]: player.isUnlocked(level.globalLevel),
                     locked: !player.isUnlocked(level.globalLevel),
                   }"
                   :style="segmentNodeStyle(level)"
-                  @click="handleMapNode(level)"
+                  @click="handleLevelNode(level)"
                 >
-                  <template v-if="rewardForLevel(level)">
-                    <img :src="rewardChestImage(rewardForLevel(level))" alt="" />
-                  </template>
-                  <template v-else>
-                    <span>{{ level.localLevel }}</span>
-                    <van-icon v-if="!player.isUnlocked(level.globalLevel)" name="lock" class="node-lock" />
-                  </template>
+                  <span>{{ level.localLevel }}</span>
+                  <van-icon v-if="!player.isUnlocked(level.globalLevel)" name="lock" class="node-lock" />
+                </button>
+                <button
+                  v-for="reward in rewardsForSegment(segment)"
+                  :key="`reward-${reward.globalLevel}`"
+                  type="button"
+                  class="reward-node"
+                  :class="{
+                    claimable: player.isRewardClaimable(game.state.selectedChapterIndex, reward.localLevel),
+                    claimed: player.isRewardClaimed(game.state.selectedChapterIndex, reward.localLevel),
+                  }"
+                  :style="rewardNodeStyle(reward)"
+                  @click="claimChapterReward(reward)"
+                >
+                  <img :src="rewardChestImage(reward)" alt="" loading="lazy" decoding="async" />
                 </button>
               </div>
             </div>
           </div>
 
-          <img class="map-guide-half" :src="assetManifest.map.guideHalf" alt="" />
+          <img class="map-guide-half" :src="assetManifest.map.guideHalf" alt="" loading="lazy" decoding="async" />
           <div class="map-guide-dialog">
-            <img :src="assetManifest.map.guideDialog" alt="" />
+            <img :src="assetManifest.map.guideDialog" alt="" loading="lazy" decoding="async" />
             <p>晚饭时间到啦！一起解锁更多美味吧。</p>
           </div>
 
@@ -170,18 +176,18 @@
         </aside>
 
         <footer class="map-footer">
-          <img class="map-footer-bg" :src="assetManifest.map.bottomBar" alt="" />
+          <img class="map-footer-bg" :src="assetManifest.map.bottomBar" alt="" decoding="async" />
           <button type="button" class="map-footer-action reward" aria-label="奖励" @click="openGift">
-            <img :src="assetManifest.map.buttons.reward" alt="" />
+            <img :src="assetManifest.map.buttons.reward" alt="" decoding="async" />
           </button>
           <button type="button" class="map-footer-action rules" aria-label="玩法说明" @click="openMapInfo">
-            <img :src="assetManifest.map.buttons.setting" alt="" />
+            <img :src="assetManifest.map.buttons.footerRules" alt="" decoding="async" />
           </button>
         </footer>
 
         <div v-if="showMapRules" class="map-rules-mask" @click="showMapRules = false">
           <aside class="map-rules-panel" @click.stop>
-            <img :src="assetManifest.map.rulesPanel" alt="" />
+            <img :src="assetManifest.map.rulesPanel" alt="" loading="lazy" decoding="async" />
             <div class="map-rules-copy">
               <h3>玩法说明</h3>
               <p>滑动相邻美食完成三消，完成关卡目标即可通关。</p>
@@ -213,7 +219,7 @@
                 <div v-for="item in topGoalSlots" :key="item.id" class="goal-item" :class="{ empty: item.empty }">
                   <template v-if="!item.empty">
                     <span class="goal-icon">
-                      <img v-if="goalImage(item.goal)" :src="goalImage(item.goal)" :alt="game.getGoalConfig(item.goal).label" />
+                      <img v-if="goalImage(item.goal)" :src="goalImage(item.goal)" :alt="game.getGoalConfig(item.goal).label" decoding="async" />
                       <template v-else>{{ game.getGoalConfig(item.goal).icon }}</template>
                     </span>
                     <span class="goal-count">{{ Math.max(item.count, 0) }}</span>
@@ -295,21 +301,21 @@
               @click="game.activateBooster(booster.id)"
             >
               <span class="booster-icon">
-                <img v-if="booster.image" :src="booster.image" :alt="booster.id" />
+                <img v-if="booster.image" :src="booster.image" :alt="booster.id" loading="lazy" decoding="async" />
                 <template v-else>{{ booster.icon }}</template>
               </span>
               <van-badge :content="booster.count" class="badge-anchor" />
             </van-button>
           </div>
           <div class="travel-progress">
-            <img class="chapter-building" :src="assetManifest.ui.chapterBuilding" alt="" />
+            <img class="chapter-building" :src="assetManifest.ui.chapterBuilding" alt="" loading="lazy" decoding="async" />
             <span class="chapter-name">{{ game.state.levelConfig.chapter.title }}</span>
             <div class="chapter-meter">
               <span :style="{ width: `${detailTreasurePercent}%` }"></span>
               <strong>{{ game.state.levelConfig.localLevel }}/{{ nextRewardLevel }}</strong>
             </div>
             <van-button size="small" round type="warning" class="treasure-claim" @click="claimDetailTreasure">
-              <img :src="assetManifest.ui.treasureChest" alt="" />
+              <img :src="assetManifest.ui.treasureChest" alt="" loading="lazy" decoding="async" />
               <span v-if="detailTreasureStatus === 'claimable'">可领取</span>
               <span v-else-if="detailTreasureStatus === 'claimed'">已领取</span>
             </van-button>
@@ -326,7 +332,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch, watchEffect } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch, watchEffect } from "vue";
 import { showDialog, showLoadingToast, showToast } from "vant";
 import { blockers, chapters, LEVELS_PER_CHAPTER, pieces, REWARD_LEVELS, TOTAL_LEVELS } from "./config/levels";
 import { assetManifest } from "./config/assets";
@@ -347,6 +353,7 @@ const swipeStart = ref(null);
 const didSwipe = ref(false);
 const selectedHighlightIndex = ref(0);
 const mapPage = ref(0);
+const viewportHeight = ref(window.innerHeight);
 const mapDragState = ref({
   dragging: false,
   startY: 0,
@@ -355,6 +362,9 @@ const mapDragState = ref({
 const SWIPE_THRESHOLD = 18;
 const MAP_PAGE_HEIGHT = 360;
 const MAP_PAGE_SWIPE_THRESHOLD = 70;
+const appViewportStyle = computed(() => ({
+  "--app-height": `${viewportHeight.value}px`,
+}));
 if (!params.has("level")) {
   game.changeLevel(player.progress.currentLevel);
 }
@@ -450,7 +460,7 @@ const currentSceneImage = computed(() => {
   return assetManifest.backgrounds?.[game.state.levelConfig.chapter.id] || assetManifest.background;
 });
 const sceneStyle = computed(() =>
-  currentSceneImage.value ? { "--scene-image": `url("${currentSceneImage.value}")` } : {},
+  currentSceneImage.value ? { ...appViewportStyle.value, "--scene-image": `url("${currentSceneImage.value}")` } : appViewportStyle.value,
 );
 const mapSceneStyle = computed(() =>
   assetManifest.map.background ? { "--map-bg": `url("${assetManifest.map.background}")` } : {},
@@ -465,6 +475,23 @@ watchEffect(() => {
   link.as = "image";
   link.href = currentSceneImage.value;
   document.head.appendChild(link);
+});
+
+function updateViewportHeight() {
+  const height = window.visualViewport?.height || window.innerHeight;
+  viewportHeight.value = height;
+  document.documentElement.style.setProperty("--app-height", `${height}px`);
+}
+
+onMounted(() => {
+  updateViewportHeight();
+  window.addEventListener("resize", updateViewportHeight);
+  window.visualViewport?.addEventListener("resize", updateViewportHeight);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("resize", updateViewportHeight);
+  window.visualViewport?.removeEventListener("resize", updateViewportHeight);
 });
 const mapRules = [
   { index: 1, title: "通关策略", text: "匹配3个或更多美食，完成目标即可通关。" },
@@ -567,15 +594,6 @@ function handleLevelNode(level) {
   goGame(level.globalLevel);
 }
 
-function handleMapNode(level) {
-  const reward = rewardForLevel(level);
-  if (reward) {
-    claimChapterReward(reward);
-    return;
-  }
-  handleLevelNode(level);
-}
-
 function resetMapDrag() {
   mapDragState.value = {
     dragging: false,
@@ -654,8 +672,10 @@ function levelsForSegment(segment) {
   return chapterLevels.value.slice(start, start + 20);
 }
 
-function rewardForLevel(level) {
-  return visibleRewards.value.find((reward) => reward.localLevel === level.localLevel);
+function rewardsForSegment(segment) {
+  const start = segment * 20;
+  const end = start + 20;
+  return visibleRewards.value.filter((reward) => reward.localLevel > start && reward.localLevel <= end);
 }
 
 function segmentPoint(localLevel) {
@@ -667,6 +687,20 @@ function segmentNodeStyle(level) {
   return {
     left: `${point.left}%`,
     top: `${point.top}%`,
+  };
+}
+
+function rewardNodeStyle(reward) {
+  const isSegmentEndReward = reward.localLevel % 20 === 0;
+  const startLevel = isSegmentEndReward ? reward.localLevel - 1 : reward.localLevel;
+  const endLevel = isSegmentEndReward ? reward.localLevel : reward.localLevel + 1;
+  const startPoint = segmentPoint(startLevel);
+  const endPoint = segmentPoint(endLevel);
+  const left = (startPoint.left + endPoint.left) / 2;
+  const top = (startPoint.top + endPoint.top) / 2;
+  return {
+    left: `${left}%`,
+    top: `${top}%`,
   };
 }
 
