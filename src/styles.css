@@ -395,8 +395,8 @@ button {
 
 .map-screen {
   position: relative;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: calc(min(100vw, 430px) * 474 / 760) minmax(0, 1fr);
   align-content: stretch;
   gap: 0;
   height: auto;
@@ -524,7 +524,7 @@ button {
   position: relative;
   display: block;
   min-height: 0;
-  height: calc(min(100vw, 430px) * 474 / 760);
+  height: 100%;
   margin-top: 0;
   padding: 0;
   border-radius: 0;
@@ -873,16 +873,14 @@ button {
   flex-direction: column;
   overflow: visible;
   padding-bottom: 0;
-  flex: 1;
 }
 
 .map-guide-half-container {
   position: relative;
   width: 100%;
   height: clamp(150px, 25vh, 200px);
-  margin-top: -30px;
+  margin-top: 70px;
   pointer-events: none;
-  transform: translateY(15px);
 }
 
 .map-guide-half {
