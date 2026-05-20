@@ -153,6 +153,26 @@
               <p>晚饭时间到啦！一起解锁更多美味吧。</p>
             </div>
           </div>
+
+          <footer class="map-footer">
+            <img class="map-footer-bg" :src="assetManifest.map.bottomBar" alt="" decoding="async" />
+            <button type="button" class="map-footer-action reward" aria-label="奖励" @click="openGift">
+              <img :src="assetManifest.map.buttons.reward" alt="" decoding="async" />
+            </button>
+            <button type="button" class="map-footer-action rules" aria-label="玩法说明" @click="openMapInfo">
+              <img :src="assetManifest.map.buttons.footerRules" alt="" decoding="async" />
+            </button>
+            <aside class="footer-guide-rules">
+              <img class="footer-guide-bg" :src="assetManifest.map.rulesPanelNew" alt="" decoding="async" />
+              <div class="footer-guide-content">
+                <div class="footer-rule-list">
+                  <div v-for="rule in mapRules.slice(0, 3)" :key="rule.title" class="footer-rule-item">
+                    <p>{{ rule.text }}</p>
+                  </div>
+                </div>
+              </div>
+            </aside>
+          </footer>
         </section>
 
         <aside class="map-guide">
@@ -163,26 +183,6 @@
           </div>
           <div class="guide-bubble">美景、美食、文化一周打尽！一起开启多彩贵州之旅。</div>
         </aside>
-
-        <footer class="map-footer">
-          <img class="map-footer-bg" :src="assetManifest.map.bottomBar" alt="" decoding="async" />
-          <button type="button" class="map-footer-action reward" aria-label="奖励" @click="openGift">
-            <img :src="assetManifest.map.buttons.reward" alt="" decoding="async" />
-          </button>
-          <button type="button" class="map-footer-action rules" aria-label="玩法说明" @click="openMapInfo">
-            <img :src="assetManifest.map.buttons.footerRules" alt="" decoding="async" />
-          </button>
-          <aside class="footer-guide-rules">
-            <img class="footer-guide-bg" :src="assetManifest.map.rulesPanelNew" alt="" decoding="async" />
-            <div class="footer-guide-content">
-              <div class="footer-rule-list">
-                <div v-for="rule in mapRules.slice(0, 3)" :key="rule.title" class="footer-rule-item">
-                  <p>{{ rule.text }}</p>
-                </div>
-              </div>
-            </div>
-          </aside>
-        </footer>
 
         <div v-if="showMapRules" class="map-rules-mask" @click="showMapRules = false">
           <aside class="map-rules-panel" @click.stop>
