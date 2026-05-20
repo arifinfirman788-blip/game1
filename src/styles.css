@@ -1219,33 +1219,48 @@ button {
   position: absolute;
   z-index: 2;
   right: 2%;
-  top: 8%;
-  width: 46%;
-  height: 84%;
+  top: 12%;
+  width: 30%;
+  height: 76%;
   display: grid;
-  grid-template-rows: auto 1fr;
-  align-content: start;
-  padding: 6px 8px;
-  border-radius: 8px;
-  background-image: url("../assets/map/rules-panel.png");
-  background-size: 100% 100%;
-  background-position: center;
-  background-repeat: no-repeat;
+  place-items: center;
   color: #3f2e1e;
   overflow: hidden;
 }
 
-.footer-guide-rules h3 {
-  margin: 0 0 4px;
+.footer-guide-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.footer-guide-content {
+  position: relative;
+  z-index: 1;
+  width: 86%;
+  height: 82%;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  align-content: start;
+  padding: 2px 4px;
+  overflow: hidden;
+}
+
+.footer-guide-content h3 {
+  margin: 0 0 2px;
   text-align: center;
-  font-size: clamp(10px, 3vw, 13px);
+  font-size: clamp(7px, 2vw, 9px);
   color: #7b351f;
-  line-height: 1.2;
+  line-height: 1.1;
 }
 
 .footer-rule-list {
   display: grid;
-  gap: 2px;
+  gap: 1px;
   overflow-y: auto;
   scrollbar-width: none;
 }
@@ -1258,22 +1273,22 @@ button {
   display: grid;
   grid-template-columns: 1fr;
   gap: 0;
-  padding: 2px 0;
-  border-top: 1px solid rgba(102, 72, 42, 0.15);
+  padding: 1px 0;
+  border-top: 1px solid rgba(102, 72, 42, 0.1);
 }
 
 .footer-rule-item strong {
   display: block;
-  font-size: clamp(9px, 2.5vw, 11px);
+  font-size: clamp(6px, 1.6vw, 8px);
   text-align: center;
   color: #5b351f;
-  line-height: 1.2;
+  line-height: 1.1;
 }
 
 .footer-rule-item p {
   margin: 0;
-  font-size: clamp(8px, 2.2vw, 10px);
-  line-height: 1.25;
+  font-size: clamp(5px, 1.3vw, 7px);
+  line-height: 1.1;
   text-align: center;
   color: #6a4a31;
 }

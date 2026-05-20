@@ -74,6 +74,7 @@ export const assetManifest = {
     titleFrame: asset("/assets/map/mobile/level-map-title-frame-mobile.png"),
     bottomBar: asset("/assets/map/mobile/level-map-bottom-bar-mobile.png"),
     rulesPanel: asset("/assets/map/rules-panel.png"),
+    rulesPanelNew: asset("/assets/map/rules-panel-new.png"),
     buttons: {
       back: asset("/assets/map/btn-back.png"),
       reward: asset("/assets/map/footer-reward.png"),
