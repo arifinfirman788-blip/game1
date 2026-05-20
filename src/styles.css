@@ -879,7 +879,7 @@ button {
   position: relative;
   width: 100%;
   height: clamp(150px, 25vh, 200px);
-  margin-top: 70px;
+  margin-top: 200px;
   pointer-events: none;
 }
 
@@ -904,6 +904,7 @@ button {
   display: grid;
   place-items: center;
   pointer-events: none;
+  transform: translateX(20px);
 }
 
 .map-guide-dialog img {
@@ -930,7 +931,7 @@ button {
   height: auto;
   min-height: 300px;
   max-height: none;
-  overflow: hidden;
+  overflow: visible;
   touch-action: pan-y;
   border-radius: 0;
   background: transparent;
