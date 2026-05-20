@@ -661,7 +661,7 @@ button {
   flex-direction: column;
   align-items: center;
   width: 100%;
-  transform: translate(-5px, -10px);
+  transform: translate(-15px, -20px);
 }
 
 .chapter-visual-copy span {
@@ -688,7 +688,7 @@ button {
   justify-content: center;
   overflow: visible;
   margin-top: 4px;
-  transform: translate(5px, -10px);
+  transform: translate(15px, -20px);
 }
 
 .chapter-highlight-item {
@@ -726,7 +726,7 @@ button {
   color: #6a3c1f;
   text-align: center;
   pointer-events: none;
-  transform: translateY(-5px);
+  transform: translateY(-15px);
 }
 
 .chapter-highlight-desc strong {
@@ -806,7 +806,7 @@ button {
   border-radius: 0;
   background: transparent;
   border: 0;
-  transform: translate(-5px, -5px);
+  transform: translate(-10px, -10px);
 }
 
 .chapter-speed p {
