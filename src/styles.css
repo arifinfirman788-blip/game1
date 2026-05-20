@@ -1277,6 +1277,14 @@ button {
   border: none;
 }
 
+.footer-rule-item:first-child {
+  transform: translateX(10px);
+}
+
+.footer-rule-item:last-child {
+  transform: translateX(-10px);
+}
+
 .footer-rule-item p {
   margin: 0;
   font-size: clamp(8px, 1.8vw, 10px);
