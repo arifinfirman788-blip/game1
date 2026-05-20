@@ -1,4 +1,5 @@
 import { computed, reactive, watch } from "vue";
+import { REWARD_LEVELS } from "../config/levels";
 
 const STORAGE_KEY = "guizhou-match3-progress";
 const PROGRESS_VERSION = 2;
@@ -113,7 +114,7 @@ export function usePlayerProgress() {
 
   function getBoosterReward(rewardLevel) {
     if (BOOSTER_REWARD_TABLE[rewardLevel]) return { ...BOOSTER_REWARD_TABLE[rewardLevel] };
-    if (rewardLevel % 10 === 0) return { hammer: 1, bottle: 1 };
+    if (REWARD_LEVELS.includes(rewardLevel) && rewardLevel % 10 === 0) return { hammer: 1, bottle: 1 };
     return { hammer: 1 };
   }
 

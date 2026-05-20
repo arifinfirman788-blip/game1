@@ -47,4 +47,43 @@ export const assetManifest = {
     treasureChest: asset("/assets/detail/ui/treasure-chest.png"),
     starGray: asset("/assets/detail/ui/star-gray.png"),
   },
+  map: {
+    background: asset("/assets/map/level-map-bg.jpg"),
+    route: asset("/assets/map/route-unlocked.webp"),
+    highlights: [
+      asset("/assets/map/chapter-highlights/kaili-suantangyu.png"),
+      asset("/assets/map/chapter-highlights/zunyi-yangroufen.png"),
+      asset("/assets/map/chapter-highlights/xingyi-yangroufen.png"),
+      asset("/assets/map/chapter-highlights/wuse-nuomifan.png"),
+      asset("/assets/map/chapter-highlights/nanbai-huangba.png"),
+      asset("/assets/map/chapter-highlights/zhijin-faba.png"),
+    ],
+    nodes: {
+      current: asset("/assets/map/level-node-current.png"),
+      locked: asset("/assets/map/level-node-locked.webp"),
+      pass0: asset("/assets/map/level-node-pass-0.png"),
+      pass1: asset("/assets/map/level-node-pass-1.png"),
+      pass2: asset("/assets/map/level-node-pass-2.png"),
+      pass3: asset("/assets/map/level-node-pass-3.png"),
+    },
+    chests: {
+      closed: asset("/assets/map/chest-closed.webp"),
+      ready: asset("/assets/map/chest-ready.png"),
+      opened: asset("/assets/map/chest-opened.png"),
+    },
+    titleFrame: asset("/assets/map/level-map-title-frame.png"),
+    bottomBar: asset("/assets/map/level-map-bottom-bar.png"),
+    rulesPanel: asset("/assets/map/rules-panel.png"),
+    buttons: {
+      back: asset("/assets/map/btn-back.png"),
+      reward: asset("/assets/map/footer-reward.png"),
+      setting: asset("/assets/map/footer-rules.png"),
+    },
+    guideHalf: asset("/assets/map/huangxiaoxi-half.png"),
+    guideDialog: asset("/assets/map/dialog-bubble.png"),
+    chapterCards: {
+      active: asset("/assets/map/chapter-card-active.png"),
+      normal: asset("/assets/map/chapter-card-normal.png"),
+    },
+  },
 };

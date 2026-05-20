@@ -40,14 +40,16 @@
         </van-grid>
       </section>
 
-      <section v-else-if="screen === 'map'" class="map-screen">
-        <van-nav-bar title="多彩贵州 · 山水人文之旅" left-arrow @click-left="goHome">
-          <template #right>
-            <van-icon name="wap-nav" size="24" @click="openMapInfo" />
-          </template>
-        </van-nav-bar>
-
+      <section v-else-if="screen === 'map'" class="map-screen" :style="mapSceneStyle">
         <section class="chapter-panel">
+          <img class="chapter-panel-bg" :src="assetManifest.map.titleFrame" alt="" />
+          <button type="button" class="map-icon-btn back" aria-label="返回首页" @click="goHome">
+            <img :src="assetManifest.map.buttons.back" alt="" />
+          </button>
+          <div class="map-page-title">黄小西带你游贵州</div>
+          <button type="button" class="map-icon-btn setting" aria-label="设置" @click="openSettings">
+            <img :src="assetManifest.map.buttons.setting" alt="" />
+          </button>
           <div class="chapter-list" aria-label="7大关">
             <van-button
               v-for="(chapter, index) in chapters"
@@ -57,59 +59,91 @@
               :class="{ active: index === game.state.selectedChapterIndex }"
               @click="game.state.selectedChapterIndex = index"
             >
-              <span>{{ index + 1 }}</span>{{ chapter.name }}
+              <span class="chapter-list-index">{{ index + 1 }}</span>
+              <span class="chapter-list-name">{{ chapter.name }}</span>
             </van-button>
           </div>
 
           <div class="chapter-visual">
-            <span>第 {{ game.state.selectedChapterIndex + 1 }} 章</span>
-            <h3>{{ selectedChapter.title.replace(/^第.章\s*/, "") }}</h3>
-            <p>{{ selectedChapter.scenicSpot }} · {{ selectedChapter.featureFood }}</p>
-            <div class="food-strip">
-              <span v-for="piece in chapterFoods" :key="piece.id" class="food-token" :class="piece.id">{{ piece.text }}</span>
+            <div class="chapter-visual-copy">
+              <span>第 {{ game.state.selectedChapterIndex + 1 }} 章</span>
+              <h3>{{ selectedChapter.title.replace(/^第.章\s*/, "") }}</h3>
+              <p>{{ selectedChapter.scenicSpot }} · {{ selectedChapter.featureFood }}</p>
+            </div>
+            <div class="chapter-highlight-strip" aria-label="章节美食展示">
+              <button
+                v-for="(item, index) in chapterHighlightItems"
+                :key="item.title"
+                type="button"
+                class="chapter-highlight-item"
+                :class="{ active: selectedHighlightIndex === index }"
+                :aria-label="item.title"
+                @click="selectedHighlightIndex = index"
+              >
+                <img :src="item.image" :alt="item.title" />
+              </button>
+            </div>
+            <div class="chapter-highlight-desc">
+              <strong>{{ selectedHighlight.title }}</strong>
+              <p>{{ selectedHighlight.text }}</p>
             </div>
           </div>
 
           <div class="chapter-speed">
-            <p>米火关进度</p>
+            <p>本大关进度</p>
             <strong><van-icon name="star" /> {{ chapterStarTotal }}/300</strong>
             <van-progress :percentage="chapterStarPercent" stroke-width="10" color="#85c341" :show-pivot="false" />
           </div>
         </section>
 
         <section class="map-body">
-          <div class="route-map">
-            <button
-              v-for="level in visibleChapterLevels"
-              :key="level.globalLevel"
-              type="button"
-              class="level-node"
-              :class="{
-                'is-current': level.globalLevel === game.state.currentLevel,
-                'is-boss': level.localLevel % 10 === 0,
-                locked: !player.isUnlocked(level.globalLevel),
-              }"
-              :style="routeNodeStyle(level)"
-              @click="handleLevelNode(level)"
+          <div
+            class="route-map"
+            @pointerdown="handleMapPointerDown"
+            @pointermove="handleMapPointerMove"
+            @pointerup="handleMapPointerUp"
+            @pointercancel="handleMapPointerCancel"
+            @lostpointercapture="handleMapPointerCancel"
+          >
+            <div
+              class="route-map-track"
+              :style="mapTrackStyle"
             >
-              <span>{{ level.localLevel }}</span>
-              <small v-if="player.isUnlocked(level.globalLevel)" class="node-stars">
-                <i v-for="index in 3" :key="index" :class="{ lit: player.getStars(level.globalLevel) >= index }">★</i>
-              </small>
-              <van-icon v-else name="lock" class="node-lock" />
-            </button>
+              <div v-for="segment in mapSegments" :key="segment" class="route-segment">
+                <img class="route-art" :src="assetManifest.map.route" alt="" />
+                <button
+                  v-for="level in levelsForSegment(segment)"
+                  :key="level.globalLevel"
+                  type="button"
+                  class="level-node"
+                  :class="{
+                    'is-current': level.globalLevel === game.state.currentLevel,
+                    'is-boss': level.localLevel % 10 === 0,
+                    'has-reward': rewardForLevel(level),
+                    claimable: rewardForLevel(level) && player.isRewardClaimable(game.state.selectedChapterIndex, level.localLevel),
+                    claimed: rewardForLevel(level) && player.isRewardClaimed(game.state.selectedChapterIndex, level.localLevel),
+                    [`stars-${player.getStars(level.globalLevel)}`]: player.isUnlocked(level.globalLevel),
+                    locked: !player.isUnlocked(level.globalLevel),
+                  }"
+                  :style="segmentNodeStyle(level)"
+                  @click="handleMapNode(level)"
+                >
+                  <template v-if="rewardForLevel(level)">
+                    <img :src="rewardChestImage(rewardForLevel(level))" alt="" />
+                  </template>
+                  <template v-else>
+                    <span>{{ level.localLevel }}</span>
+                    <van-icon v-if="!player.isUnlocked(level.globalLevel)" name="lock" class="node-lock" />
+                  </template>
+                </button>
+              </div>
+            </div>
+          </div>
 
-            <button
-              v-for="reward in visibleRewards"
-              :key="reward.localLevel"
-              type="button"
-              class="reward-chest"
-              :class="{ claimable: player.isRewardClaimable(game.state.selectedChapterIndex, reward.localLevel), claimed: player.isRewardClaimed(game.state.selectedChapterIndex, reward.localLevel) }"
-              :style="routeNodeStyle(reward)"
-              @click="claimChapterReward(reward)"
-            >
-              🎁
-            </button>
+          <img class="map-guide-half" :src="assetManifest.map.guideHalf" alt="" />
+          <div class="map-guide-dialog">
+            <img :src="assetManifest.map.guideDialog" alt="" />
+            <p>晚饭时间到啦！一起解锁更多美味吧。</p>
           </div>
 
           <aside class="guide-rules">
@@ -136,9 +170,27 @@
         </aside>
 
         <footer class="map-footer">
-          <van-button icon="orders-o" type="primary" round>关卡</van-button>
-          <van-button icon="gift-o" type="warning" round @click="openGift">奖励</van-button>
+          <img class="map-footer-bg" :src="assetManifest.map.bottomBar" alt="" />
+          <button type="button" class="map-footer-action reward" aria-label="奖励" @click="openGift">
+            <img :src="assetManifest.map.buttons.reward" alt="" />
+          </button>
+          <button type="button" class="map-footer-action rules" aria-label="玩法说明" @click="openMapInfo">
+            <img :src="assetManifest.map.buttons.setting" alt="" />
+          </button>
         </footer>
+
+        <div v-if="showMapRules" class="map-rules-mask" @click="showMapRules = false">
+          <aside class="map-rules-panel" @click.stop>
+            <img :src="assetManifest.map.rulesPanel" alt="" />
+            <div class="map-rules-copy">
+              <h3>玩法说明</h3>
+              <p>滑动相邻美食完成三消，完成关卡目标即可通关。</p>
+              <p>每章 100 关，关卡节点会按进度解锁，通关星级会在节点素材上回显。</p>
+              <p>宝箱达到指定关卡后可领取，奖励用于后续关卡破局。</p>
+            </div>
+            <button type="button" class="map-rules-close" @click="showMapRules = false">关闭</button>
+          </aside>
+        </div>
       </section>
 
       <section v-else class="play-screen">
@@ -191,7 +243,7 @@
               :key="`${cell.row}-${cell.col}`"
               class="cell"
               :class="{ selected: isSelected(cell), clearing: game.state.effects.clearing.has(cellKey(cell)) }"
-              :disabled="game.state.busy"
+              :disabled="game.state.busy || game.state.completed || game.state.failed || game.state.movesLeft <= 0"
               @click="handleCellClick(cell)"
               @pointerdown="handleCellPointerDown($event, cell)"
               @pointerup="handleCellPointerUp($event, cell)"
@@ -253,12 +305,13 @@
             <img class="chapter-building" :src="assetManifest.ui.chapterBuilding" alt="" />
             <span class="chapter-name">{{ game.state.levelConfig.chapter.title }}</span>
             <div class="chapter-meter">
-              <span :style="{ width: `${chapterProgressPercent}%` }"></span>
-              <strong>{{ game.state.levelConfig.localLevel }}/100</strong>
+              <span :style="{ width: `${detailTreasurePercent}%` }"></span>
+              <strong>{{ game.state.levelConfig.localLevel }}/{{ nextRewardLevel }}</strong>
             </div>
-            <van-button size="small" round type="warning" class="treasure-claim">
+            <van-button size="small" round type="warning" class="treasure-claim" @click="claimDetailTreasure">
               <img :src="assetManifest.ui.treasureChest" alt="" />
-              <span>10关领取</span>
+              <span v-if="detailTreasureStatus === 'claimable'">可领取</span>
+              <span v-else-if="detailTreasureStatus === 'claimed'">已领取</span>
             </van-button>
           </div>
           <div class="level-tools">
@@ -275,7 +328,7 @@
 <script setup>
 import { computed, ref, watch, watchEffect } from "vue";
 import { showDialog, showLoadingToast, showToast } from "vant";
-import { blockers, chapters, LEVELS_PER_CHAPTER, pieces, TOTAL_LEVELS } from "./config/levels";
+import { blockers, chapters, LEVELS_PER_CHAPTER, pieces, REWARD_LEVELS, TOTAL_LEVELS } from "./config/levels";
 import { assetManifest } from "./config/assets";
 import { useMatch3Game } from "./composables/useMatch3Game";
 import { usePlayerProgress } from "./composables/usePlayerProgress";
@@ -283,14 +336,25 @@ import { usePlayerProgress } from "./composables/usePlayerProgress";
 const params = new URLSearchParams(window.location.search);
 const initialLevel = Number(params.get("level")) || 128;
 const screen = ref(params.has("level") ? "game" : params.get("screen") === "map" ? "map" : "home");
+const showMapRules = ref(false);
 const player = usePlayerProgress();
 const game = useMatch3Game(initialLevel, {
   onLevelComplete: handleLevelComplete,
+  onLevelFail: handleLevelFail,
   getBoosterCount: (booster) => player.progress.inventory[booster] || 0,
 });
 const swipeStart = ref(null);
 const didSwipe = ref(false);
+const selectedHighlightIndex = ref(0);
+const mapPage = ref(0);
+const mapDragState = ref({
+  dragging: false,
+  startY: 0,
+  currentY: 0,
+});
 const SWIPE_THRESHOLD = 18;
+const MAP_PAGE_HEIGHT = 360;
+const MAP_PAGE_SWIPE_THRESHOLD = 70;
 if (!params.has("level")) {
   game.changeLevel(player.progress.currentLevel);
 }
@@ -319,18 +383,53 @@ const chapterLevels = computed(() => {
     localLevel: index + 1,
   }));
 });
-const visibleChapterLevels = computed(() => chapterLevels.value.slice(0, 20));
 const visibleRewards = computed(() =>
-  [3, 10, 16].map((localLevel) => ({
+  REWARD_LEVELS.map((localLevel) => ({
     globalLevel: game.state.selectedChapterIndex * LEVELS_PER_CHAPTER + localLevel,
     localLevel,
   })),
 );
+const nextRewardLevel = computed(() => {
+  const localLevel = game.state.levelConfig.localLevel;
+  return REWARD_LEVELS.find((rewardLevel) => rewardLevel >= localLevel) || LEVELS_PER_CHAPTER;
+});
+const detailTreasurePercent = computed(() =>
+  Math.min(100, Math.round((game.state.levelConfig.localLevel / nextRewardLevel.value) * 100)),
+);
+const detailTreasureStatus = computed(() => {
+  const nextLevel = nextRewardLevel.value;
+  if (player.isRewardClaimed(game.state.levelConfig.chapterIndex, nextLevel)) return "claimed";
+  if (player.isRewardClaimable(game.state.levelConfig.chapterIndex, nextLevel)) return "claimable";
+  return "locked";
+});
+const mapSegments = computed(() => Array.from({ length: Math.ceil(LEVELS_PER_CHAPTER / 20) }, (_, index) => index));
+const maxUnlockedMapPage = computed(() => {
+  const chapterStart = game.state.selectedChapterIndex * LEVELS_PER_CHAPTER + 1;
+  const unlockedInChapter = Math.max(1, Math.min(LEVELS_PER_CHAPTER, player.progress.unlockedLevel - chapterStart + 1));
+  return Math.floor((unlockedInChapter - 1) / 20);
+});
+const mapTrackStyle = computed(() => ({
+  "--map-page-y": `${-mapPage.value * MAP_PAGE_HEIGHT}px`,
+}));
 const chapterStarTotal = computed(() =>
   chapterLevels.value.reduce((sum, level) => sum + player.getStars(level.globalLevel), 0),
 );
 const chapterStarPercent = computed(() => Math.round((chapterStarTotal.value / 300) * 100));
-const chapterFoods = computed(() => pieces.slice(0, 6));
+const chapterHighlightCopy = [
+  { title: "凯里酸汤鱼", text: "一口鲜酸开胃，像瀑布水汽一样爽快。" },
+  { title: "遵义羊肉粉", text: "热汤滚香，米粉柔滑，赶路也要吃得踏实。" },
+  { title: "兴义羊肉粉", text: "山野香气更浓，暖胃又有峰林烟火气。" },
+  { title: "五色糯米饭", text: "五彩入盘，软糯香甜，带着民族节庆的好彩头。" },
+  { title: "南白黄粑", text: "糯香绵密，甜而不腻，是旅途里的温柔一口。" },
+  { title: "织金发粑", text: "松软发甜，越嚼越香，适合闯关前补满元气。" },
+];
+const chapterHighlightItems = computed(() =>
+  assetManifest.map.highlights.map((image, index) => ({
+    image,
+    ...chapterHighlightCopy[index],
+  })),
+);
+const selectedHighlight = computed(() => chapterHighlightItems.value[selectedHighlightIndex.value] || chapterHighlightItems.value[0]);
 const topGoalSlots = computed(() => {
   const entries = Object.entries(game.state.goals).slice(0, 3).map(([goal, count]) => ({
     id: goal,
@@ -353,6 +452,9 @@ const currentSceneImage = computed(() => {
 const sceneStyle = computed(() =>
   currentSceneImage.value ? { "--scene-image": `url("${currentSceneImage.value}")` } : {},
 );
+const mapSceneStyle = computed(() =>
+  assetManifest.map.background ? { "--map-bg": `url("${assetManifest.map.background}")` } : {},
+);
 const preloadedImages = new Set();
 
 watchEffect(() => {
@@ -373,6 +475,20 @@ const mapRules = [
   { index: 6, title: "道具使用", text: "银锤等道具可在困难局面中破局。" },
   { index: 7, title: "三星挑战", text: "高分通关并保留步数，可获得更高最终分。" },
 ];
+
+watch(
+  () => game.state.selectedChapterIndex,
+  () => {
+    mapPage.value = 0;
+    resetMapDrag();
+  },
+);
+
+watch(maxUnlockedMapPage, (maxPage) => {
+  if (mapPage.value > maxPage) {
+    mapPage.value = maxPage;
+  }
+});
 
 function goHome() {
   screen.value = "home";
@@ -422,6 +538,22 @@ function handleLevelComplete(result) {
     });
 }
 
+function handleLevelFail(result) {
+  showDialog({
+    title: "挑战失败",
+    message: `第 ${result.localLevel} 关步数已用完，当前得分 ${result.score.toLocaleString("zh-CN")}。要再来一次吗？`,
+    confirmButtonText: "再来一次",
+    cancelButtonText: "返回选关",
+    showCancelButton: true,
+  })
+    .then(() => {
+      game.changeLevel(result.level);
+    })
+    .catch(() => {
+      goMap();
+    });
+}
+
 watch(
   () => game.state.boosterUsed,
   (booster) => {
@@ -435,15 +567,117 @@ function handleLevelNode(level) {
   goGame(level.globalLevel);
 }
 
-function routeNodeStyle(level) {
-  const index = level.localLevel - 1;
-  const row = Math.floor(index / 4);
-  const col = index % 4;
-  const reversedCol = row % 2 === 0 ? col : 3 - col;
-  return {
-    left: `${10 + reversedCol * 23}%`,
-    top: `${5 + row * 18}%`,
+function handleMapNode(level) {
+  const reward = rewardForLevel(level);
+  if (reward) {
+    claimChapterReward(reward);
+    return;
+  }
+  handleLevelNode(level);
+}
+
+function resetMapDrag() {
+  mapDragState.value = {
+    dragging: false,
+    startY: 0,
+    currentY: 0,
   };
+}
+
+function handleMapPointerDown(event) {
+  if (event.pointerType === "mouse" && event.button !== 0) return;
+  mapDragState.value = {
+    dragging: true,
+    startY: event.clientY,
+    currentY: event.clientY,
+  };
+  event.currentTarget.setPointerCapture?.(event.pointerId);
+}
+
+function handleMapPointerMove(event) {
+  if (!mapDragState.value.dragging) return;
+  mapDragState.value = {
+    ...mapDragState.value,
+    currentY: event.clientY,
+  };
+}
+
+function handleMapPointerUp(event) {
+  if (!mapDragState.value.dragging) return;
+  event.currentTarget.releasePointerCapture?.(event.pointerId);
+  const deltaY = mapDragState.value.currentY - mapDragState.value.startY;
+  const wantsNextPage = deltaY < -MAP_PAGE_SWIPE_THRESHOLD;
+  const wantsPrevPage = deltaY > MAP_PAGE_SWIPE_THRESHOLD;
+  if (wantsNextPage) {
+    if (mapPage.value < maxUnlockedMapPage.value) {
+      mapPage.value += 1;
+    } else {
+      showToast("完成前面的关卡后再继续前进");
+    }
+  } else if (wantsPrevPage && mapPage.value > 0) {
+    mapPage.value -= 1;
+  }
+  resetMapDrag();
+}
+
+function handleMapPointerCancel(event) {
+  if (!mapDragState.value.dragging) return;
+  event.currentTarget.releasePointerCapture?.(event.pointerId);
+  resetMapDrag();
+}
+
+const routePoints = [
+  { left: 12, top: 16 },
+  { left: 30, top: 18 },
+  { left: 51, top: 14 },
+  { left: 75, top: 16 },
+  { left: 90, top: 27 },
+  { left: 76, top: 35 },
+  { left: 53, top: 35 },
+  { left: 27, top: 36 },
+  { left: 14, top: 43 },
+  { left: 28, top: 49 },
+  { left: 51, top: 51 },
+  { left: 76, top: 51 },
+  { left: 87, top: 62 },
+  { left: 75, top: 70 },
+  { left: 52, top: 70 },
+  { left: 28, top: 70 },
+  { left: 17, top: 80 },
+  { left: 35, top: 86 },
+  { left: 59, top: 84 },
+  { left: 76, top: 82 },
+];
+
+function levelsForSegment(segment) {
+  const start = segment * 20;
+  return chapterLevels.value.slice(start, start + 20);
+}
+
+function rewardForLevel(level) {
+  return visibleRewards.value.find((reward) => reward.localLevel === level.localLevel);
+}
+
+function segmentPoint(localLevel) {
+  return routePoints[(localLevel - 1) % 20];
+}
+
+function segmentNodeStyle(level) {
+  const point = segmentPoint(level.localLevel);
+  return {
+    left: `${point.left}%`,
+    top: `${point.top}%`,
+  };
+}
+
+function rewardChestImage(reward) {
+  if (player.isRewardClaimed(game.state.selectedChapterIndex, reward.localLevel)) {
+    return assetManifest.map.chests.opened;
+  }
+  if (player.isRewardClaimable(game.state.selectedChapterIndex, reward.localLevel)) {
+    return assetManifest.map.chests.ready;
+  }
+  return assetManifest.map.chests.closed;
 }
 
 function claimChapterReward(reward) {
@@ -462,6 +696,31 @@ function claimChapterReward(reward) {
   showDialog({
     title: "领取成功",
     message: `获得 ${rewardText}，继续出发吧。`,
+    confirmButtonText: "好",
+  });
+}
+
+function claimDetailTreasure() {
+  const rewardLevel = nextRewardLevel.value;
+  if (player.isRewardClaimed(game.state.levelConfig.chapterIndex, rewardLevel)) {
+    showToast("这个宝箱已经领取过啦");
+    return;
+  }
+  if (!player.isRewardClaimable(game.state.levelConfig.chapterIndex, rewardLevel)) {
+    showToast(`通关到第 ${rewardLevel} 小关后可领取`);
+    return;
+  }
+  const rewardItems = player.claimReward(game.state.levelConfig.chapterIndex, rewardLevel);
+  if (!rewardItems) {
+    showToast("完成前面的关卡后再来领取");
+    return;
+  }
+  const rewardText = Object.entries(rewardItems)
+    .map(([booster, count]) => `${boosterName(booster)} +${count}`)
+    .join("、");
+  showDialog({
+    title: "领取成功",
+    message: `获得 ${rewardText}，选关页宝箱状态已同步更新。`,
     confirmButtonText: "好",
   });
 }
@@ -506,7 +765,7 @@ function openGift() {
 }
 
 function openMapInfo() {
-  showDialog({ title: "关卡规则", message: "7 大景区，每个景区 100 小关。前期收集美食，随后逐步加入冰块、木箱和银链。" });
+  showMapRules.value = true;
 }
 
 function openLevelInfo() {

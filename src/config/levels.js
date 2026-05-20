@@ -2,6 +2,7 @@ export const BOARD_SIZE = 8;
 export const LEVELS_PER_CHAPTER = 100;
 export const TOTAL_CHAPTERS = 7;
 export const TOTAL_LEVELS = LEVELS_PER_CHAPTER * TOTAL_CHAPTERS;
+export const REWARD_LEVELS = [3, 10, 16, 20, 30, 40, 50, 60, 70, 80, 90, 100];
 
 export const pieces = [
   { id: "chili", name: "肠旺辣椒", text: "椒", aria: "红色辣椒棋子" },
@@ -82,18 +83,20 @@ function buildGoals(blockerPlan, localLevel, difficulty) {
   const goals = {};
   const primaryPiece = pieces[(localLevel - 1) % pieces.length];
   const secondaryPiece = pieces[(localLevel + 1) % pieces.length];
-  goals[primaryPiece.id] = 24 + Math.floor(localLevel / 3) + Math.floor(difficulty * 4);
+  const targetGoalCount = localLevel <= 4 ? 1 : localLevel <= 10 ? 2 : 3;
+  const earlyEase = localLevel <= 4 ? -8 : localLevel <= 10 ? -5 : 0;
+  goals[primaryPiece.id] = Math.max(10, 18 + Math.floor(localLevel / 4) + Math.floor(difficulty * 3) + earlyEase);
   blockerPlan.forEach(({ type, amount }) => {
     if (amount <= 0) return;
     const goalPressure = type === "ice" ? 1.45 : type === "crate" ? 1.7 : 1.55;
     goals[type] = Math.ceil(amount * goalPressure + difficulty * 3);
   });
-  if (Object.keys(goals).length < 3) {
-    goals[secondaryPiece.id] = 18 + Math.floor(localLevel / 4) + Math.floor(difficulty * 3);
+  if (Object.keys(goals).length < targetGoalCount) {
+    goals[secondaryPiece.id] = Math.max(8, 13 + Math.floor(localLevel / 5) + Math.floor(difficulty * 2) + earlyEase);
   }
-  if (Object.keys(goals).length < 3) {
+  if (Object.keys(goals).length < targetGoalCount) {
     const tertiaryPiece = pieces[(localLevel + 3) % pieces.length];
-    goals[tertiaryPiece.id] = 14 + Math.floor(localLevel / 5) + Math.floor(difficulty * 2);
+    goals[tertiaryPiece.id] = 12 + Math.floor(localLevel / 6) + Math.floor(difficulty * 2);
   }
   return goals;
 }
@@ -101,7 +104,7 @@ function buildGoals(blockerPlan, localLevel, difficulty) {
 function buildMoveBudget(localLevel, chapterIndex, blockerPlan) {
   const activeBlockers = blockerPlan.filter((item) => item.amount > 0);
   const blockerLoad = activeBlockers.reduce((sum, item) => sum + item.amount, 0);
-  const earlyGenerosity = localLevel <= 5 ? 1 : 0;
+  const earlyGenerosity = localLevel <= 4 ? 4 : localLevel <= 10 ? 2 : 0;
   const pressure = Math.floor(localLevel / 14) + chapterIndex;
   return clamp(25 + earlyGenerosity + Math.floor(blockerLoad / 10) - pressure, 16, 30);
 }

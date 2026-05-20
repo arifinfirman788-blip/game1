@@ -1,5 +1,5 @@
 import { computed, nextTick, reactive } from "vue";
-import { showDialog, showToast } from "vant";
+import { showToast } from "vant";
 import {
   BOARD_SIZE,
   TOTAL_LEVELS,
@@ -60,6 +60,7 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
     goals: {},
     busy: false,
     completed: false,
+    failed: false,
     goalsCompleted: false,
     activeBooster: null,
     boosterUsed: null,
@@ -117,6 +118,7 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
     state.goals = clone(state.levelConfig.goals);
     state.busy = false;
     state.completed = false;
+    state.failed = false;
     state.goalsCompleted = false;
     state.activeBooster = null;
     state.boosterUsed = null;
@@ -167,7 +169,7 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
   }
 
   async function selectCell(cell) {
-    if (state.busy) return;
+    if (state.busy || state.completed || state.failed || state.movesLeft <= 0) return;
     if (state.activeBooster) {
       await useBooster(cell);
       return;
@@ -192,7 +194,7 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
   }
 
   async function swipeCell(cell, direction) {
-    if (state.busy) return;
+    if (state.busy || state.completed || state.failed || state.movesLeft <= 0) return;
     if (state.activeBooster) {
       await useBooster(cell);
       return;
@@ -223,6 +225,7 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
   }
 
   async function trySwap(a, b) {
+    if (state.completed || state.failed || state.movesLeft <= 0) return;
     state.busy = true;
     swapTypes(a, b);
     state.selected = null;
@@ -679,7 +682,7 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
   }
 
   function activateBooster(booster) {
-    if (state.busy) return;
+    if (state.busy || state.completed || state.failed || state.movesLeft <= 0) return;
     if (options.getBoosterCount?.(booster) <= 0) {
       showToast("该道具数量不足");
       return;
@@ -768,12 +771,22 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
     }
 
     if (state.movesLeft <= 0) {
-      showDialog({
-        title: "步数用完",
-        message: "还差一点点，再试一次一定能打开局面。",
-        confirmButtonText: "知道了",
-      });
+      failLevel();
     }
+  }
+
+  function failLevel() {
+    if (state.failed || state.completed) return;
+    state.failed = true;
+    state.busy = false;
+    state.selected = null;
+    state.guideText = "步数用完啦，调整策略再挑战一次。";
+    options.onLevelFail?.({
+      level: state.currentLevel,
+      localLevel: state.levelConfig.localLevel,
+      chapter: state.levelConfig.chapter,
+      score: state.score,
+    });
   }
 
   function completeLevel() {
