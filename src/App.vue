@@ -152,18 +152,6 @@
             <p>晚饭时间到啦！一起解锁更多美味吧。</p>
           </div>
 
-          <aside class="guide-rules">
-            <h3>玩法说明</h3>
-            <van-list>
-              <div v-for="rule in mapRules" :key="rule.title" class="rule-item">
-                <span>{{ rule.index }}</span>
-                <div>
-                  <strong>{{ rule.title }}</strong>
-                  <p>{{ rule.text }}</p>
-                </div>
-              </div>
-            </van-list>
-          </aside>
         </section>
 
         <aside class="map-guide">
@@ -182,6 +170,9 @@
           </button>
           <button type="button" class="map-footer-action rules" aria-label="玩法说明" @click="openMapInfo">
             <img :src="assetManifest.map.buttons.footerRules" alt="" decoding="async" />
+          </button>
+          <button type="button" class="map-footer-action guide-info" aria-label="玩法说明详情" @click="openMapInfo">
+            <span>玩法</span>
           </button>
         </footer>
 
@@ -462,9 +453,7 @@ const currentSceneImage = computed(() => {
 const sceneStyle = computed(() =>
   currentSceneImage.value ? { ...appViewportStyle.value, "--scene-image": `url("${currentSceneImage.value}")` } : appViewportStyle.value,
 );
-const mapSceneStyle = computed(() =>
-  assetManifest.map.background ? { "--map-bg": `url("${assetManifest.map.background}")` } : {},
-);
+const mapSceneStyle = computed(() => ({}));
 const preloadedImages = new Set();
 
 watchEffect(() => {

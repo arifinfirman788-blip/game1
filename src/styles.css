@@ -101,7 +101,6 @@ button {
   grid-template-rows: auto 1fr auto;
   padding: max(6px, env(safe-area-inset-top)) 12px max(8px, env(safe-area-inset-bottom));
   isolation: isolate;
-  box-shadow: var(--shadow);
   background-image: var(--scene-image);
   background-size: cover;
   background-position: center;
@@ -234,6 +233,9 @@ button {
   min-height: calc(var(--app-height, 100dvh) - 22px);
   align-content: space-between;
   gap: 14px;
+  max-width: 430px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 .home-top,
@@ -280,7 +282,9 @@ button {
 .home-hero {
   display: grid;
   align-items: end;
-  min-height: 48vh;
+  min-height: clamp(200px, 40vh, 380px);
+  flex: 1;
+  justify-content: center;
 }
 
 .home-title-card {
@@ -303,16 +307,17 @@ button {
 
 .home-title-card h1 {
   margin: 0;
-  font-size: clamp(38px, 12vw, 58px);
-  line-height: 1.06;
+  font-size: clamp(28px, 8vw, 48px);
+  line-height: 1.1;
   letter-spacing: 0;
 }
 
 .home-title-card span {
   display: block;
-  margin-top: 10px;
-  font-size: 16px;
+  margin-top: 8px;
+  font-size: clamp(12px, 3.5vw, 16px);
   font-weight: 900;
+  padding: 0 10px;
 }
 
 .home-guide {
@@ -322,8 +327,8 @@ button {
 }
 
 .home-character {
-  width: 150px;
-  height: 210px;
+  width: clamp(120px, 36vw, 180px);
+  height: clamp(160px, 48vw, 240px);
   transform: translateY(18px) scale(1.12);
 }
 
@@ -334,10 +339,10 @@ button {
 
 .start-button,
 .continue-button {
-  min-height: 58px;
+  min-height: clamp(44px, 12vw, 58px);
   border-radius: 18px;
   color: #fff7d1;
-  font-size: 22px;
+  font-size: clamp(16px, 5vw, 22px);
   font-weight: 900;
   box-shadow: 0 7px 0 rgba(55, 38, 24, 0.46);
 }
@@ -358,17 +363,18 @@ button {
 .home-summary {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  padding: 10px;
+  gap: 6px;
+  padding: 8px;
   border-radius: 18px;
   background: rgba(18, 45, 62, 0.78);
   border: 3px solid rgba(229, 236, 236, 0.8);
+  margin: 0 4px;
 }
 
 .home-summary .van-grid-item__content {
   color: #fff4d1;
   background: transparent;
-  padding: 7px 4px;
+  padding: 6px 4px;
 }
 
 .home-summary div {
@@ -378,45 +384,36 @@ button {
 }
 
 .home-summary strong {
-  font-size: 24px;
+  font-size: clamp(18px, 5vw, 24px);
   line-height: 1;
 }
 
 .home-summary span {
-  font-size: 13px;
+  font-size: clamp(11px, 3vw, 13px);
   font-weight: 900;
 }
 
 .map-screen {
   position: relative;
   display: grid;
-  grid-template-rows: clamp(174px, 27.2vh, 216px) minmax(0, 1fr);
+  grid-template-rows: clamp(140px, 22vh, 180px) minmax(0, 1fr);
   align-content: stretch;
   gap: 0;
-  height: 100dvh;
-  height: var(--app-height, 100dvh);
-  min-height: 0;
-  margin: 0 -10px -8px;
-  padding: 8px 10px 0;
-  overflow: hidden;
-  background-image:
-    linear-gradient(180deg, rgba(7, 18, 40, 0.28) 0 8%, rgba(7, 18, 40, 0.04) 24%, rgba(7, 30, 45, 0.18)),
-    var(--map-bg);
+  height: auto;
+  min-height: var(--app-height, 100dvh);
+  margin: 0;
+  padding: 0 0 80px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background-image: var(--map-bg);
   background-size: cover;
-  background-position: center 56%;
+  background-position: center;
   background-repeat: no-repeat;
+  scrollbar-width: none;
 }
 
-.map-screen::before {
-  content: "";
-  position: absolute;
-  z-index: 0;
-  left: 0;
-  top: 0;
-  width: 112px;
-  height: 52px;
-  background: linear-gradient(135deg, rgba(29, 88, 132, 0.92), rgba(32, 93, 134, 0.18));
-  pointer-events: none;
+.map-screen::-webkit-scrollbar {
+  display: none;
 }
 
 .map-screen > * {
@@ -864,19 +861,19 @@ button {
 
 .map-body {
   position: relative;
-  height: 100%;
-  min-height: 0;
+  height: auto;
+  min-height: 400px;
   display: block;
-  overflow: hidden;
-  padding-bottom: clamp(132px, 21vh, 176px);
+  overflow: visible;
+  padding-bottom: 20px;
 }
 
 .map-guide-half {
   position: absolute;
   z-index: 5;
-  left: -2px;
-  bottom: clamp(94px, 15.2vh, 122px);
-  width: min(28vw, 108px);
+  left: 4px;
+  bottom: clamp(80px, 14vh, 110px);
+  width: min(32vw, 120px);
   height: auto;
   pointer-events: none;
   filter: drop-shadow(0 5px 8px rgba(12, 20, 28, 0.38));
@@ -885,9 +882,9 @@ button {
 .map-guide-dialog {
   position: absolute;
   z-index: 6;
-  left: 82px;
-  bottom: clamp(137px, 21vh, 170px);
-  width: min(43vw, 166px);
+  left: clamp(70px, 22vw, 100px);
+  bottom: clamp(110px, 18vh, 150px);
+  width: min(50vw, 200px);
   aspect-ratio: 473 / 182;
   display: grid;
   place-items: center;
@@ -915,14 +912,13 @@ button {
 
 .route-map {
   position: relative;
-  height: min(360px, max(272px, calc(var(--app-height, 100dvh) - clamp(174px, 27.2vh, 216px) - clamp(132px, 21vh, 176px))));
+  height: auto;
+  min-height: 300px;
   max-height: none;
-  overflow: hidden;
-  overflow-x: hidden;
-  touch-action: none;
+  overflow: visible;
+  touch-action: pan-y;
   border-radius: 0;
   background: transparent;
-  scrollbar-width: none;
 }
 
 .route-map::-webkit-scrollbar {
@@ -1099,13 +1095,13 @@ button {
 .guide-rules {
   position: absolute;
   z-index: 5;
-  right: -8px;
-  bottom: clamp(94px, 15.2vh, 122px);
+  right: 4px;
+  bottom: clamp(80px, 14vh, 110px);
   display: block;
-  width: min(25vw, 98px);
-  max-height: 170px;
+  width: min(28vw, 110px);
+  max-height: 150px;
   overflow: hidden;
-  padding: 19px 8px 17px;
+  padding: 16px 6px 14px;
   border-radius: 8px;
   border: 0;
   background-image: url("../assets/map/rules-panel.png");
@@ -1163,12 +1159,12 @@ button {
 }
 
 .map-footer {
-  position: absolute;
+  position: fixed;
   z-index: 7;
   left: 50%;
   right: auto;
-  bottom: max(-14px, calc(env(safe-area-inset-bottom) - 14px));
-  width: min(98vw, 382px);
+  bottom: max(0px, calc(env(safe-area-inset-bottom)));
+  width: min(100vw, 430px);
   aspect-ratio: 756 / 354;
   display: block;
   transform: translateX(-50%);
@@ -1201,7 +1197,7 @@ button {
 }
 
 .map-footer-action.reward {
-  left: 34%;
+  left: 20%;
   top: 25%;
   width: 17%;
   height: 42%;
@@ -1215,7 +1211,7 @@ button {
 }
 
 .map-footer-action.rules {
-  left: 56%;
+  left: 42%;
   top: 25%;
   width: 17%;
   height: 42%;
@@ -1229,6 +1225,20 @@ button {
   height: 100%;
   object-fit: contain;
   display: block;
+}
+
+.map-footer-action.guide-info {
+  left: 64%;
+  top: 25%;
+  width: 17%;
+  height: 42%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #fff8d8;
+  font-size: clamp(12px, 3.5vw, 16px);
+  font-weight: 900;
+  text-shadow: 0 2px 0 rgba(12, 28, 44, 0.58);
 }
 
 .map-rules-mask {
