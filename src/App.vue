@@ -132,7 +132,7 @@
                     locked: !player.isUnlocked(level.globalLevel),
                   }"
                   :style="segmentNodeStyle(level)"
-                  @click="handleLevelNode(level)"
+                  @click.stop="handleLevelNode(level)"
                 >
                   <span>{{ level.localLevel }}</span>
                   <van-icon v-if="!player.isUnlocked(level.globalLevel)" name="lock" class="node-lock" />
@@ -147,7 +147,7 @@
                     claimed: player.isRewardClaimed(game.state.selectedChapterIndex, reward.localLevel),
                   }"
                   :style="rewardNodeStyle(reward)"
-                  @click="claimChapterReward(reward)"
+                  @click.stop="claimChapterReward(reward)"
                 >
                   <img :src="rewardChestImage(reward)" alt="" loading="lazy" decoding="async" />
                 </button>
@@ -698,6 +698,9 @@ watch(
 );
 
 function handleLevelNode(level) {
+  if (mapDragState.value.dragging && Math.abs(mapDragState.value.currentX - mapDragState.value.startX) > 5) {
+    return; // 忽略滑动过程中的点击
+  }
   goGame(level.globalLevel);
 }
 
@@ -833,6 +836,9 @@ function rewardChestImage(reward) {
 }
 
 function claimChapterReward(reward) {
+  if (mapDragState.value.dragging && Math.abs(mapDragState.value.currentX - mapDragState.value.startX) > 5) {
+    return; // 忽略滑动过程中的点击
+  }
   if (player.isRewardClaimed(game.state.selectedChapterIndex, reward.localLevel)) {
     showToast("这个宝箱已经领取过啦");
     return;

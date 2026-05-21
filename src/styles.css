@@ -976,10 +976,10 @@ button {
 
 .level-node {
   position: absolute;
-  z-index: 3;
+  z-index: 5;
   pointer-events: auto;
-  width: 34px;
-  height: 36px;
+  width: 44px;
+  height: 46px;
   transform: translate(-50%, -50%);
   display: grid;
   place-items: center;
@@ -1075,10 +1075,10 @@ button {
 
 .reward-node {
   position: absolute;
-  z-index: 4;
+  z-index: 5;
   pointer-events: auto;
-  width: 25px;
-  height: 23px;
+  width: 35px;
+  height: 33px;
   transform: translate(-50%, -50%);
   display: grid;
   place-items: center;
