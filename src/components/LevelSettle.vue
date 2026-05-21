@@ -1,16 +1,12 @@
 <template>
   <section v-if="visible" class="level-settle" :class="{ 'show': show, 'exiting': exiting }">
-    <div class="settle-banner" :class="{ 'banner-in': show }">
-      <img :src="assetManifest.settle.banner" alt="恭喜过关" decoding="async" />
-    </div>
+    <div class="settle-content-wrap">
+      <div class="settle-banner" :class="{ 'banner-in': show }">
+        <img :src="assetManifest.settle.banner" alt="恭喜过关" decoding="async" />
+      </div>
 
-    <div class="settle-reward-frame" :class="{ 'frame-in': show }">
-      <img :src="assetManifest.settle.rewardFrame" alt="获得奖励" decoding="async" />
-    </div>
-
-    <div class="settle-middle-row">
-      <div class="settle-character" :class="{ 'char-in': show }">
-        <img :src="assetManifest.settle.character" alt="黄小西" decoding="async" />
+      <div class="settle-reward-frame" :class="{ 'frame-in': show }">
+        <img :src="assetManifest.settle.rewardFrame" alt="获得奖励" decoding="async" />
       </div>
 
       <div class="settle-detail-frame" :class="{ 'frame-in': show }">
@@ -43,20 +39,24 @@
           </div>
         </div>
       </div>
-    </div>
 
-    <div class="settle-dialog" :class="{ 'dialog-in': show && panelPhase >= 3 }">
-      <img :src="assetManifest.ui.dialogBubble" alt="" decoding="async" />
-      <p>太棒啦！我们又一起收获了满满的银饰宝藏！下一站，苗乡更精彩！</p>
-    </div>
+      <div class="settle-dialog" :class="{ 'dialog-in': show && panelPhase >= 3 }">
+        <img :src="assetManifest.ui.dialogBubble" alt="" decoding="async" />
+        <p>太棒啦！我们又一起收获了满满的银饰宝藏！下一站，苗乡更精彩！</p>
+      </div>
 
-    <div class="settle-buttons" :class="{ 'buttons-in': showButtons }">
-      <button class="settle-btn retry" @click="$emit('retry')">
-        <img :src="assetManifest.settle.btnRetry" alt="重新挑战" decoding="async" />
-      </button>
-      <button v-if="!result.isLastLevel" class="settle-btn next" @click="$emit('next')">
-        <img :src="assetManifest.settle.btnNext" alt="下一关" decoding="async" />
-      </button>
+      <div class="settle-buttons" :class="{ 'buttons-in': showButtons }">
+        <button class="settle-btn retry" @click="$emit('retry')">
+          <img :src="assetManifest.settle.btnRetry" alt="重新挑战" decoding="async" />
+        </button>
+        <button v-if="!result.isLastLevel" class="settle-btn next" @click="$emit('next')">
+          <img :src="assetManifest.settle.btnNext" alt="下一关" decoding="async" />
+        </button>
+      </div>
+
+      <div class="settle-character" :class="{ 'char-in': show }">
+        <img :src="assetManifest.settle.character" alt="黄小西" decoding="async" />
+      </div>
     </div>
   </section>
 </template>
@@ -109,11 +109,6 @@ watch(() => props.visible, (val) => {
     showButtons.value = false;
     panelPhase.value = 0;
     clearPanelTimers();
-    const scene = document.querySelector('.game-scene');
-    if (scene) {
-      scene.dataset.prevOverflowY = scene.style.overflowY;
-      scene.style.overflowY = 'hidden';
-    }
     requestAnimationFrame(() => {
       show.value = true;
       panelTimers.push(setTimeout(() => { panelPhase.value = 1; }, 400));
@@ -121,23 +116,12 @@ watch(() => props.visible, (val) => {
       panelTimers.push(setTimeout(() => { panelPhase.value = 3; }, 1400));
       panelTimers.push(setTimeout(() => { showButtons.value = true; }, 1900));
     });
-  } else {
-    const scene = document.querySelector('.game-scene');
-    if (scene) {
-      scene.style.overflowY = scene.dataset.prevOverflowY || '';
-      delete scene.dataset.prevOverflowY;
-    }
   }
 }, { immediate: true });
 
 function close() {
   exiting.value = true;
   clearPanelTimers();
-  const scene = document.querySelector('.game-scene');
-  if (scene) {
-    scene.style.overflowY = scene.dataset.prevOverflowY || '';
-    delete scene.dataset.prevOverflowY;
-  }
   setTimeout(() => {
     show.value = false;
     exiting.value = false;
@@ -150,25 +134,19 @@ defineExpose({ close });
 
 <style scoped>
 .level-settle {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 100;
+  position: relative;
   width: 100%;
-  height: 100%;
+  flex: 1;
+  min-height: calc(100dvh - 140px);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  gap: max(2px, 1vh);
-  padding: max(15px, 3vh) 0 0;
-  overflow: hidden;
+  padding: 10px 0 20px;
   opacity: 0;
   transform: translateY(6px);
   transition: opacity 350ms ease, transform 350ms ease;
-  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 10;
 }
 
 .level-settle.show {
@@ -181,12 +159,23 @@ defineExpose({ close });
   transform: translateY(6px);
 }
 
+.settle-content-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
 .settle-banner {
-  width: min(70%, 260px, 20vh);
+  width: min(75%, 300px);
+  margin-top: -75px;
   transform: translateY(-12px) scale(0.88);
   opacity: 0;
   transition: transform 450ms cubic-bezier(0.16, 1, 0.3, 1), opacity 350ms ease;
-  flex-shrink: 0;
+  z-index: 5;
 }
 
 .settle-banner.banner-in {
@@ -201,11 +190,12 @@ defineExpose({ close });
 }
 
 .settle-reward-frame {
-  width: min(85%, 340px, 25vh);
+  width: min(85%, 340px);
+  margin-top: -10px;
   transform: translateY(20px) scale(0.94);
   opacity: 0;
   transition: transform 400ms cubic-bezier(0.16, 1, 0.3, 1) 80ms, opacity 350ms ease 80ms;
-  flex-shrink: 0;
+  z-index: 4;
 }
 
 .settle-reward-frame.frame-in {
@@ -219,26 +209,17 @@ defineExpose({ close });
   display: block;
 }
 
-.settle-middle-row {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  width: 95%;
-  max-width: min(400px, 45vh);
-  margin-top: max(5px, 1vh);
-  gap: 5px;
-  flex-shrink: 0;
-}
-
 .settle-character {
-  position: relative;
-  width: 38%;
-  flex-shrink: 0;
+  position: absolute;
+  left: -60px;
+  bottom: 20px;
+  width: 45%;
+  max-width: 200px;
+  z-index: 10;
   pointer-events: none;
-  transform: translateX(-20px) translateY(10px);
+  transform: translateX(-30px) translateY(20px);
   opacity: 0;
-  transition: transform 500ms cubic-bezier(0.16, 1, 0.3, 1) 350ms, opacity 400ms ease 350ms;
+  transition: transform 400ms cubic-bezier(0.16, 1, 0.3, 1) 200ms, opacity 350ms ease 200ms;
 }
 
 .settle-character.char-in {
@@ -254,11 +235,13 @@ defineExpose({ close });
 
 .settle-detail-frame {
   position: relative;
-  width: 62%;
-  flex-shrink: 0;
-  transform: translateX(20px) translateY(20px) scale(0.821);
+  left: 40px;
+  width: min(81%, 324px);
+  margin-top: -20px;
+  transform: translateX(0) translateY(20px) scale(0.9);
   opacity: 0;
   transition: transform 400ms cubic-bezier(0.16, 1, 0.3, 1) 180ms, opacity 350ms ease 180ms;
+  z-index: 3;
 }
 
 .settle-detail-frame.frame-in {
@@ -274,11 +257,11 @@ defineExpose({ close });
 
 .detail-panels {
   position: absolute;
-  inset: 22% 8% 16%;
+  inset: 24% 10% 18%;
   display: flex;
   justify-content: space-between;
   align-items: stretch;
-  gap: 4px;
+  gap: 16px;
 }
 
 .detail-panel {
@@ -287,8 +270,8 @@ defineExpose({ close });
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1px;
-  padding: 4px 1px;
+  gap: 2px;
+  padding: 4px 2px;
   min-width: 0;
   opacity: 0;
 }
@@ -326,7 +309,7 @@ defineExpose({ close });
 }
 
 .stars-row img {
-  width: 14px;
+  width: 18px;
   height: auto;
   animation: starPop 400ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
@@ -386,12 +369,14 @@ defineExpose({ close });
 
 .settle-dialog {
   position: relative;
-  width: min(70%, 280px, 20vh);
+  left: 35px;
+  width: min(70%, 280px);
+  margin-top: -25px;
   transform: translateX(0) translateY(10px) scale(0.9075);
   opacity: 0;
   transition: transform 400ms cubic-bezier(0.16, 1, 0.3, 1) 300ms, opacity 350ms ease 300ms;
-  margin-top: max(5px, 1vh);
   flex-shrink: 0;
+  z-index: 6;
 }
 
 .settle-dialog.dialog-in {
@@ -403,11 +388,13 @@ defineExpose({ close });
   width: 100%;
   height: auto;
   display: block;
+  transform: scaleY(0.5);
+  transform-origin: top;
 }
 
 .settle-dialog p {
   position: absolute;
-  inset: 12% 10% 16% 14%;
+  inset: -35% 10% 8% 14%;
   margin: 0;
   font-size: 11px;
   color: #5a3d1a;
@@ -419,15 +406,17 @@ defineExpose({ close });
 }
 
 .settle-buttons {
+  position: relative;
+  left: 25px;
   display: flex;
   justify-content: center;
   gap: 10px;
   transform: translateX(0) translateY(20px);
   opacity: 0;
   transition: transform 350ms cubic-bezier(0.16, 1, 0.3, 1) 500ms, opacity 300ms ease 500ms;
-  margin-top: auto;
-  margin-bottom: max(15px, 3vh);
-  z-index: 10;
+  margin-top: -45px;
+  margin-bottom: 20px;
+  z-index: 7;
   flex-shrink: 0;
 }
 
@@ -456,10 +445,10 @@ defineExpose({ close });
 }
 
 .settle-btn.retry {
-  width: min(100px, 15vh);
+  width: 100px;
 }
 
 .settle-btn.next {
-  width: min(110px, 16vh);
+  width: 110px;
 }
 </style>
