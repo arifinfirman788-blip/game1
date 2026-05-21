@@ -161,7 +161,7 @@ defineExpose({ close });
 
 .settle-content-wrap {
   position: relative;
-  top: 20px;
+  top: 25px;
   display: flex;
   flex-direction: column;
   align-items: center;
