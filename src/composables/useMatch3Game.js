@@ -549,14 +549,18 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
 
   function clearMatches(matches, combo, options = {}) {
     matches.forEach((cell) => {
+      // 1. 如果有障碍物，先消除障碍物
       if (cell.blocker) {
         reduceGoal(cell.blocker);
         cell.blocker = null;
       }
+      
+      // 2. 消除棋子类型（无论外面是不是包裹了冰块，消除后底部的棋子也必须一起被清除，然后由上方棋子掉落填充）
       if (cell.type) {
         reduceGoal(cell.type);
         cell.type = null;
       }
+      
       cell.special = null;
     });
     const gained = matches.length * (options.specialScore ? SPECIAL_SCORE : SCORE_PER_TILE) * combo;
