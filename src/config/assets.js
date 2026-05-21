@@ -81,7 +81,7 @@ export const assetManifest = {
     chests: {
       closed: asset("/assets/map/chest-closed.webp"),
       ready: asset("/assets/map/chest-ready.png"),
-      opened: asset("/assets/map/chest-opened.png"),
+      opened: asset("/assets/map/chest-opened.webp"),
     },
     titleFrame: asset("/assets/map/mobile/level-map-title-frame-mobile.png"),
     bottomBar: asset("/assets/map/mobile/level-map-bottom-bar-mobile.png"),
