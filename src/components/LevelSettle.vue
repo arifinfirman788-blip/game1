@@ -1,21 +1,17 @@
 <template>
   <section v-if="visible" class="level-settle" :class="{ 'show': show, 'exiting': exiting }">
-    <!-- 1. 横幅 -->
     <div class="settle-banner" :class="{ 'banner-in': show }">
       <img :src="assetManifest.settle.banner" alt="恭喜过关" decoding="async" />
     </div>
 
-    <!-- 2. 获得奖励框体 - 保持干净，只显示框体图 -->
     <div class="settle-reward-frame" :class="{ 'frame-in': show }">
       <img :src="assetManifest.settle.rewardFrame" alt="获得奖励" decoding="async" />
     </div>
 
-    <!-- 3. 结算详情 - 3板块 -->
     <div class="settle-detail-frame" :class="{ 'frame-in': show }">
       <img class="detail-bg" :src="assetManifest.settle.detailFrameNew" alt="结算详情" decoding="async" />
       <div class="detail-panels">
-        <!-- 板块1: 星级(只显示获得的) + 完美通关 + 总分 -->
-        <div class="detail-panel panel-stars">
+        <div class="detail-panel panel-stars" :class="{ 'panel-in': panelPhase >= 1 }">
           <div class="stars-row">
             <img
               v-for="index in result.stars"
@@ -29,29 +25,25 @@
           <strong class="panel-score">{{ displayScore.toLocaleString('zh-CN') }}</strong>
         </div>
 
-        <!-- 板块2: 连击奖励 -->
-        <div class="detail-panel panel-combo" style="transform: translateX(-12px);">
+        <div class="detail-panel panel-combo" :class="{ 'panel-in': panelPhase >= 2 }">
           <span class="panel-title">连击奖励</span>
           <strong class="panel-bonus">+{{ (result.comboBonus || 0).toLocaleString('zh-CN') }}</strong>
           <span class="panel-sub">最高连击 {{ result.maxCombo || 0 }}</span>
         </div>
 
-        <!-- 板块3: 步数奖励 -->
-        <div class="detail-panel panel-moves" style="transform: translateX(-20px);">
+        <div class="detail-panel panel-moves" :class="{ 'panel-in': panelPhase >= 3 }">
           <span class="panel-title">步数奖励</span>
           <strong class="panel-bonus">+{{ (result.movesBonus || 0).toLocaleString('zh-CN') }}</strong>
-          <span class="panel-sub">剩余步数 {{ result.remainingMoves || 0 }}</span>
+          <span class="panel-sub">自动消除得分</span>
         </div>
       </div>
     </div>
 
-    <!-- 4. 对话框 -->
-    <div class="settle-dialog" :class="{ 'dialog-in': show }">
+    <div class="settle-dialog" :class="{ 'dialog-in': show && panelPhase >= 3 }">
       <img :src="assetManifest.ui.dialogBubble" alt="" decoding="async" />
       <p>太棒啦！我们又一起收获了满满的银饰宝藏！下一站，苗乡更精彩！</p>
     </div>
 
-    <!-- 5. 按钮 -->
     <div class="settle-buttons" :class="{ 'buttons-in': showButtons }">
       <button class="settle-btn retry" @click="$emit('retry')">
         <img :src="assetManifest.settle.btnRetry" alt="重新挑战" decoding="async" />
@@ -61,7 +53,6 @@
       </button>
     </div>
 
-    <!-- 人物：固定在结算画面左下角，与背景左下角重合 -->
     <div class="settle-character" :class="{ 'char-in': show }">
       <img :src="assetManifest.settle.character" alt="黄小西" decoding="async" />
     </div>
@@ -69,7 +60,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, onUnmounted } from 'vue';
 import { assetManifest } from '../config/assets';
 
 const props = defineProps({
@@ -89,8 +80,8 @@ defineEmits(['next', 'retry']);
 const show = ref(false);
 const exiting = ref(false);
 const showButtons = ref(false);
+const panelPhase = ref(0);
 
-// 只使用1星素材，根据获得的星级数量重复显示
 const starImage = assetManifest.settle.star1;
 
 const perfectText = computed(() => {
@@ -98,23 +89,57 @@ const perfectText = computed(() => {
   return texts[(props.result.stars || 1) - 1] || texts[0];
 });
 
+let panelTimers = [];
+
+function clearPanelTimers() {
+  panelTimers.forEach(t => clearTimeout(t));
+  panelTimers = [];
+}
+
+onUnmounted(() => {
+  clearPanelTimers();
+});
+
 watch(() => props.visible, (val) => {
   if (val) {
     exiting.value = false;
     show.value = false;
     showButtons.value = false;
+    panelPhase.value = 0;
+    clearPanelTimers();
+    const scene = document.querySelector('.game-scene');
+    if (scene) {
+      scene.dataset.prevOverflowY = scene.style.overflowY;
+      scene.style.overflowY = 'hidden';
+    }
     requestAnimationFrame(() => {
       show.value = true;
-      setTimeout(() => { showButtons.value = true; }, 700);
+      panelTimers.push(setTimeout(() => { panelPhase.value = 1; }, 400));
+      panelTimers.push(setTimeout(() => { panelPhase.value = 2; }, 900));
+      panelTimers.push(setTimeout(() => { panelPhase.value = 3; }, 1400));
+      panelTimers.push(setTimeout(() => { showButtons.value = true; }, 1900));
     });
+  } else {
+    const scene = document.querySelector('.game-scene');
+    if (scene) {
+      scene.style.overflowY = scene.dataset.prevOverflowY || '';
+      delete scene.dataset.prevOverflowY;
+    }
   }
 }, { immediate: true });
 
 function close() {
   exiting.value = true;
+  clearPanelTimers();
+  const scene = document.querySelector('.game-scene');
+  if (scene) {
+    scene.style.overflowY = scene.dataset.prevOverflowY || '';
+    delete scene.dataset.prevOverflowY;
+  }
   setTimeout(() => {
     show.value = false;
     exiting.value = false;
+    panelPhase.value = 0;
   }, 400);
 }
 
@@ -122,7 +147,6 @@ defineExpose({ close });
 </script>
 
 <style scoped>
-/* 结算画面 - 替换棋盘区和道具区 */
 .level-settle {
   position: relative;
   z-index: 100;
@@ -131,7 +155,9 @@ defineExpose({ close });
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  padding: 102px 0 0;
+  padding: 52px 0 0;
+  margin-top: -70px;
+  min-height: calc(100dvh + 70px - 52px);
   opacity: 0;
   transform: translateY(6px);
   transition: opacity 350ms ease, transform 350ms ease;
@@ -147,7 +173,6 @@ defineExpose({ close });
   transform: translateY(6px);
 }
 
-/* 1. 横幅 */
 .settle-banner {
   width: min(70%, 260px);
   transform: translateY(-12px) scale(0.88);
@@ -166,7 +191,6 @@ defineExpose({ close });
   display: block;
 }
 
-/* 2. 获得奖励框体 - 干净 */
 .settle-reward-frame {
   width: min(85%, 340px);
   transform: translateY(58px) scale(0.94);
@@ -185,7 +209,6 @@ defineExpose({ close });
   display: block;
 }
 
-/* 3. 结算详情 - 3板块 */
 .settle-detail-frame {
   position: relative;
   width: min(83%, 346px);
@@ -223,6 +246,34 @@ defineExpose({ close });
   gap: 2px;
   padding: 4px 2px;
   min-width: 0;
+  opacity: 0;
+}
+
+.detail-panel.panel-in {
+  animation: panelReveal 400ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.panel-combo.panel-in {
+  animation: panelRevealCombo 400ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.panel-moves.panel-in {
+  animation: panelRevealMoves 400ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes panelReveal {
+  from { opacity: 0; transform: translateY(10px) scale(0.88); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes panelRevealCombo {
+  from { opacity: 0; transform: translateX(-12px) translateY(10px) scale(0.88); }
+  to { opacity: 1; transform: translateX(-12px) translateY(0) scale(1); }
+}
+
+@keyframes panelRevealMoves {
+  from { opacity: 0; transform: translateX(-20px) translateY(10px) scale(0.88); }
+  to { opacity: 1; transform: translateX(-20px) translateY(0) scale(1); }
 }
 
 .stars-row {
@@ -253,7 +304,14 @@ defineExpose({ close });
 
 .panel-tag.perfect-1 { color: #c4a574; }
 .panel-tag.perfect-2 { color: #e0e0e0; }
-.panel-tag.perfect-3 { color: #ffd740; }
+.panel-tag.perfect-3 {
+  color: #ff8c00;
+  text-shadow:
+    0 0 0 #fff,
+    0 0 2px #fff,
+    0 0 4px #fff,
+    0 1px 2px rgba(0,0,0,0.5);
+}
 
 .panel-score {
   font-size: clamp(14px, 4vw, 18px);
@@ -282,7 +340,6 @@ defineExpose({ close });
   white-space: nowrap;
 }
 
-/* 4. 对话框 - 放大至90.75% */
 .settle-dialog {
   position: relative;
   width: min(56%, 240px);
@@ -315,7 +372,6 @@ defineExpose({ close });
   text-align: center;
 }
 
-/* 5. 按钮 */
 .settle-buttons {
   display: flex;
   justify-content: center;
@@ -357,7 +413,6 @@ defineExpose({ close });
   width: clamp(100px, 26vw, 130px);
 }
 
-/* 人物：固定在结算画面左下角，与背景左下角重合 */
 .settle-character {
   position: absolute;
   left: 0;

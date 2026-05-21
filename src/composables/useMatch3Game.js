@@ -85,6 +85,7 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
     totalCombos: 0,
     comboBonus: 0,
     movesBonus: 0,
+    autoClearScore: 0,
   });
 
   const starCount = computed(
@@ -146,6 +147,7 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
     stats.totalCombos = 0;
     stats.comboBonus = 0;
     stats.movesBonus = 0;
+    stats.autoClearScore = 0;
   }
 
   function placeBlockers() {
@@ -329,7 +331,7 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
     return Boolean(cell?.type) && cell.blocker !== "crate" && cell.special?.kind !== "bomb" && cell.special?.kind !== "rainbow";
   }
 
-  async function resolveMatches(initialGroups, sourceCells = []) {
+  async function resolveMatches(initialGroups, sourceCells = [], options = {}) {
     let groups = initialGroups;
     let combo = 0;
     while (groups.length > 0) {
@@ -340,7 +342,7 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
       const expandedCells = expandSpecials(clearCells);
       playMatchEffects(expandedCells, combo);
       await delay(330);
-      clearMatches(expandedCells, combo);
+      clearMatches(expandedCells, combo, { autoClear: options.autoClear });
       damageAdjacentCrates(expandedCells);
       state.effects.falling = collapseBoard();
       state.effects.spawning = refillBoard();
@@ -532,7 +534,11 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
         cell.special = null;
       }
     });
-    state.score += matches.length * (options.specialScore ? SPECIAL_SCORE : SCORE_PER_TILE) * combo;
+    const gained = matches.length * (options.specialScore ? SPECIAL_SCORE : SCORE_PER_TILE) * combo;
+    state.score += gained;
+    if (options.autoClear) {
+      stats.autoClearScore += gained;
+    }
   }
 
   function damageAdjacentCrates(matches) {
@@ -819,7 +825,7 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
 
     while (findMatchGroups().length > 0) {
       const groups = findMatchGroups();
-      await resolveMatches(groups, []);
+      await resolveMatches(groups, [], { autoClear: true });
       clearEffects();
       await delay(120);
     }
@@ -844,7 +850,7 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
     const targets = expandSpecials([cell]);
     playMatchEffects(targets, 1);
     await delay(150);
-    clearMatches(targets, 1, { specialScore: true });
+    clearMatches(targets, 1, { specialScore: true, autoClear: true });
     damageAdjacentCrates(targets);
     state.movesLeft -= 1;
     state.effects.falling = collapseBoard();
@@ -854,7 +860,7 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
     clearEffects();
 
     const groups = findMatchGroups();
-    if (groups.length > 0) await resolveMatches(groups, [cell]);
+    if (groups.length > 0) await resolveMatches(groups, [cell], { autoClear: true });
     clearEffects();
   }
 
@@ -888,7 +894,7 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
         state.movesLeft -= 1;
         clearEffects();
         state.guideText = `自动消除中，剩余 ${state.movesLeft} 步`;
-        await resolveMatches(matchGroups, [a, b]);
+        await resolveMatches(matchGroups, [a, b], { autoClear: true });
         clearEffects();
         await delay(80);
         return true;
@@ -915,15 +921,14 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
 
   function completeLevel() {
     state.completed = true;
-    // 计算步数奖励
-    const remainingMoves = state.movesLeft;
-    stats.movesBonus = remainingMoves * 200;
-    const finalScore = state.score + stats.movesBonus;
+    // 步数奖励 = 自动消减期间实际获得的分数
+    stats.movesBonus = stats.autoClearScore;
+    const finalScore = state.score;
     options.onLevelComplete?.({
       level: state.currentLevel,
       nextLevel: clamp(state.currentLevel + 1, 1, TOTAL_LEVELS),
       stars: Math.max(starCount.value, 1),
-      remainingMoves,
+      remainingMoves: 0,
       maxCombo: stats.maxCombo,
       comboBonus: stats.comboBonus,
       movesBonus: stats.movesBonus,
