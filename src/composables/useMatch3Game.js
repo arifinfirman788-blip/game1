@@ -79,6 +79,14 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
     },
   });
 
+  // 结算统计数据
+  const stats = reactive({
+    maxCombo: 0,
+    totalCombos: 0,
+    comboBonus: 0,
+    movesBonus: 0,
+  });
+
   const starCount = computed(
     () => state.levelConfig.starTargets.filter((target) => state.score >= target).length,
   );
@@ -133,6 +141,11 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
 
     placeBlockers();
     state.guideText = GUIDE_LINES[0];
+    // 重置统计数据
+    stats.maxCombo = 0;
+    stats.totalCombos = 0;
+    stats.comboBonus = 0;
+    stats.movesBonus = 0;
   }
 
   function placeBlockers() {
@@ -337,6 +350,12 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
       groups = findMatchGroups();
     }
     state.guideText = combo > 1 ? `漂亮！${combo} 连消，多彩贵州一路畅行。` : "消除成功，继续收集关卡目标。";
+    // 更新连击统计
+    if (combo > 1) {
+      stats.totalCombos += 1;
+      stats.maxCombo = Math.max(stats.maxCombo, combo);
+      stats.comboBonus += combo * 50;
+    }
   }
 
   function createRewardFromGroups(groups, sourceCells) {
@@ -896,13 +915,20 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
 
   function completeLevel() {
     state.completed = true;
+    // 计算步数奖励
+    const remainingMoves = state.movesLeft;
+    stats.movesBonus = remainingMoves * 200;
+    const finalScore = state.score + stats.movesBonus;
     options.onLevelComplete?.({
       level: state.currentLevel,
       nextLevel: clamp(state.currentLevel + 1, 1, TOTAL_LEVELS),
       stars: Math.max(starCount.value, 1),
-      remainingMoves: 0,
-      bonusScore: 0,
-      finalScore: state.score,
+      remainingMoves,
+      maxCombo: stats.maxCombo,
+      comboBonus: stats.comboBonus,
+      movesBonus: stats.movesBonus,
+      bonusScore: stats.comboBonus + stats.movesBonus,
+      finalScore,
       isLastLevel: state.currentLevel >= TOTAL_LEVELS,
     });
   }

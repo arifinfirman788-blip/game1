@@ -250,109 +250,113 @@
           <span id="levelLabel">第 {{ game.state.levelConfig.globalLevel }} 关</span>
         </header>
 
-        <section class="board-wrap">
-          <div class="game-board asset-board">
-            <button
-              v-for="cell in flatBoard"
-              :key="`${cell.row}-${cell.col}`"
-              class="cell"
-              :class="{ selected: isSelected(cell), clearing: game.state.effects.clearing.has(cellKey(cell)) }"
-              :disabled="game.state.busy || game.state.completed || game.state.failed || game.state.movesLeft <= 0"
-              @click="handleCellClick(cell)"
-              @pointerdown="handleCellPointerDown($event, cell)"
-              @pointerup="handleCellPointerUp($event, cell)"
-              @pointercancel="clearSwipeStart"
-              @pointerleave="handleCellPointerLeave($event, cell)"
-            >
-              <span v-if="cell.type" class="piece" :class="[cell.type, specialClass(cell), pieceEffectClass(cell)]" :style="pieceStyle(cell)">
-                {{ pieceText(cell.type) }}
-                <span v-if="cell.special" class="special-mark" aria-hidden="true"></span>
-              </span>
-              <span v-if="cell.blocker" class="blocker" :class="cell.blocker">{{ blockers[cell.blocker].icon }}</span>
-              <span v-for="ring in ringsForCell(cell)" :key="ring.id" class="match-ring"></span>
+        <!-- 结算画面：通关时替换棋盘区和道具区 -->
+        <template v-if="settleResult && !settleResult.failed">
+          <LevelSettle
+            :visible="settlePhase >= 1"
+            :result="settleResult"
+            :display-score="settleDisplayScore"
+            @next="closeSettleAndNext"
+            @retry="closeSettleAndRetry"
+          />
+        </template>
+
+        <!-- 正常游戏区域：未通关时显示 -->
+        <template v-else>
+          <section class="board-wrap">
+            <div class="game-board asset-board">
+              <button
+                v-for="cell in flatBoard"
+                :key="`${cell.row}-${cell.col}`"
+                class="cell"
+                :class="{ selected: isSelected(cell), clearing: game.state.effects.clearing.has(cellKey(cell)) }"
+                :disabled="game.state.busy || game.state.completed || game.state.failed || game.state.movesLeft <= 0"
+                @click="handleCellClick(cell)"
+                @pointerdown="handleCellPointerDown($event, cell)"
+                @pointerup="handleCellPointerUp($event, cell)"
+                @pointercancel="clearSwipeStart"
+                @pointerleave="handleCellPointerLeave($event, cell)"
+              >
+                <span v-if="cell.type" class="piece" :class="[cell.type, specialClass(cell), pieceEffectClass(cell)]" :style="pieceStyle(cell)">
+                  {{ pieceText(cell.type) }}
+                  <span v-if="cell.special" class="special-mark" aria-hidden="true"></span>
+                </span>
+                <span v-if="cell.blocker" class="blocker" :class="cell.blocker">{{ blockers[cell.blocker].icon }}</span>
+                <span v-for="ring in ringsForCell(cell)" :key="ring.id" class="match-ring"></span>
+                <span
+                  v-for="particle in particlesForCell(cell)"
+                  :key="particle.id"
+                  class="particle"
+                  :style="particleStyle(particle)"
+                ></span>
+              </button>
               <span
-                v-for="particle in particlesForCell(cell)"
-                :key="particle.id"
-                class="particle"
-                :style="particleStyle(particle)"
-              ></span>
-            </button>
-            <span
-              v-for="score in game.state.effects.floatScores"
-              :key="score.id"
-              class="float-score"
-              :style="{ '--score-x': score.x, '--score-y': score.y }"
-            >
-              +{{ score.amount }}
-            </span>
-            <span v-if="game.state.effects.combo" class="combo-banner">{{ game.state.effects.combo.text }}</span>
-            <span v-if="game.state.effects.levelClearBanner" class="level-clear-banner">🎉 通关！结算中</span>
-          </div>
-        </section>
-
-        <aside class="guide-wrap">
-          <div class="guide-character" :class="{ 'has-image': assetManifest.guide.normal }" :style="guideImageStyle" aria-hidden="true">
-            <div class="silver-crown"></div>
-            <div class="guide-face"></div>
-            <div class="guide-body"></div>
-          </div>
-          <div class="guide-bubble">{{ game.state.guideText }}</div>
-        </aside>
-
-        <footer class="bottom-hud">
-          <div class="booster-bar">
-            <van-button
-              v-for="booster in boosters"
-              :key="booster.id"
-              round
-              class="booster"
-              :class="{ active: game.state.activeBooster === booster.id }"
-              @click="game.activateBooster(booster.id)"
-            >
-              <span class="booster-icon">
-                <img v-if="booster.image" :src="booster.image" :alt="booster.id" loading="lazy" decoding="async" />
-                <template v-else>{{ booster.icon }}</template>
+                v-for="score in game.state.effects.floatScores"
+                :key="score.id"
+                class="float-score"
+                :style="{ '--score-x': score.x, '--score-y': score.y }"
+              >
+                +{{ score.amount }}
               </span>
-              <van-badge :content="booster.count" class="badge-anchor" />
-            </van-button>
-          </div>
-          <div class="travel-progress">
-            <img class="chapter-building" :src="assetManifest.ui.chapterBuilding" alt="" loading="lazy" decoding="async" />
-            <span class="chapter-name">{{ game.state.levelConfig.chapter.title }}</span>
-            <div class="chapter-meter">
-              <span :style="{ width: `${detailTreasurePercent}%` }"></span>
-              <strong>{{ game.state.levelConfig.localLevel }}/{{ nextRewardLevel }}</strong>
+              <span v-if="game.state.effects.combo" class="combo-banner">{{ game.state.effects.combo.text }}</span>
+              <span v-if="game.state.effects.levelClearBanner" class="level-clear-banner">🎉 通关！结算中</span>
             </div>
-            <van-button size="small" round type="warning" class="treasure-claim" @click="claimDetailTreasure">
-              <img :src="assetManifest.ui.treasureChest" alt="" loading="lazy" decoding="async" />
-              <span v-if="detailTreasureStatus === 'claimable'">可领取{{ claimableRewardLevels.length > 1 ? `(${claimableRewardLevels.length})` : '' }}</span>
-              <span v-else-if="detailTreasureStatus === 'claimed'">已领取</span>
-            </van-button>
-          </div>
-          <div class="level-tools">
-            <van-button size="small" round @click="changeLevel(game.state.currentLevel - 1)">上一关</van-button>
-            <van-button size="small" round type="primary" @click="openLevelInfo">规则</van-button>
-            <van-button size="small" round @click="changeLevel(game.state.currentLevel + 1)">下一关</van-button>
-          </div>
-        </footer>
+          </section>
 
-        <aside v-if="settleResult" class="settle-overlay" :class="[`phase-${settlePhase}`, { exiting: settlePhase === 3 }]">
+          <aside class="guide-wrap">
+            <div class="guide-character" :class="{ 'has-image': assetManifest.guide.normal }" :style="guideImageStyle" aria-hidden="true">
+              <div class="silver-crown"></div>
+              <div class="guide-face"></div>
+              <div class="guide-body"></div>
+            </div>
+            <div class="guide-bubble">{{ game.state.guideText }}</div>
+          </aside>
+
+          <footer class="bottom-hud">
+            <div class="booster-bar">
+              <van-button
+                v-for="booster in boosters"
+                :key="booster.id"
+                round
+                class="booster"
+                :class="{ active: game.state.activeBooster === booster.id }"
+                @click="game.activateBooster(booster.id)"
+              >
+                <span class="booster-icon">
+                  <img v-if="booster.image" :src="booster.image" :alt="booster.id" loading="lazy" decoding="async" />
+                  <template v-else>{{ booster.icon }}</template>
+                </span>
+                <van-badge :content="booster.count" class="badge-anchor" />
+              </van-button>
+            </div>
+            <div class="travel-progress">
+              <img class="chapter-building" :src="assetManifest.ui.chapterBuilding" alt="" loading="lazy" decoding="async" />
+              <span class="chapter-name">{{ game.state.levelConfig.chapter.title }}</span>
+              <div class="chapter-meter">
+                <span :style="{ width: `${detailTreasurePercent}%` }"></span>
+                <strong>{{ game.state.levelConfig.localLevel }}/{{ nextRewardLevel }}</strong>
+              </div>
+              <van-button size="small" round type="warning" class="treasure-claim" @click="claimDetailTreasure">
+                <img :src="assetManifest.ui.treasureChest" alt="" loading="lazy" decoding="async" />
+                <span v-if="detailTreasureStatus === 'claimable'">可领取{{ claimableRewardLevels.length > 1 ? `(${claimableRewardLevels.length})` : '' }}</span>
+                <span v-else-if="detailTreasureStatus === 'claimed'">已领取</span>
+              </van-button>
+            </div>
+            <div class="level-tools">
+              <van-button size="small" round @click="changeLevel(game.state.currentLevel - 1)">上一关</van-button>
+              <van-button size="small" round type="primary" @click="openLevelInfo">规则</van-button>
+              <van-button size="small" round @click="changeLevel(game.state.currentLevel + 1)">下一关</van-button>
+            </div>
+          </footer>
+        </template>
+
+        <!-- 失败结算：保持原有弹窗 -->
+        <aside v-if="settleResult && settleResult.failed" class="settle-overlay" :class="[`phase-${settlePhase}`, { exiting: settlePhase === 3 }]">
           <div class="settle-card">
-            <div class="settle-header" :class="{ failed: settleResult.failed }">
-              <span v-if="settleResult.failed" class="settle-title-icon">😔</span>
-              <span v-else class="settle-title-icon">🎉</span>
-              <h2>{{ settleResult.failed ? '挑战失败' : '关卡完成' }}</h2>
+            <div class="settle-header failed">
+              <span class="settle-title-icon">😔</span>
+              <h2>挑战失败</h2>
               <p>第 {{ settleResult.level }} 关 · {{ game.state.levelConfig.chapter.name }}</p>
-            </div>
-
-            <div class="settle-stars" v-if="!settleResult.failed">
-              <span
-                v-for="index in 3"
-                :key="index"
-                class="settle-star"
-                :class="{ lit: settlePhase >= 1 && settleResult.stars >= index }"
-                :style="{ transitionDelay: `${0.3 + index * 0.2}s` }"
-              >★</span>
             </div>
 
             <div class="settle-score">
@@ -362,15 +366,6 @@
 
             <div class="settle-actions" v-if="settlePhase >= 2">
               <van-button
-                v-if="!settleResult.failed && !settleResult.isLastLevel"
-                block
-                round
-                type="primary"
-                class="settle-btn"
-                @click="closeSettleAndNext"
-              >进入下一关</van-button>
-              <van-button
-                v-if="settleResult.failed"
                 block
                 round
                 type="primary"
@@ -398,6 +393,7 @@ import { blockers, chapters, LEVELS_PER_CHAPTER, pieces, REWARD_LEVELS, TOTAL_LE
 import { assetManifest } from "./config/assets";
 import { useMatch3Game } from "./composables/useMatch3Game";
 import { usePlayerProgress } from "./composables/usePlayerProgress";
+import LevelSettle from "./components/LevelSettle.vue";
 
 const params = new URLSearchParams(window.location.search);
 const initialLevel = Number(params.get("level")) || 128;

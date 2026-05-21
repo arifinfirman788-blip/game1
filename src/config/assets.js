@@ -47,6 +47,18 @@ export const assetManifest = {
     treasureChest: asset("/assets/detail/ui/treasure-chest.png"),
     starGray: asset("/assets/detail/ui/star-gray.png"),
   },
+  settle: {
+    banner: asset("/assets/settle/banner.png"),
+    rewardFrame: asset("/assets/settle/reward-frame.png"),
+    detailFrame: asset("/assets/settle/detail-frame.png"),
+    detailFrameNew: asset("/image/结算详情框体.png?v=2"),
+    btnRetry: asset("/assets/settle/btn-retry.png"),
+    btnNext: asset("/assets/settle/btn-next.png"),
+    character: asset("/assets/settle/character.png"),
+    star1: asset("/assets/settle/star-1.png"),
+    star2: asset("/assets/settle/star-2.png"),
+    star3: asset("/assets/settle/star-3.png"),
+  },
   map: {
     background: asset("/assets/map/mobile/level-map-bg-mobile.jpg"),
     route: asset("/assets/map/route-unlocked.webp"),
