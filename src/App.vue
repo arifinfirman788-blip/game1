@@ -34,9 +34,18 @@
         </div>
 
         <van-grid :border="false" :column-num="3" class="home-summary">
-          <van-grid-item text="大景区"><strong>7</strong></van-grid-item>
-          <van-grid-item text="小关卡"><strong>700</strong></van-grid-item>
-          <van-grid-item text="星挑战"><strong>3</strong></van-grid-item>
+          <van-grid-item>
+            <strong>7</strong>
+            <span>大景区</span>
+          </van-grid-item>
+          <van-grid-item>
+            <strong>700</strong>
+            <span>小关卡</span>
+          </van-grid-item>
+          <van-grid-item>
+            <strong>3</strong>
+            <span>星级评价</span>
+          </van-grid-item>
         </van-grid>
       </section>
 
@@ -277,6 +286,7 @@
               +{{ score.amount }}
             </span>
             <span v-if="game.state.effects.combo" class="combo-banner">{{ game.state.effects.combo.text }}</span>
+            <span v-if="game.state.effects.levelClearBanner" class="level-clear-banner">🎉 通关！结算中</span>
           </div>
         </section>
 
@@ -315,7 +325,7 @@
             </div>
             <van-button size="small" round type="warning" class="treasure-claim" @click="claimDetailTreasure">
               <img :src="assetManifest.ui.treasureChest" alt="" loading="lazy" decoding="async" />
-              <span v-if="detailTreasureStatus === 'claimable'">可领取</span>
+              <span v-if="detailTreasureStatus === 'claimable'">可领取{{ claimableRewardLevels.length > 1 ? `(${claimableRewardLevels.length})` : '' }}</span>
               <span v-else-if="detailTreasureStatus === 'claimed'">已领取</span>
             </van-button>
           </div>
@@ -406,10 +416,15 @@ const nextRewardLevel = computed(() => {
 const detailTreasurePercent = computed(() =>
   Math.min(100, Math.round((game.state.levelConfig.localLevel / nextRewardLevel.value) * 100)),
 );
+const claimableRewardLevels = computed(() =>
+  REWARD_LEVELS.filter((rewardLevel) =>
+    player.isRewardClaimable(game.state.levelConfig.chapterIndex, rewardLevel),
+  ),
+);
 const detailTreasureStatus = computed(() => {
+  if (claimableRewardLevels.value.length > 0) return "claimable";
   const nextLevel = nextRewardLevel.value;
   if (player.isRewardClaimed(game.state.levelConfig.chapterIndex, nextLevel)) return "claimed";
-  if (player.isRewardClaimable(game.state.levelConfig.chapterIndex, nextLevel)) return "claimable";
   return "locked";
 });
 const mapSegments = computed(() => [mapPage.value]);
@@ -540,14 +555,10 @@ function goGame(level) {
 
 function handleLevelComplete(result) {
   player.completeLevel(result.level, result.stars);
-  const bonusText =
-    result.bonusScore > 0
-      ? `剩余 ${result.remainingMoves} 步已折算为 ${result.bonusScore} 分。`
-      : "本关目标已全部完成。";
 
   showDialog({
     title: "关卡完成",
-    message: `最终得分 ${result.finalScore.toLocaleString("zh-CN")}。${bonusText}`,
+    message: `最终得分 ${result.finalScore.toLocaleString("zh-CN")}，获得 ${result.stars} 星。`,
     confirmButtonText: result.isLastLevel ? "返回选关" : "进入下一关",
     cancelButtonText: "返回选关",
     showCancelButton: true,
@@ -745,26 +756,35 @@ function claimChapterReward(reward) {
 }
 
 function claimDetailTreasure() {
-  const rewardLevel = nextRewardLevel.value;
-  if (player.isRewardClaimed(game.state.levelConfig.chapterIndex, rewardLevel)) {
-    showToast("这个宝箱已经领取过啦");
+  const chapterIndex = game.state.levelConfig.chapterIndex;
+  const claimableLevels = REWARD_LEVELS.filter(
+    (rewardLevel) => player.isRewardClaimable(chapterIndex, rewardLevel),
+  );
+  if (claimableLevels.length === 0) {
+    const nextLevel = nextRewardLevel.value;
+    if (player.isRewardClaimed(chapterIndex, nextLevel)) {
+      showToast("这个宝箱已经领取过啦");
+    } else {
+      showToast(`通关到第 ${nextLevel} 小关后可领取`);
+    }
     return;
   }
-  if (!player.isRewardClaimable(game.state.levelConfig.chapterIndex, rewardLevel)) {
-    showToast(`通关到第 ${rewardLevel} 小关后可领取`);
-    return;
-  }
-  const rewardItems = player.claimReward(game.state.levelConfig.chapterIndex, rewardLevel);
-  if (!rewardItems) {
-    showToast("完成前面的关卡后再来领取");
-    return;
-  }
-  const rewardText = Object.entries(rewardItems)
+  const allRewards = {};
+  claimableLevels.forEach((rewardLevel) => {
+    const rewardItems = player.claimReward(chapterIndex, rewardLevel);
+    if (rewardItems) {
+      Object.entries(rewardItems).forEach(([booster, count]) => {
+        allRewards[booster] = (allRewards[booster] || 0) + count;
+      });
+    }
+  });
+  const rewardText = Object.entries(allRewards)
     .map(([booster, count]) => `${boosterName(booster)} +${count}`)
     .join("、");
+  const suffix = claimableLevels.length > 1 ? `，共领取 ${claimableLevels.length} 个宝箱` : "";
   showDialog({
     title: "领取成功",
-    message: `获得 ${rewardText}，选关页宝箱状态已同步更新。`,
+    message: `获得 ${rewardText}${suffix}，选关页宝箱状态已同步更新。`,
     confirmButtonText: "好",
   });
 }

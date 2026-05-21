@@ -91,8 +91,7 @@ function buildGoals(blockerPlan, localLevel, difficulty) {
   goals[primaryPiece.id] = Math.max(10, 18 + Math.floor(localLevel / 4) + Math.floor(difficulty * 3) + earlyEase);
   blockerPlan.forEach(({ type, amount }) => {
     if (amount <= 0) return;
-    const goalPressure = type === "ice" ? 1.45 : type === "crate" ? 1.7 : 1.55;
-    goals[type] = Math.ceil(amount * goalPressure + difficulty * 3);
+    goals[type] = amount;
   });
   if (Object.keys(goals).length < targetGoalCount) {
     goals[secondaryPiece.id] = Math.max(8, 13 + Math.floor(localLevel / 5) + Math.floor(difficulty * 2) + earlyEase);

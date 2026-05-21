@@ -11,7 +11,6 @@ import {
 } from "../config/levels";
 
 const SCORE_PER_TILE = 80;
-const MOVE_BONUS_SCORE = 200;
 const SPECIAL_SCORE = 140;
 const GUIDE_LINES = [
   "匹配美食，收集银饰，探索多彩贵州！",
@@ -76,6 +75,7 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
       rings: [],
       floatScores: [],
       combo: null,
+      levelClearBanner: null,
     },
   });
 
@@ -761,8 +761,9 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
     if (goalsComplete) {
       state.goalsCompleted = true;
 
-      if (starCount.value < 3 && state.movesLeft > 0) {
-        state.guideText = "关卡目标已完成！还可以继续消除，冲到三星后再结算。";
+      if (state.movesLeft > 0) {
+        state.guideText = "关卡目标已完成！剩余步数自动消除中...";
+        autoPlayRemainingMoves();
         return;
       }
 
@@ -773,6 +774,110 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
     if (state.movesLeft <= 0) {
       failLevel();
     }
+  }
+
+  async function autoPlayRemainingMoves() {
+    state.busy = true;
+    state.effects.levelClearBanner = { id: crypto.randomUUID() };
+    state.guideText = "🎉 关卡通关！剩余步数结算中...";
+
+    await delay(1200);
+    state.effects.levelClearBanner = null;
+
+    let safetyCounter = state.movesLeft * 4;
+
+    while (state.movesLeft > 0 && safetyCounter > 0) {
+      safetyCounter -= 1;
+      const specialCell = findSpecialCell();
+      if (specialCell) {
+        await autoTriggerSpecial(specialCell);
+        continue;
+      }
+
+      const swapped = await autoFindAndSwap();
+      if (!swapped) break;
+    }
+
+    while (findMatchGroups().length > 0) {
+      const groups = findMatchGroups();
+      await resolveMatches(groups, []);
+      clearEffects();
+      await delay(120);
+    }
+
+    state.movesLeft = 0;
+    state.busy = false;
+    completeLevel();
+  }
+
+  function findSpecialCell() {
+    for (let row = 0; row < BOARD_SIZE; row += 1) {
+      for (let col = 0; col < BOARD_SIZE; col += 1) {
+        const cell = state.board[row][col];
+        if (cell.special && cell.type) return cell;
+      }
+    }
+    return null;
+  }
+
+  async function autoTriggerSpecial(cell) {
+    state.guideText = `自动释放特殊棋子！`;
+    const targets = expandSpecials([cell]);
+    playMatchEffects(targets, 1);
+    await delay(150);
+    clearMatches(targets, 1, { specialScore: true });
+    damageAdjacentCrates(targets);
+    state.movesLeft -= 1;
+    state.effects.falling = collapseBoard();
+    state.effects.spawning = refillBoard();
+    await nextTick();
+    await delay(120);
+    clearEffects();
+
+    const groups = findMatchGroups();
+    if (groups.length > 0) await resolveMatches(groups, [cell]);
+    clearEffects();
+  }
+
+  async function autoFindAndSwap() {
+    const candidates = [];
+    for (let row = 0; row < BOARD_SIZE; row += 1) {
+      for (let col = 0; col < BOARD_SIZE; col += 1) {
+        const cell = state.board[row][col];
+        if (!canSelect(cell)) continue;
+        if (col + 1 < BOARD_SIZE && canSelect(state.board[row][col + 1])) {
+          candidates.push([cell, state.board[row][col + 1]]);
+        }
+        if (row + 1 < BOARD_SIZE && canSelect(state.board[row + 1][col])) {
+          candidates.push([cell, state.board[row + 1][col]]);
+        }
+      }
+    }
+    if (candidates.length === 0) return false;
+
+    for (let i = candidates.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+    }
+
+    for (const [a, b] of candidates) {
+      swapTypes(a, b);
+      const matchGroups = findMatchGroups();
+      if (matchGroups.length > 0) {
+        setSwapHints(a, b);
+        await delay(120);
+        state.movesLeft -= 1;
+        clearEffects();
+        state.guideText = `自动消除中，剩余 ${state.movesLeft} 步`;
+        await resolveMatches(matchGroups, [a, b]);
+        clearEffects();
+        await delay(80);
+        return true;
+      }
+      swapTypes(a, b);
+    }
+
+    return false;
   }
 
   function failLevel() {
@@ -790,21 +895,13 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
   }
 
   function completeLevel() {
-    const starsBeforeBonus = starCount.value;
-    const remainingMoves = state.movesLeft;
-    const bonusScore = starsBeforeBonus >= 3 && remainingMoves > 0 ? remainingMoves * MOVE_BONUS_SCORE : 0;
-
-    if (bonusScore > 0) {
-      state.score += bonusScore;
-    }
-
     state.completed = true;
     options.onLevelComplete?.({
       level: state.currentLevel,
       nextLevel: clamp(state.currentLevel + 1, 1, TOTAL_LEVELS),
       stars: Math.max(starCount.value, 1),
-      remainingMoves,
-      bonusScore,
+      remainingMoves: 0,
+      bonusScore: 0,
       finalScore: state.score,
       isLastLevel: state.currentLevel >= TOTAL_LEVELS,
     });
