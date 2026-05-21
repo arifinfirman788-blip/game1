@@ -1109,7 +1109,15 @@ button {
 }
 
 .reward-node.claimable {
-  animation: reward-glow 1.2s ease-in-out infinite alternate;
+  background: transparent;
+  box-shadow: none;
+  border-radius: 50%;
+  animation: chest-float 1.8s ease-in-out infinite;
+}
+
+@keyframes chest-float {
+  0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+  50% { transform: translate(-50%, -50%) translateY(-6px); }
 }
 
 .reward-node.claimed {
