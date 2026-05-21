@@ -148,23 +148,25 @@ defineExpose({ close });
 
 <style scoped>
 .level-settle {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   z-index: 100;
   width: 100%;
-  height: 100dvh;
+  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
-  padding: 30px 0 0;
+  justify-content: flex-start;
+  gap: 0;
+  padding: 40px 0 0;
   overflow: hidden;
   opacity: 0;
   transform: translateY(6px);
   transition: opacity 350ms ease, transform 350ms ease;
+  background-color: rgba(0, 0, 0, 0.6);
 }
 
 .level-settle.show {
@@ -197,13 +199,13 @@ defineExpose({ close });
 
 .settle-reward-frame {
   width: min(85%, 340px);
-  transform: translateY(58px) scale(0.94);
+  transform: translateY(20px) scale(0.94);
   opacity: 0;
   transition: transform 400ms cubic-bezier(0.16, 1, 0.3, 1) 80ms, opacity 350ms ease 80ms;
 }
 
 .settle-reward-frame.frame-in {
-  transform: translateY(-50px) scale(1);
+  transform: translateY(-10px) scale(1);
   opacity: 1;
 }
 
@@ -216,13 +218,13 @@ defineExpose({ close });
 .settle-detail-frame {
   position: relative;
   width: min(83%, 346px);
-  transform: translateX(20px) translateY(58px) scale(0.821);
+  transform: translateX(0) translateY(20px) scale(0.821);
   opacity: 0;
   transition: transform 400ms cubic-bezier(0.16, 1, 0.3, 1) 180ms, opacity 350ms ease 180ms;
 }
 
 .settle-detail-frame.frame-in {
-  transform: translateX(40px) translateY(-50px) scale(0.864);
+  transform: translateX(0) translateY(-20px) scale(0.864);
   opacity: 1;
 }
 
@@ -347,13 +349,13 @@ defineExpose({ close });
 .settle-dialog {
   position: relative;
   width: min(56%, 240px);
-  transform: translateX(0) translateY(6px) scale(0.9075);
+  transform: translateX(0) translateY(20px) scale(0.9075);
   opacity: 0;
   transition: transform 400ms cubic-bezier(0.16, 1, 0.3, 1) 300ms, opacity 350ms ease 300ms;
 }
 
 .settle-dialog.dialog-in {
-  transform: translateX(25px) translateY(-80px) scale(0.9075);
+  transform: translateX(30px) translateY(-30px) scale(0.9075);
   opacity: 1;
 }
 
@@ -380,13 +382,16 @@ defineExpose({ close });
   display: flex;
   justify-content: center;
   gap: 10px;
-  transform: translateX(0) translateY(6px);
+  transform: translateX(0) translateY(20px);
   opacity: 0;
   transition: transform 350ms cubic-bezier(0.16, 1, 0.3, 1) 500ms, opacity 300ms ease 500ms;
+  margin-top: auto;
+  margin-bottom: 40px;
+  z-index: 10;
 }
 
 .settle-buttons.buttons-in {
-  transform: translateX(40px) translateY(-60px);
+  transform: translateX(0) translateY(0);
   opacity: 1;
 }
 
@@ -418,19 +423,19 @@ defineExpose({ close });
 }
 
 .settle-character {
-  position: fixed;
-  left: 0;
+  position: absolute;
+  left: -20px;
   bottom: 0;
   z-index: 5;
-  width: 220px;
+  width: 200px;
   pointer-events: none;
-  transform: translateX(-105px) translateY(-35px);
+  transform: translateX(-50px) translateY(20px);
   opacity: 0;
   transition: transform 500ms cubic-bezier(0.16, 1, 0.3, 1) 350ms, opacity 400ms ease 350ms;
 }
 
 .settle-character.char-in {
-  transform: translateX(-75px) translateY(-45px);
+  transform: translateX(0) translateY(0);
   opacity: 1;
 }
 
