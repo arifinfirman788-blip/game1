@@ -162,8 +162,8 @@ defineExpose({ close });
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  gap: 0;
-  padding: 40px 0 0;
+  gap: max(2px, 1vh);
+  padding: max(15px, 3vh) 0 0;
   overflow: hidden;
   opacity: 0;
   transform: translateY(6px);
@@ -182,10 +182,11 @@ defineExpose({ close });
 }
 
 .settle-banner {
-  width: min(70%, 260px);
+  width: min(70%, 260px, 20vh);
   transform: translateY(-12px) scale(0.88);
   opacity: 0;
   transition: transform 450ms cubic-bezier(0.16, 1, 0.3, 1), opacity 350ms ease;
+  flex-shrink: 0;
 }
 
 .settle-banner.banner-in {
@@ -200,10 +201,11 @@ defineExpose({ close });
 }
 
 .settle-reward-frame {
-  width: min(85%, 340px);
+  width: min(85%, 340px, 25vh);
   transform: translateY(20px) scale(0.94);
   opacity: 0;
   transition: transform 400ms cubic-bezier(0.16, 1, 0.3, 1) 80ms, opacity 350ms ease 80ms;
+  flex-shrink: 0;
 }
 
 .settle-reward-frame.frame-in {
@@ -223,9 +225,10 @@ defineExpose({ close });
   align-items: center;
   justify-content: center;
   width: 95%;
-  max-width: 400px;
-  margin-top: 10px;
+  max-width: min(400px, 45vh);
+  margin-top: max(5px, 1vh);
   gap: 5px;
+  flex-shrink: 0;
 }
 
 .settle-character {
@@ -383,11 +386,12 @@ defineExpose({ close });
 
 .settle-dialog {
   position: relative;
-  width: min(70%, 280px);
+  width: min(70%, 280px, 20vh);
   transform: translateX(0) translateY(10px) scale(0.9075);
   opacity: 0;
   transition: transform 400ms cubic-bezier(0.16, 1, 0.3, 1) 300ms, opacity 350ms ease 300ms;
-  margin-top: 5px;
+  margin-top: max(5px, 1vh);
+  flex-shrink: 0;
 }
 
 .settle-dialog.dialog-in {
@@ -422,8 +426,9 @@ defineExpose({ close });
   opacity: 0;
   transition: transform 350ms cubic-bezier(0.16, 1, 0.3, 1) 500ms, opacity 300ms ease 500ms;
   margin-top: auto;
-  margin-bottom: 40px;
+  margin-bottom: max(15px, 3vh);
   z-index: 10;
+  flex-shrink: 0;
 }
 
 .settle-buttons.buttons-in {
@@ -451,10 +456,10 @@ defineExpose({ close });
 }
 
 .settle-btn.retry {
-  width: 100px;
+  width: min(100px, 15vh);
 }
 
 .settle-btn.next {
-  width: 110px;
+  width: min(110px, 16vh);
 }
 </style>
