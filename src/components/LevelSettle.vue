@@ -148,16 +148,20 @@ defineExpose({ close });
 
 <style scoped>
 .level-settle {
-  position: relative;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   z-index: 100;
   width: 100%;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  padding: 52px 0 0;
-  margin-top: -70px;
-  min-height: calc(100dvh + 70px - 52px);
+  padding: 30px 0 0;
+  overflow: hidden;
   opacity: 0;
   transform: translateY(6px);
   transition: opacity 350ms ease, transform 350ms ease;
@@ -414,7 +418,7 @@ defineExpose({ close });
 }
 
 .settle-character {
-  position: absolute;
+  position: fixed;
   left: 0;
   bottom: 0;
   z-index: 5;
