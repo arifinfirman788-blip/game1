@@ -723,7 +723,8 @@ function handleMapPointerDown(event) {
     startY: event.clientY,
     currentY: event.clientY,
   };
-  event.currentTarget.setPointerCapture?.(event.pointerId);
+  // 取消 setPointerCapture，避免劫持子元素（关卡节点）的 click 事件
+  // event.currentTarget.setPointerCapture?.(event.pointerId);
 }
 
 function handleMapPointerMove(event) {
@@ -737,7 +738,8 @@ function handleMapPointerMove(event) {
 
 function handleMapPointerUp(event) {
   if (!mapDragState.value.dragging) return;
-  event.currentTarget.releasePointerCapture?.(event.pointerId);
+  
+  // event.currentTarget.releasePointerCapture?.(event.pointerId);
   const deltaX = mapDragState.value.currentX - mapDragState.value.startX;
   const deltaY = mapDragState.value.currentY - mapDragState.value.startY;
   const isHorizontalSwipe = Math.abs(deltaX) > Math.abs(deltaY);
@@ -761,7 +763,7 @@ function handleMapPointerUp(event) {
 
 function handleMapPointerCancel(event) {
   if (!mapDragState.value.dragging) return;
-  event.currentTarget.releasePointerCapture?.(event.pointerId);
+  // event.currentTarget.releasePointerCapture?.(event.pointerId);
   resetMapDrag();
 }
 
