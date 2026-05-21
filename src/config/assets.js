@@ -51,7 +51,7 @@ export const assetManifest = {
     banner: asset("/assets/settle/banner.png"),
     rewardFrame: asset("/assets/settle/reward-frame.png"),
     detailFrame: asset("/assets/settle/detail-frame.png"),
-    detailFrameNew: asset("/image/结算详情框体.png?v=2"),
+    detailFrameNew: asset("/assets/settle/detail-frame-new.png"),
     btnRetry: asset("/assets/settle/btn-retry.png"),
     btnNext: asset("/assets/settle/btn-next.png"),
     character: asset("/assets/settle/character.png"),
