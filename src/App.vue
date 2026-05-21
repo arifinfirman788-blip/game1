@@ -476,7 +476,7 @@ const detailTreasureStatus = computed(() => {
   if (player.isRewardClaimed(game.state.levelConfig.chapterIndex, nextLevel)) return "claimed";
   return "locked";
 });
-const mapSegments = computed(() => [mapPage.value]);
+const mapSegments = computed(() => [0, 1, 2, 3, 4]);
 const maxUnlockedMapPage = computed(() => {
   const chapterStart = game.state.selectedChapterIndex * LEVELS_PER_CHAPTER + 1;
   const unlockedInChapter = Math.max(1, Math.min(LEVELS_PER_CHAPTER, player.progress.unlockedLevel - chapterStart + 1));

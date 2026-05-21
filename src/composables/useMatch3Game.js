@@ -455,13 +455,42 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
     return cells;
   }
 
-  async function triggerRainbowSwap(swappedCells) {
+  async function triggerRainbowSwap(swappedCells, options = {}) {
     const rainbowCells = swappedCells.filter((cell) => cell.special?.kind === "rainbow");
     const otherCells = swappedCells.filter((cell) => cell.special?.kind !== "rainbow");
+
+    const pairedCell = otherCells[0];
+    if (rainbowCells.length === 1 && pairedCell?.special && pairedCell.type) {
+      state.guideText = "彩虹球触发特殊组合！全屏同类棋子变异！";
+      const targetType = pairedCell.type;
+      const allCells = state.board.flat();
+      const targets = allCells.filter((target) => target.type === targetType);
+      
+      targets.forEach(cell => {
+        cell.special = clone(pairedCell.special);
+      });
+      
+      await delay(300);
+      
+      const expandedTargets = expandSpecials([...targets, pairedCell, ...rainbowCells]);
+      playMatchEffects(expandedTargets, 1);
+      await delay(360);
+      clearMatches(expandedTargets, 1, { specialScore: true, autoClear: options.autoClear });
+      damageAdjacentCrates(expandedTargets);
+      state.effects.falling = collapseBoard();
+      state.effects.spawning = refillBoard();
+      await nextTick();
+      await delay(360);
+      clearEffects();
+      const groups = findMatchGroups();
+      if (groups.length > 0) await resolveMatches(groups, swappedCells, options);
+      return;
+    }
+
     const targets = getRainbowSwapTargets(rainbowCells, otherCells);
     playMatchEffects(targets, 1);
     await delay(360);
-    clearMatches(targets, 1, { specialScore: true });
+    clearMatches(targets, 1, { specialScore: true, autoClear: options.autoClear });
     damageAdjacentCrates(targets);
     state.effects.falling = collapseBoard();
     state.effects.spawning = refillBoard();
@@ -469,15 +498,15 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
     await delay(360);
     clearEffects();
     const groups = findMatchGroups();
-    if (groups.length > 0) await resolveMatches(groups, swappedCells);
+    if (groups.length > 0) await resolveMatches(groups, swappedCells, options);
   }
 
-  async function triggerBombSwap(bombCells, swappedCells) {
+  async function triggerBombSwap(bombCells, swappedCells, options = {}) {
     const targets = uniqueCells(bombCells.flatMap((cell) => collectSpecialTargets(cell, "swap")));
     state.guideText = "炸弹奖励已触发，清除当前位置九宫格。";
     playMatchEffects(targets, 1);
     await delay(360);
-    clearMatches(targets, 1, { specialScore: true });
+    clearMatches(targets, 1, { specialScore: true, autoClear: options.autoClear });
     damageAdjacentCrates(targets);
     state.effects.falling = collapseBoard();
     state.effects.spawning = refillBoard();
@@ -485,7 +514,7 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
     await delay(360);
     clearEffects();
     const groups = findMatchGroups();
-    if (groups.length > 0) await resolveMatches(groups, swappedCells);
+    if (groups.length > 0) await resolveMatches(groups, swappedCells, options);
   }
 
   function getRainbowSwapTargets(rainbowCells, otherCells) {
@@ -523,16 +552,12 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
       if (cell.blocker) {
         reduceGoal(cell.blocker);
         cell.blocker = null;
-        cell.special = null;
-        if (!cell.type) {
-          cell.type = randomPieceId();
-          cell.special = null;
-        }
-      } else {
+      }
+      if (cell.type) {
         reduceGoal(cell.type);
         cell.type = null;
-        cell.special = null;
       }
+      cell.special = null;
     });
     const gained = matches.length * (options.specialScore ? SPECIAL_SCORE : SCORE_PER_TILE) * combo;
     state.score += gained;
@@ -847,6 +872,26 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
 
   async function autoTriggerSpecial(cell) {
     state.guideText = `自动释放特殊棋子！`;
+
+    if (cell.special?.kind === "rainbow") {
+      const adjacentCells = [
+        state.board[cell.row - 1]?.[cell.col],
+        state.board[cell.row + 1]?.[cell.col],
+        state.board[cell.row]?.[cell.col - 1],
+        state.board[cell.row]?.[cell.col + 1]
+      ].filter(c => c && c.type);
+      
+      const targetCell = adjacentCells.length > 0 
+        ? adjacentCells[Math.floor(Math.random() * adjacentCells.length)] 
+        : state.board.flat().find(c => c && c.type && c !== cell);
+        
+      if (targetCell) {
+        state.movesLeft -= 1;
+        await triggerRainbowSwap([cell, targetCell], { autoClear: true });
+        return;
+      }
+    }
+
     const targets = expandSpecials([cell]);
     playMatchEffects(targets, 1);
     await delay(150);
