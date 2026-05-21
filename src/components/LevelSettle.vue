@@ -46,10 +46,10 @@
       </div>
 
       <div class="settle-buttons" :class="{ 'buttons-in': showButtons }">
-        <button class="settle-btn retry" @click="$emit('retry')">
+        <button class="settle-btn retry" @click="handleRetry">
           <img :src="assetManifest.settle.btnRetry" alt="重新挑战" decoding="async" />
         </button>
-        <button v-if="!result.isLastLevel" class="settle-btn next" @click="$emit('next')">
+        <button v-if="!result.isLastLevel" class="settle-btn next" @click="handleNext">
           <img :src="assetManifest.settle.btnNext" alt="下一关" decoding="async" />
         </button>
       </div>
@@ -77,7 +77,7 @@ const props = defineProps({
   },
 });
 
-defineEmits(['next', 'retry']);
+const emit = defineEmits(['next', 'retry']);
 
 const show = ref(false);
 const exiting = ref(false);
@@ -90,6 +90,16 @@ const perfectText = computed(() => {
   const texts = ['再接再厉', '表现不错', '完美通关'];
   return texts[(props.result.stars || 1) - 1] || texts[0];
 });
+
+function handleNext() {
+  exiting.value = true;
+  emit('next');
+}
+
+function handleRetry() {
+  exiting.value = true;
+  emit('retry');
+}
 
 let panelTimers = [];
 
@@ -213,7 +223,7 @@ defineExpose({ close });
 .settle-character {
   position: absolute;
   left: -60px;
-  bottom: 20px;
+  bottom: 0px;
   width: 45%;
   max-width: 200px;
   z-index: 10;
@@ -372,7 +382,7 @@ defineExpose({ close });
   position: relative;
   left: 35px;
   width: min(70%, 280px);
-  margin-top: -25px;
+  margin-top: -5px;
   transform: translateX(0) translateY(10px) scale(0.9075);
   opacity: 0;
   transition: transform 400ms cubic-bezier(0.16, 1, 0.3, 1) 300ms, opacity 350ms ease 300ms;

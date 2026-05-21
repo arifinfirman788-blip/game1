@@ -211,12 +211,10 @@
         <header class="top-hud">
           <div class="hud-side left">
             <van-button round icon="setting-o" class="vant-round" aria-label="设置" @click="openSettings" />
-            <span>设置</span>
           </div>
           <div class="title-plaque">黄小西带你游贵州</div>
           <div class="hud-side right">
             <van-button round class="vant-round pause-round" aria-label="暂停" @click="goMap">Ⅱ</van-button>
-            <span>暂停</span>
           </div>
 
           <div class="mission-panel">
@@ -658,6 +656,11 @@ function closeSettleAndNext() {
     } else {
       goGame(nextLevel);
     }
+    
+    setTimeout(() => {
+      const scene = document.querySelector('.game-scene');
+      if (scene) scene.scrollTop = 0;
+    }, 0);
   }, 500);
 }
 
@@ -672,6 +675,11 @@ function closeSettleAndRetry() {
     settlePhase.value = 0;
     isTransitioning.value = false;
     game.changeLevel(level);
+
+    setTimeout(() => {
+      const scene = document.querySelector('.game-scene');
+      if (scene) scene.scrollTop = 0;
+    }, 0);
   }, 500);
 }
 
