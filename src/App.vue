@@ -335,6 +335,57 @@
             <van-button size="small" round @click="changeLevel(game.state.currentLevel + 1)">下一关</van-button>
           </div>
         </footer>
+
+        <aside v-if="settleResult" class="settle-overlay" :class="[`phase-${settlePhase}`, { exiting: settlePhase === 3 }]">
+          <div class="settle-card">
+            <div class="settle-header" :class="{ failed: settleResult.failed }">
+              <span v-if="settleResult.failed" class="settle-title-icon">😔</span>
+              <span v-else class="settle-title-icon">🎉</span>
+              <h2>{{ settleResult.failed ? '挑战失败' : '关卡完成' }}</h2>
+              <p>第 {{ settleResult.level }} 关 · {{ game.state.levelConfig.chapter.name }}</p>
+            </div>
+
+            <div class="settle-stars" v-if="!settleResult.failed">
+              <span
+                v-for="index in 3"
+                :key="index"
+                class="settle-star"
+                :class="{ lit: settlePhase >= 1 && settleResult.stars >= index }"
+                :style="{ transitionDelay: `${0.3 + index * 0.2}s` }"
+              >★</span>
+            </div>
+
+            <div class="settle-score">
+              <p class="settle-score-label">最终得分</p>
+              <strong class="settle-score-value">{{ settleDisplayScore.toLocaleString("zh-CN") }}</strong>
+            </div>
+
+            <div class="settle-actions" v-if="settlePhase >= 2">
+              <van-button
+                v-if="!settleResult.failed && !settleResult.isLastLevel"
+                block
+                round
+                type="primary"
+                class="settle-btn"
+                @click="closeSettleAndNext"
+              >进入下一关</van-button>
+              <van-button
+                v-if="settleResult.failed"
+                block
+                round
+                type="primary"
+                class="settle-btn"
+                @click="closeSettleAndRetry"
+              >再来一次</van-button>
+              <van-button
+                block
+                round
+                class="settle-btn settle-btn-secondary"
+                @click="closeSettleAndGoMap"
+              >返回选关</van-button>
+            </div>
+          </div>
+        </aside>
       </section>
     </section>
   </main>
@@ -342,7 +393,7 @@
 
 <script setup>
 import { computed, onMounted, onUnmounted, ref, watch, watchEffect } from "vue";
-import { showDialog, showLoadingToast, showToast } from "vant";
+import { showToast } from "vant";
 import { blockers, chapters, LEVELS_PER_CHAPTER, pieces, REWARD_LEVELS, TOTAL_LEVELS } from "./config/levels";
 import { assetManifest } from "./config/assets";
 import { useMatch3Game } from "./composables/useMatch3Game";
@@ -352,6 +403,10 @@ const params = new URLSearchParams(window.location.search);
 const initialLevel = Number(params.get("level")) || 128;
 const screen = ref(params.has("level") ? "game" : params.get("screen") === "map" ? "map" : "home");
 const showMapRules = ref(false);
+const settleResult = ref(null);
+const settlePhase = ref(0);
+const settleDisplayScore = ref(0);
+const isTransitioning = ref(false);
 const player = usePlayerProgress();
 const game = useMatch3Game(initialLevel, {
   onLevelComplete: handleLevelComplete,
@@ -546,49 +601,95 @@ function goGame(level) {
     showToast("先完成前置关卡再来挑战吧");
     return;
   }
-  const toast = showLoadingToast({ message: "加载关卡...", forbidClick: true, duration: 0 });
   game.changeLevel(level);
   screen.value = "game";
   updateUrl("game");
-  window.setTimeout(() => toast.close(), 260);
 }
 
 function handleLevelComplete(result) {
   player.completeLevel(result.level, result.stars);
+  settleResult.value = result;
+  settlePhase.value = 0;
+  settleDisplayScore.value = 0;
 
-  showDialog({
-    title: "关卡完成",
-    message: `最终得分 ${result.finalScore.toLocaleString("zh-CN")}，获得 ${result.stars} 星。`,
-    confirmButtonText: result.isLastLevel ? "返回选关" : "进入下一关",
-    cancelButtonText: "返回选关",
-    showCancelButton: true,
-  })
-    .then(() => {
-      if (result.isLastLevel) {
-        goMap();
-        return;
-      }
-      goGame(result.nextLevel);
-    })
-    .catch(() => {
-      goMap();
-    });
+  window.setTimeout(() => { settlePhase.value = 1; }, 400);
+  animateScoreCounter(result.finalScore, 1200, () => {
+    settlePhase.value = 2;
+  });
+}
+
+function animateScoreCounter(target, duration, onDone) {
+  const start = performance.now();
+  function tick(now) {
+    const progress = Math.min((now - start) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    settleDisplayScore.value = Math.round(target * eased);
+    if (progress < 1) {
+      requestAnimationFrame(tick);
+    } else {
+      settleDisplayScore.value = target;
+      onDone?.();
+    }
+  }
+  requestAnimationFrame(tick);
 }
 
 function handleLevelFail(result) {
-  showDialog({
-    title: "挑战失败",
-    message: `第 ${result.localLevel} 关步数已用完，当前得分 ${result.score.toLocaleString("zh-CN")}。要再来一次吗？`,
-    confirmButtonText: "再来一次",
-    cancelButtonText: "返回选关",
-    showCancelButton: true,
-  })
-    .then(() => {
-      game.changeLevel(result.level);
-    })
-    .catch(() => {
+  settleResult.value = { ...result, stars: 0, finalScore: result.score, isLastLevel: false, nextLevel: result.level, failed: true };
+  settlePhase.value = 0;
+  settleDisplayScore.value = 0;
+
+  window.setTimeout(() => { settlePhase.value = 1; }, 300);
+  animateScoreCounter(result.score, 800, () => {
+    settlePhase.value = 2;
+  });
+}
+
+function closeSettleAndNext() {
+  if (isTransitioning.value) return;
+  isTransitioning.value = true;
+  settlePhase.value = 3;
+
+  const nextLevel = settleResult.value?.nextLevel || game.state.currentLevel + 1;
+  const isLast = settleResult.value?.isLastLevel;
+
+  window.setTimeout(() => {
+    settleResult.value = null;
+    settlePhase.value = 0;
+    isTransitioning.value = false;
+    if (isLast) {
       goMap();
-    });
+    } else {
+      goGame(nextLevel);
+    }
+  }, 500);
+}
+
+function closeSettleAndRetry() {
+  if (isTransitioning.value) return;
+  isTransitioning.value = true;
+  settlePhase.value = 3;
+
+  const level = settleResult.value?.level || game.state.currentLevel;
+  window.setTimeout(() => {
+    settleResult.value = null;
+    settlePhase.value = 0;
+    isTransitioning.value = false;
+    game.changeLevel(level);
+  }, 500);
+}
+
+function closeSettleAndGoMap() {
+  if (isTransitioning.value) return;
+  isTransitioning.value = true;
+  settlePhase.value = 3;
+
+  window.setTimeout(() => {
+    settleResult.value = null;
+    settlePhase.value = 0;
+    isTransitioning.value = false;
+    goMap();
+  }, 500);
 }
 
 watch(

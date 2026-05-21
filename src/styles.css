@@ -206,6 +206,7 @@ button {
   grid-template-rows: auto auto auto auto;
   align-content: start;
   row-gap: 8px;
+  animation: screen-fade-in 350ms ease both;
 }
 
 .icon-button,
@@ -1495,6 +1496,172 @@ button {
   background: linear-gradient(180deg, #229d8b, #0d6866);
   font-size: 12px;
   font-weight: 900;
+}
+
+.settle-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  background: rgba(8, 18, 28, 0);
+  transition: background 500ms ease;
+  pointer-events: none;
+}
+
+.settle-overlay.phase-1,
+.settle-overlay.phase-2 {
+  background: rgba(8, 18, 28, 0.72);
+  pointer-events: auto;
+}
+
+.settle-overlay.exiting {
+  background: rgba(8, 18, 28, 0);
+  transition: background 400ms ease;
+}
+
+.settle-card {
+  width: min(88vw, 360px);
+  padding: 28px 24px 20px;
+  border-radius: 24px;
+  background: linear-gradient(165deg, #1a3f5c, #0e2438);
+  border: 3px solid rgba(229, 236, 236, 0.6);
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.55), 0 0 60px rgba(133, 195, 65, 0.12);
+  text-align: center;
+  transform: scale(0.6) translateY(40px);
+  opacity: 0;
+  transition: transform 500ms cubic-bezier(0.16, 1, 0.3, 1), opacity 400ms ease;
+}
+
+.settle-overlay.phase-1 .settle-card,
+.settle-overlay.phase-2 .settle-card {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+}
+
+.settle-overlay.exiting .settle-card {
+  transform: scale(1.05) translateY(-20px);
+  opacity: 0;
+  transition: transform 400ms cubic-bezier(0.7, 0, 0.84, 0), opacity 350ms ease;
+}
+
+.settle-header {
+  margin-bottom: 18px;
+}
+
+.settle-header h2 {
+  margin: 8px 0 4px;
+  font-size: clamp(22px, 6.5vw, 28px);
+  color: #ffe66f;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+.settle-header p {
+  margin: 0;
+  font-size: clamp(12px, 3.2vw, 14px);
+  color: rgba(255, 244, 209, 0.7);
+}
+
+.settle-header.failed h2 {
+  color: #ff8a80;
+}
+
+.settle-title-icon {
+  font-size: clamp(36px, 10vw, 48px);
+  display: block;
+  animation: settle-icon-bounce 600ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.settle-stars {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 12px 0 20px;
+}
+
+.settle-star {
+  font-size: clamp(36px, 10vw, 48px);
+  color: rgba(255, 255, 255, 0.18);
+  transition: color 400ms ease, transform 400ms cubic-bezier(0.16, 1, 0.3, 1), text-shadow 400ms ease;
+  text-shadow: none;
+  transform: scale(0.8);
+}
+
+.settle-star.lit {
+  color: #ffd740;
+  text-shadow: 0 0 16px rgba(255, 215, 64, 0.7), 0 2px 4px rgba(0, 0, 0, 0.3);
+  transform: scale(1);
+}
+
+.settle-score {
+  margin: 8px 0 20px;
+}
+
+.settle-score-label {
+  margin: 0;
+  font-size: clamp(12px, 3.2vw, 14px);
+  color: rgba(255, 244, 209, 0.6);
+}
+
+.settle-score-value {
+  font-size: clamp(32px, 9vw, 44px);
+  color: #fff4d1;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  line-height: 1.2;
+}
+
+.settle-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 4px;
+  animation: settle-actions-in 400ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.settle-btn {
+  font-size: 16px !important;
+  font-weight: 900 !important;
+  height: 44px !important;
+}
+
+.settle-btn-secondary {
+  background: transparent !important;
+  border: 2px solid rgba(255, 244, 209, 0.3) !important;
+  color: rgba(255, 244, 209, 0.7) !important;
+}
+
+@keyframes settle-icon-bounce {
+  0% {
+    transform: scale(0) rotate(-15deg);
+  }
+  50% {
+    transform: scale(1.2) rotate(5deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes settle-actions-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes screen-fade-in {
+  from {
+    opacity: 0;
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+  }
 }
 
 .goal-item {
