@@ -286,7 +286,7 @@ defineExpose({ close });
 }
 
 .stars-row img {
-  width: clamp(16px, 4.5vw, 22px);
+  width: 18px;
   height: auto;
   animation: starPop 400ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
@@ -302,7 +302,7 @@ defineExpose({ close });
 }
 
 .panel-tag {
-  font-size: clamp(9px, 2.4vw, 11px);
+  font-size: 10px;
   font-weight: 700;
 }
 
@@ -318,20 +318,20 @@ defineExpose({ close });
 }
 
 .panel-score {
-  font-size: clamp(14px, 4vw, 18px);
+  font-size: 16px;
   font-weight: 900;
   color: #1a5c2e;
   text-shadow: 0 1px 2px rgba(255, 255, 255, 0.2);
 }
 
 .panel-title {
-  font-size: clamp(9px, 2.4vw, 11px);
+  font-size: 10px;
   color: #2d6a3f;
   white-space: nowrap;
 }
 
 .panel-bonus {
-  font-size: clamp(13px, 3.6vw, 16px);
+  font-size: 14px;
   font-weight: 900;
   color: #1a5c2e;
   text-shadow: 0 1px 2px rgba(255, 255, 255, 0.2);
@@ -339,7 +339,7 @@ defineExpose({ close });
 }
 
 .panel-sub {
-  font-size: clamp(8px, 2.2vw, 10px);
+  font-size: 9px;
   color: #4a7c59;
   white-space: nowrap;
 }
@@ -367,7 +367,7 @@ defineExpose({ close });
   position: absolute;
   inset: 12% 10% 16% 14%;
   margin: 0;
-  font-size: clamp(10px, 2.6vw, 12px);
+  font-size: 11px;
   color: #5a3d1a;
   line-height: 1.4;
   display: flex;
@@ -410,11 +410,11 @@ defineExpose({ close });
 }
 
 .settle-btn.retry {
-  width: clamp(90px, 24vw, 120px);
+  width: 100px;
 }
 
 .settle-btn.next {
-  width: clamp(100px, 26vw, 130px);
+  width: 110px;
 }
 
 .settle-character {
@@ -422,7 +422,7 @@ defineExpose({ close });
   left: 0;
   bottom: 0;
   z-index: 5;
-  width: clamp(200px, 52vw, 280px);
+  width: 220px;
   pointer-events: none;
   transform: translateX(-105px) translateY(-35px);
   opacity: 0;
