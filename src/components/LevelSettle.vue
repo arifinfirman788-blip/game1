@@ -172,7 +172,7 @@ defineExpose({ close });
 
 .settle-banner {
   width: min(75%, 300px);
-  margin-top: -75px;
+  margin-top: -60px;
   transform: translateY(-12px) scale(0.88);
   opacity: 0;
   transition: transform 450ms cubic-bezier(0.16, 1, 0.3, 1), opacity 350ms ease;
@@ -192,7 +192,7 @@ defineExpose({ close });
 
 .settle-reward-frame {
   width: min(85%, 340px);
-  margin-top: -10px;
+  margin-top: -25px;
   transform: translateY(20px) scale(0.94);
   opacity: 0;
   transition: transform 400ms cubic-bezier(0.16, 1, 0.3, 1) 80ms, opacity 350ms ease 80ms;
