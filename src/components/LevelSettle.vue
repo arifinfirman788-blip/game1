@@ -8,33 +8,39 @@
       <img :src="assetManifest.settle.rewardFrame" alt="获得奖励" decoding="async" />
     </div>
 
-    <div class="settle-detail-frame" :class="{ 'frame-in': show }">
-      <img class="detail-bg" :src="assetManifest.settle.detailFrameNew" alt="结算详情" decoding="async" />
-      <div class="detail-panels">
-        <div class="detail-panel panel-stars" :class="{ 'panel-in': panelPhase >= 1 }">
-          <div class="stars-row">
-            <img
-              v-for="index in result.stars"
-              :key="index"
-              :src="starImage"
-              class="lit"
-              alt=""
-            />
+    <div class="settle-middle-row">
+      <div class="settle-character" :class="{ 'char-in': show }">
+        <img :src="assetManifest.settle.character" alt="黄小西" decoding="async" />
+      </div>
+
+      <div class="settle-detail-frame" :class="{ 'frame-in': show }">
+        <img class="detail-bg" :src="assetManifest.settle.detailFrameNew" alt="结算详情" decoding="async" />
+        <div class="detail-panels">
+          <div class="detail-panel panel-stars" :class="{ 'panel-in': panelPhase >= 1 }">
+            <div class="stars-row">
+              <img
+                v-for="index in result.stars"
+                :key="index"
+                :src="starImage"
+                class="lit"
+                alt=""
+              />
+            </div>
+            <span class="panel-tag" :class="`perfect-${result.stars}`">{{ perfectText }}</span>
+            <strong class="panel-score">{{ displayScore.toLocaleString('zh-CN') }}</strong>
           </div>
-          <span class="panel-tag" :class="`perfect-${result.stars}`">{{ perfectText }}</span>
-          <strong class="panel-score">{{ displayScore.toLocaleString('zh-CN') }}</strong>
-        </div>
 
-        <div class="detail-panel panel-combo" :class="{ 'panel-in': panelPhase >= 2 }">
-          <span class="panel-title">连击奖励</span>
-          <strong class="panel-bonus">+{{ (result.comboBonus || 0).toLocaleString('zh-CN') }}</strong>
-          <span class="panel-sub">最高连击 {{ result.maxCombo || 0 }}</span>
-        </div>
+          <div class="detail-panel panel-combo" :class="{ 'panel-in': panelPhase >= 2 }">
+            <span class="panel-title">连击奖励</span>
+            <strong class="panel-bonus">+{{ (result.comboBonus || 0).toLocaleString('zh-CN') }}</strong>
+            <span class="panel-sub">最高连击 {{ result.maxCombo || 0 }}</span>
+          </div>
 
-        <div class="detail-panel panel-moves" :class="{ 'panel-in': panelPhase >= 3 }">
-          <span class="panel-title">步数奖励</span>
-          <strong class="panel-bonus">+{{ (result.movesBonus || 0).toLocaleString('zh-CN') }}</strong>
-          <span class="panel-sub">自动消除得分</span>
+          <div class="detail-panel panel-moves" :class="{ 'panel-in': panelPhase >= 3 }">
+            <span class="panel-title">步数奖励</span>
+            <strong class="panel-bonus">+{{ (result.movesBonus || 0).toLocaleString('zh-CN') }}</strong>
+            <span class="panel-sub">自动消除得分</span>
+          </div>
         </div>
       </div>
     </div>
@@ -51,10 +57,6 @@
       <button v-if="!result.isLastLevel" class="settle-btn next" @click="$emit('next')">
         <img :src="assetManifest.settle.btnNext" alt="下一关" decoding="async" />
       </button>
-    </div>
-
-    <div class="settle-character" :class="{ 'char-in': show }">
-      <img :src="assetManifest.settle.character" alt="黄小西" decoding="async" />
     </div>
   </section>
 </template>
@@ -215,16 +217,49 @@ defineExpose({ close });
   display: block;
 }
 
+.settle-middle-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: 95%;
+  max-width: 400px;
+  margin-top: 10px;
+  gap: 5px;
+}
+
+.settle-character {
+  position: relative;
+  width: 38%;
+  flex-shrink: 0;
+  pointer-events: none;
+  transform: translateX(-20px) translateY(10px);
+  opacity: 0;
+  transition: transform 500ms cubic-bezier(0.16, 1, 0.3, 1) 350ms, opacity 400ms ease 350ms;
+}
+
+.settle-character.char-in {
+  transform: translateX(0) translateY(0);
+  opacity: 1;
+}
+
+.settle-character img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
 .settle-detail-frame {
   position: relative;
-  width: min(83%, 346px);
-  transform: translateX(0) translateY(20px) scale(0.821);
+  width: 62%;
+  flex-shrink: 0;
+  transform: translateX(20px) translateY(20px) scale(0.821);
   opacity: 0;
   transition: transform 400ms cubic-bezier(0.16, 1, 0.3, 1) 180ms, opacity 350ms ease 180ms;
 }
 
 .settle-detail-frame.frame-in {
-  transform: translateX(0) translateY(-20px) scale(0.864);
+  transform: translateX(0) translateY(0) scale(1);
   opacity: 1;
 }
 
@@ -236,11 +271,11 @@ defineExpose({ close });
 
 .detail-panels {
   position: absolute;
-  inset: 24% 10% 18%;
+  inset: 22% 8% 16%;
   display: flex;
   justify-content: space-between;
   align-items: stretch;
-  gap: 16px;
+  gap: 4px;
 }
 
 .detail-panel {
@@ -249,8 +284,8 @@ defineExpose({ close });
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
-  padding: 4px 2px;
+  gap: 1px;
+  padding: 4px 1px;
   min-width: 0;
   opacity: 0;
 }
@@ -288,7 +323,7 @@ defineExpose({ close });
 }
 
 .stars-row img {
-  width: 18px;
+  width: 14px;
   height: auto;
   animation: starPop 400ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
@@ -304,7 +339,7 @@ defineExpose({ close });
 }
 
 .panel-tag {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
 }
 
@@ -320,20 +355,20 @@ defineExpose({ close });
 }
 
 .panel-score {
-  font-size: 16px;
+  font-size: 13px;
   font-weight: 900;
   color: #1a5c2e;
   text-shadow: 0 1px 2px rgba(255, 255, 255, 0.2);
 }
 
 .panel-title {
-  font-size: 10px;
+  font-size: 9px;
   color: #2d6a3f;
   white-space: nowrap;
 }
 
 .panel-bonus {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 900;
   color: #1a5c2e;
   text-shadow: 0 1px 2px rgba(255, 255, 255, 0.2);
@@ -341,21 +376,22 @@ defineExpose({ close });
 }
 
 .panel-sub {
-  font-size: 9px;
+  font-size: 8px;
   color: #4a7c59;
   white-space: nowrap;
 }
 
 .settle-dialog {
   position: relative;
-  width: min(56%, 240px);
-  transform: translateX(0) translateY(20px) scale(0.9075);
+  width: min(70%, 280px);
+  transform: translateX(0) translateY(10px) scale(0.9075);
   opacity: 0;
   transition: transform 400ms cubic-bezier(0.16, 1, 0.3, 1) 300ms, opacity 350ms ease 300ms;
+  margin-top: 5px;
 }
 
 .settle-dialog.dialog-in {
-  transform: translateX(30px) translateY(-30px) scale(0.9075);
+  transform: translateX(0) translateY(0) scale(1);
   opacity: 1;
 }
 
@@ -420,28 +456,5 @@ defineExpose({ close });
 
 .settle-btn.next {
   width: 110px;
-}
-
-.settle-character {
-  position: absolute;
-  left: -20px;
-  bottom: 0;
-  z-index: 5;
-  width: 200px;
-  pointer-events: none;
-  transform: translateX(-50px) translateY(20px);
-  opacity: 0;
-  transition: transform 500ms cubic-bezier(0.16, 1, 0.3, 1) 350ms, opacity 400ms ease 350ms;
-}
-
-.settle-character.char-in {
-  transform: translateX(0) translateY(0);
-  opacity: 1;
-}
-
-.settle-character img {
-  width: 100%;
-  height: auto;
-  display: block;
 }
 </style>
