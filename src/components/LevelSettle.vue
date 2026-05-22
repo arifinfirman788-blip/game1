@@ -7,12 +7,18 @@
 
       <div class="settle-reward-frame" :class="{ 'frame-in': show }">
         <img :src="assetManifest.settle.rewardFrame" alt="获得奖励" decoding="async" />
-        <div class="reward-cards">
+        <div class="reward-cards" :class="{ 'has-selected': selectedCardIndex !== -1 }">
           <div
             v-for="(card, index) in displayCards"
             :key="index"
             class="reward-card"
-            :class="[card.revealed ? card.type : 'purple', { 'glow-active': glowingCard === index }]"
+            :class="[
+              card.revealed ? card.type : 'purple',
+              { 'glow-active': glowingCard === index || (selectedCardIndex === index && card.revealed) },
+              { 'fade-out': selectedCardIndex !== -1 && selectedCardIndex !== index },
+              { 'move-center': selectedCardIndex === index }
+            ]"
+            :style="selectedCardIndex === index ? getCenterOffset(index) : {}"
             @click="handleCardClick(index)"
           >
             <img :src="card.revealed ? card.image : assetManifest.cards.purple" :alt="card.label" decoding="async" />
@@ -95,6 +101,7 @@ const exiting = ref(false);
 const showButtons = ref(false);
 const panelPhase = ref(0);
 const glowingCard = ref(-1);
+const selectedCardIndex = ref(-1);
 
 const starImage = assetManifest.settle.star1;
 
@@ -133,13 +140,18 @@ function handleRetry() {
 }
 
 function handleCardClick(index) {
-  if (displayCards.value[index].revealed) return;
+  if (displayCards.value[index].revealed || selectedCardIndex.value !== -1) return;
   const randomCard = cardPool[Math.floor(Math.random() * cardPool.length)];
   displayCards.value[index] = { ...randomCard, revealed: true };
   glowingCard.value = index;
-  setTimeout(() => {
-    glowingCard.value = -1;
-  }, 600);
+  selectedCardIndex.value = index;
+}
+
+function getCenterOffset(index) {
+  const cardWidth = 80;
+  const gap = 8;
+  const centerOffset = (1 - index) * (cardWidth + gap);
+  return { '--center-offset': `${centerOffset}px` };
 }
 
 let panelTimers = [];
@@ -294,18 +306,35 @@ defineExpose({ close });
 }
 
 .reward-card.blue.glow-active img {
-  filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.9)) drop-shadow(0 0 16px rgba(59, 130, 246, 0.6));
-  animation: cardGlowBlue 600ms ease-out;
+  filter: drop-shadow(0 0 12px rgba(59, 130, 246, 1)) drop-shadow(0 0 24px rgba(59, 130, 246, 0.8)) drop-shadow(0 0 36px rgba(59, 130, 246, 0.6));
+  animation: cardGlowBlue 600ms ease-out forwards;
 }
 
 .reward-card.purple.glow-active img {
-  filter: drop-shadow(0 0 8px rgba(147, 51, 234, 0.9)) drop-shadow(0 0 16px rgba(147, 51, 234, 0.6));
-  animation: cardGlowPurple 600ms ease-out;
+  filter: drop-shadow(0 0 12px rgba(147, 51, 234, 1)) drop-shadow(0 0 24px rgba(147, 51, 234, 0.8)) drop-shadow(0 0 36px rgba(147, 51, 234, 0.6));
+  animation: cardGlowPurple 600ms ease-out forwards;
 }
 
 .reward-card.gold.glow-active img {
-  filter: drop-shadow(0 0 8px rgba(234, 179, 8, 0.9)) drop-shadow(0 0 16px rgba(234, 179, 8, 0.6));
-  animation: cardGlowGold 600ms ease-out;
+  filter: drop-shadow(0 0 12px rgba(234, 179, 8, 1)) drop-shadow(0 0 24px rgba(234, 179, 8, 0.8)) drop-shadow(0 0 36px rgba(234, 179, 8, 0.6));
+  animation: cardGlowGold 600ms ease-out forwards;
+}
+
+.reward-card.fade-out {
+  opacity: 0;
+  transform: scale(0.8);
+  pointer-events: none;
+  transition: opacity 400ms ease, transform 400ms ease;
+}
+
+.reward-card.move-center {
+  position: relative;
+  z-index: 10;
+  transition: transform 500ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reward-cards.has-selected .reward-card.move-center {
+  transform: translateX(var(--center-offset, 0));
 }
 
 @keyframes cardGlowBlue {
