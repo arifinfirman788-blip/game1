@@ -59,6 +59,18 @@ export const assetManifest = {
     star2: asset("/assets/settle/star-2.png"),
     star3: asset("/assets/settle/star-3.png"),
   },
+  cards: {
+    blue: asset("/image/蓝色卡片副本.png"),
+    purple: asset("/image/紫色卡片.png"),
+    gold: asset("/image/金色卡片.png"),
+  },
+  failSettle: {
+    title: asset("/image/挑战失败副本.png"),
+    dialog: asset("/image/失败对话框副本.png"),
+    character: asset("/image/失败人物图副本.png"),
+    btnRetry: asset("/image/重新挑战副本.png"),
+    btnHome: asset("/image/返回主界面副本.png"),
+  },
   map: {
     background: asset("/assets/map/mobile/level-map-bg-mobile.jpg"),
     route: asset("/assets/map/route-unlocked.webp"),

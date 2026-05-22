@@ -7,6 +7,17 @@
 
       <div class="settle-reward-frame" :class="{ 'frame-in': show }">
         <img :src="assetManifest.settle.rewardFrame" alt="获得奖励" decoding="async" />
+        <div class="reward-cards">
+          <div
+            v-for="(card, index) in displayCards"
+            :key="index"
+            class="reward-card"
+            :class="[card.revealed ? card.type : 'purple', { 'glow-active': glowingCard === index }]"
+            @click="handleCardClick(index)"
+          >
+            <img :src="card.revealed ? card.image : assetManifest.cards.purple" :alt="card.label" decoding="async" />
+          </div>
+        </div>
       </div>
 
       <div class="settle-detail-frame" :class="{ 'frame-in': show }">
@@ -83,8 +94,28 @@ const show = ref(false);
 const exiting = ref(false);
 const showButtons = ref(false);
 const panelPhase = ref(0);
+const glowingCard = ref(-1);
 
 const starImage = assetManifest.settle.star1;
+
+const cardPool = [
+  { type: 'blue', label: '蓝色卡片', image: assetManifest.cards.blue },
+  { type: 'purple', label: '紫色卡片', image: assetManifest.cards.purple },
+  { type: 'gold', label: '金色卡片', image: assetManifest.cards.gold },
+];
+
+const displayCards = ref([
+  { ...cardPool[1], revealed: false },
+  { ...cardPool[1], revealed: false },
+  { ...cardPool[1], revealed: false },
+]);
+
+function shuffleCards() {
+  displayCards.value = displayCards.value.map(() => {
+    const randomCard = cardPool[Math.floor(Math.random() * cardPool.length)];
+    return { ...randomCard, revealed: false };
+  });
+}
 
 const perfectText = computed(() => {
   const texts = ['再接再厉', '表现不错', '完美通关'];
@@ -99,6 +130,16 @@ function handleNext() {
 function handleRetry() {
   exiting.value = true;
   emit('retry');
+}
+
+function handleCardClick(index) {
+  if (displayCards.value[index].revealed) return;
+  const randomCard = cardPool[Math.floor(Math.random() * cardPool.length)];
+  displayCards.value[index] = { ...randomCard, revealed: true };
+  glowingCard.value = index;
+  setTimeout(() => {
+    glowingCard.value = -1;
+  }, 600);
 }
 
 let panelTimers = [];
@@ -201,6 +242,7 @@ defineExpose({ close });
 }
 
 .settle-reward-frame {
+  position: relative;
   width: min(85%, 340px);
   margin-top: -25px;
   transform: translateY(20px) scale(0.94);
@@ -214,10 +256,74 @@ defineExpose({ close });
   opacity: 1;
 }
 
-.settle-reward-frame img {
+.settle-reward-frame > img {
   width: 100%;
   height: auto;
   display: block;
+}
+
+.reward-cards {
+  position: absolute;
+  inset: 18% 12% 22%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  z-index: 5;
+  transform: translateY(40px);
+}
+
+.reward-card {
+  flex: 1;
+  max-width: 80px;
+  cursor: pointer;
+  transition: transform 200ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.reward-card:active {
+  transform: scale(0.92);
+}
+
+.reward-card img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 6px;
+  transition: filter 300ms ease, box-shadow 300ms ease;
+}
+
+.reward-card.blue.glow-active img {
+  filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.9)) drop-shadow(0 0 16px rgba(59, 130, 246, 0.6));
+  animation: cardGlowBlue 600ms ease-out;
+}
+
+.reward-card.purple.glow-active img {
+  filter: drop-shadow(0 0 8px rgba(147, 51, 234, 0.9)) drop-shadow(0 0 16px rgba(147, 51, 234, 0.6));
+  animation: cardGlowPurple 600ms ease-out;
+}
+
+.reward-card.gold.glow-active img {
+  filter: drop-shadow(0 0 8px rgba(234, 179, 8, 0.9)) drop-shadow(0 0 16px rgba(234, 179, 8, 0.6));
+  animation: cardGlowGold 600ms ease-out;
+}
+
+@keyframes cardGlowBlue {
+  0% { filter: drop-shadow(0 0 4px rgba(59, 130, 246, 0.5)); transform: scale(1); }
+  40% { filter: drop-shadow(0 0 20px rgba(59, 130, 246, 1)) drop-shadow(0 0 40px rgba(59, 130, 246, 0.8)); transform: scale(1.08); }
+  100% { filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.9)) drop-shadow(0 0 16px rgba(59, 130, 246, 0.6)); transform: scale(1); }
+}
+
+@keyframes cardGlowPurple {
+  0% { filter: drop-shadow(0 0 4px rgba(147, 51, 234, 0.5)); transform: scale(1); }
+  40% { filter: drop-shadow(0 0 20px rgba(147, 51, 234, 1)) drop-shadow(0 0 40px rgba(147, 51, 234, 0.8)); transform: scale(1.08); }
+  100% { filter: drop-shadow(0 0 8px rgba(147, 51, 234, 0.9)) drop-shadow(0 0 16px rgba(147, 51, 234, 0.6)); transform: scale(1); }
+}
+
+@keyframes cardGlowGold {
+  0% { filter: drop-shadow(0 0 4px rgba(234, 179, 8, 0.5)); transform: scale(1); }
+  40% { filter: drop-shadow(0 0 20px rgba(234, 179, 8, 1)) drop-shadow(0 0 40px rgba(234, 179, 8, 0.8)); transform: scale(1.08); }
+  100% { filter: drop-shadow(0 0 8px rgba(234, 179, 8, 0.9)) drop-shadow(0 0 16px rgba(234, 179, 8, 0.6)); transform: scale(1); }
 }
 
 .settle-character {
