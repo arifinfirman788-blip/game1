@@ -4,10 +4,10 @@
 // TODO: 后端API接入后，替换为真实数据接口
 
 // 引入本地图片，确保Vite能正确打包并处理路径
-const blueCardUrl = new URL('../../image/蓝色卡片副本.png', import.meta.url).href;
-const purpleCardUrl = new URL('../../image/紫色卡片.png', import.meta.url).href;
-const goldCardUrl = new URL('../../image/金色卡片.png', import.meta.url).href;
-const redCardUrl = new URL('../../image/金色卡片.png', import.meta.url).href; // 暂用金色卡片代替，如果有红色卡片请修改此路径
+import blueCardUrl from '../../image/蓝色卡片副本.png';
+import purpleCardUrl from '../../image/紫色卡片.png';
+import goldCardUrl from '../../image/金色卡片.png';
+import redCardUrl from '../../image/金色卡片.png'; // 暂用金色卡片代替，如果有红色卡片请修改此路径
 
 // 卡牌等级配置
 export const CARD_LEVELS = {
@@ -239,5 +239,17 @@ export async function mockGetUserCards() {
   await new Promise(resolve => setTimeout(resolve, 200));
   // 从localStorage读取
   const stored = localStorage.getItem('guizhou-card-inventory');
-  return stored ? JSON.parse(stored) : [];
+  if (stored) {
+    let cards = JSON.parse(stored);
+    // 兼容处理：修正缓存中带有旧的 /image/ 绝对路径的情况，使用最新的资源引用
+    cards = cards.map(card => {
+      const template = CARD_IMAGE_POOL.find(img => img.id === card.imageId);
+      if (template) {
+        card.imageUrl = template.url;
+      }
+      return card;
+    });
+    return cards;
+  }
+  return [];
 }

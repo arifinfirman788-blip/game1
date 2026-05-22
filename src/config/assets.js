@@ -1,3 +1,12 @@
+import cardBlueImg from '../../image/蓝色卡片副本.png';
+import cardPurpleImg from '../../image/紫色卡片.png';
+import cardGoldImg from '../../image/金色卡片.png';
+import failTitleImg from '../../image/挑战失败副本.png';
+import failDialogImg from '../../image/失败对话框副本.png';
+import failCharacterImg from '../../image/失败人物图副本.png';
+import failBtnRetryImg from '../../image/重新挑战副本.png';
+import failBtnHomeImg from '../../image/返回主界面副本.png';
+
 const asset = (path) => `${import.meta.env.BASE_URL}${path.replace(/^\//, "")}`;
 
 export const assetManifest = {
@@ -60,16 +69,16 @@ export const assetManifest = {
     star3: asset("/assets/settle/star-3.png"),
   },
   cards: {
-    blue: new URL('../../image/蓝色卡片副本.png', import.meta.url).href,
-    purple: new URL('../../image/紫色卡片.png', import.meta.url).href,
-    gold: new URL('../../image/金色卡片.png', import.meta.url).href,
+    blue: cardBlueImg,
+    purple: cardPurpleImg,
+    gold: cardGoldImg,
   },
   failSettle: {
-    title: asset("/image/挑战失败副本.png"),
-    dialog: asset("/image/失败对话框副本.png"),
-    character: asset("/image/失败人物图副本.png"),
-    btnRetry: asset("/image/重新挑战副本.png"),
-    btnHome: asset("/image/返回主界面副本.png"),
+    title: failTitleImg,
+    dialog: failDialogImg,
+    character: failCharacterImg,
+    btnRetry: failBtnRetryImg,
+    btnHome: failBtnHomeImg,
   },
   map: {
     background: asset("/assets/map/mobile/level-map-bg-mobile.jpg"),
