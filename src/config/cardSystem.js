@@ -3,6 +3,12 @@
 // ============================================
 // TODO: 后端API接入后，替换为真实数据接口
 
+// 引入本地图片，确保Vite能正确打包并处理路径
+const blueCardUrl = new URL('../../image/蓝色卡片副本.png', import.meta.url).href;
+const purpleCardUrl = new URL('../../image/紫色卡片.png', import.meta.url).href;
+const goldCardUrl = new URL('../../image/金色卡片.png', import.meta.url).href;
+const redCardUrl = new URL('../../image/金色卡片.png', import.meta.url).href; // 暂用金色卡片代替，如果有红色卡片请修改此路径
+
 // 卡牌等级配置
 export const CARD_LEVELS = {
   blue: {
@@ -44,7 +50,7 @@ export const CARD_LEVELS = {
 export const CARD_IMAGE_POOL = [
   {
     id: 'img_001',
-    url: '/image/蓝色卡片副本.png',
+    url: blueCardUrl,
     name: '黄果树瀑布',
     description: '亚洲第一大瀑布，气势磅礴',
     level: 'blue',
@@ -52,7 +58,7 @@ export const CARD_IMAGE_POOL = [
   },
   {
     id: 'img_002',
-    url: '/image/蓝色卡片副本.png',
+    url: blueCardUrl,
     name: '荔波小七孔',
     description: '地球腰带上的绿宝石',
     level: 'blue',
@@ -60,7 +66,7 @@ export const CARD_IMAGE_POOL = [
   },
   {
     id: 'img_003',
-    url: '/image/紫色卡片.png',
+    url: purpleCardUrl,
     name: '西江千户苗寨',
     description: '世界上最大的苗族聚居村寨',
     level: 'purple',
@@ -68,7 +74,7 @@ export const CARD_IMAGE_POOL = [
   },
   {
     id: 'img_004',
-    url: '/image/紫色卡片.png',
+    url: purpleCardUrl,
     name: '镇远古镇',
     description: '滇楚锁钥，黔东门户',
     level: 'purple',
@@ -76,7 +82,7 @@ export const CARD_IMAGE_POOL = [
   },
   {
     id: 'img_005',
-    url: '/image/金色卡片.png',
+    url: goldCardUrl,
     name: '梵净山',
     description: '梵天净土，弥勒道场',
     level: 'gold',
@@ -84,10 +90,18 @@ export const CARD_IMAGE_POOL = [
   },
   {
     id: 'img_006',
-    url: '/image/金色卡片.png',
+    url: goldCardUrl,
     name: '赤水丹霞',
     description: '世界自然遗产，千瀑之城',
     level: 'gold',
+    location: '遵义市',
+  },
+  {
+    id: 'img_007',
+    url: redCardUrl,
+    name: '遵义会议会址',
+    description: '历史转折点',
+    level: 'red',
     location: '遵义市',
   },
 ];
@@ -143,7 +157,7 @@ export const REWARD_POOL = [
 ];
 
 // 卡牌背面模板
-export const CARD_BACK_TEMPLATE = '/image/紫色卡片.png';
+export const CARD_BACK_TEMPLATE = purpleCardUrl;
 
 // ============================================
 // Mock API 接口（预留后端接入点）

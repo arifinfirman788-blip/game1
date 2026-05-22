@@ -60,9 +60,9 @@ export const assetManifest = {
     star3: asset("/assets/settle/star-3.png"),
   },
   cards: {
-    blue: asset("/image/蓝色卡片副本.png"),
-    purple: asset("/image/紫色卡片.png"),
-    gold: asset("/image/金色卡片.png"),
+    blue: new URL('../../image/蓝色卡片副本.png', import.meta.url).href,
+    purple: new URL('../../image/紫色卡片.png', import.meta.url).href,
+    gold: new URL('../../image/金色卡片.png', import.meta.url).href,
   },
   failSettle: {
     title: asset("/image/挑战失败副本.png"),
