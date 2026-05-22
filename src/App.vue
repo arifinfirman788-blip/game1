@@ -165,12 +165,8 @@
 
           <footer class="map-footer">
             <img class="map-footer-bg" :src="assetManifest.map.bottomBar" alt="" decoding="async" />
-            <button type="button" class="map-footer-action reward" aria-label="奖励" @click="openGift">
+            <button type="button" class="map-footer-action reward" aria-label="我的卡牌" @click="showCardInventory = true">
               <img :src="assetManifest.map.buttons.reward" alt="" decoding="async" />
-            </button>
-            <button type="button" class="map-footer-action cards" aria-label="我的卡牌" @click="showCardInventory = true">
-              <span class="cards-icon">🎴</span>
-              <span class="cards-label">卡牌</span>
             </button>
             <button type="button" class="map-footer-action rules" aria-label="玩法说明" @click="openMapInfo">
               <img :src="assetManifest.map.buttons.footerRules" alt="" decoding="async" />
