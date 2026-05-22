@@ -1,6 +1,6 @@
 const asset = (path) => `${import.meta.env.BASE_URL}${path.replace(/^\//, "")}`;
 
-// --
+// -
 export const assetManifest = {
   pieces: {
     chili: asset("/assets/detail/pieces/chili.png"),
