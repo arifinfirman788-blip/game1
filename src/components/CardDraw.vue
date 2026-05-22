@@ -7,10 +7,13 @@
           v-for="index in 3"
           :key="index"
           class="draw-card back"
-          :class="{
-            'glow': isGlowing && glowingIndex === index - 1,
-            'flip': isFlipping && flippingIndex === index - 1
-          }"
+          :class="[
+            {
+              'glow': isGlowing && glowingIndex === index - 1,
+              'flip': isFlipping && flippingIndex === index - 1
+            },
+            (isGlowing || isFlipping) && (glowingIndex === index - 1 || flippingIndex === index - 1) && predictedLevel ? `glow-${predictedLevel}` : ''
+          ]"
           @click="handleDraw(index - 1)"
         >
           <img :src="cardBackImage" alt="卡牌背面" decoding="async" />
@@ -57,11 +60,17 @@ const glowingIndex = ref(-1);
 const isFlipping = ref(false);
 const flippingIndex = ref(-1);
 const drawnCard = ref(null);
+const predictedLevel = ref(null); // 预测即将抽到的卡牌等级，用于发光颜色对应
 
 async function handleDraw(index) {
   if (isGlowing.value || isFlipping.value || drawnCard.value) return;
 
-  // 第一阶段：发光
+  // 第一阶段：发光前先获取抽卡结果，以知晓颜色
+  const card = await drawCard();
+  if (card) {
+    predictedLevel.value = card.level;
+  }
+
   isGlowing.value = true;
   glowingIndex.value = index;
 
@@ -72,9 +81,6 @@ async function handleDraw(index) {
   isFlipping.value = true;
   flippingIndex.value = index;
 
-  // 调用抽卡逻辑
-  const card = await drawCard();
-
   await new Promise(resolve => setTimeout(resolve, 400));
 
   if (card) {
@@ -83,6 +89,7 @@ async function handleDraw(index) {
 
   isFlipping.value = false;
   flippingIndex.value = -1;
+  predictedLevel.value = null;
 }
 </script>
 
@@ -130,26 +137,46 @@ async function handleDraw(index) {
   animation-delay: 0.6s;
 }
 
-/* 发光效果 */
+/* 发光效果 - 默认及各等级光晕 */
 .draw-card.back.glow {
   animation: cardGlow 600ms ease-out forwards;
 }
 
-.draw-card.back.glow img {
-  filter: drop-shadow(0 0 12px rgba(255, 215, 0, 0.9))
-          drop-shadow(0 0 24px rgba(255, 215, 0, 0.7))
-          drop-shadow(0 0 36px rgba(255, 215, 0, 0.5));
+/* 蓝卡 (普通) */
+.draw-card.back.glow.glow-blue img,
+.draw-card.back.flip.glow-blue img {
+  filter: drop-shadow(0 0 12px rgba(59, 130, 246, 0.9))
+          drop-shadow(0 0 24px rgba(59, 130, 246, 0.7))
+          drop-shadow(0 0 36px rgba(59, 130, 246, 0.5));
+}
+
+/* 紫卡 (稀有) */
+.draw-card.back.glow.glow-purple img,
+.draw-card.back.flip.glow-purple img {
+  filter: drop-shadow(0 0 12px rgba(147, 51, 234, 0.9))
+          drop-shadow(0 0 24px rgba(147, 51, 234, 0.7))
+          drop-shadow(0 0 36px rgba(147, 51, 234, 0.5));
+}
+
+/* 金卡 (史诗) */
+.draw-card.back.glow.glow-gold img,
+.draw-card.back.flip.glow-gold img {
+  filter: drop-shadow(0 0 12px rgba(234, 179, 8, 0.9))
+          drop-shadow(0 0 24px rgba(234, 179, 8, 0.7))
+          drop-shadow(0 0 36px rgba(234, 179, 8, 0.5));
+}
+
+/* 红卡 (传说) */
+.draw-card.back.glow.glow-red img,
+.draw-card.back.flip.glow-red img {
+  filter: drop-shadow(0 0 12px rgba(239, 68, 68, 0.9))
+          drop-shadow(0 0 24px rgba(239, 68, 68, 0.7))
+          drop-shadow(0 0 36px rgba(239, 68, 68, 0.5));
 }
 
 /* 翻转效果 */
 .draw-card.back.flip {
   animation: cardFlip 400ms ease-out forwards;
-}
-
-.draw-card.back.flip img {
-  filter: drop-shadow(0 0 12px rgba(255, 215, 0, 0.9))
-          drop-shadow(0 0 24px rgba(255, 215, 0, 0.7))
-          drop-shadow(0 0 36px rgba(255, 215, 0, 0.5));
 }
 
 .draw-card.back:active {

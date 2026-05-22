@@ -4,6 +4,8 @@ import {
   mockRedeemCard,
   mockGetUserCards,
   CARD_LEVELS,
+  CARD_TYPES,
+  CARD_IMAGE_POOL
 } from '../config/cardSystem';
 
 const STORAGE_KEY = 'guizhou-card-inventory';
@@ -13,6 +15,15 @@ export function useCardSystem() {
     cards: [],
     isLoading: false,
     error: null,
+  });
+
+  // 动态计算所有存在的地区
+  const availableLocations = computed(() => {
+    const locations = new Set();
+    CARD_IMAGE_POOL.forEach(img => {
+      if (img.location) locations.add(img.location);
+    });
+    return Array.from(locations).sort();
   });
 
   // 按等级分组的卡牌
@@ -133,5 +144,7 @@ export function useCardSystem() {
     drawCard,
     redeemCard,
     CARD_LEVELS,
+    CARD_TYPES,
+    availableLocations
   };
 }

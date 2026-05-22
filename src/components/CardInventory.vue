@@ -8,18 +8,37 @@
       <span class="card-count">共 {{ totalCards }} 张</span>
     </header>
 
-    <!-- 等级筛选标签 -->
-    <div class="level-tabs">
+    <!-- 筛选大类标签 -->
+    <div class="filter-categories">
+      <button 
+        class="category-btn" 
+        :class="{ active: filterCategory === 'level' }"
+        @click="filterCategory = 'level'"
+      >按等级</button>
+      <button 
+        class="category-btn" 
+        :class="{ active: filterCategory === 'type' }"
+        @click="filterCategory = 'type'"
+      >按类型</button>
+      <button 
+        class="category-btn" 
+        :class="{ active: filterCategory === 'location' }"
+        @click="filterCategory = 'location'"
+      >按地区</button>
+    </div>
+
+    <!-- 二级筛选标签 -->
+    <div class="filter-tabs">
       <button
-        v-for="level in levelList"
-        :key="level.id"
+        v-for="tab in currentTabs"
+        :key="tab.id"
         class="tab-btn"
-        :class="{ active: activeLevel === level.id }"
-        @click="activeLevel = level.id"
+        :class="{ active: activeFilter === tab.id }"
+        @click="activeFilter = tab.id"
       >
-        <span class="tab-dot" :style="{ background: level.color }"></span>
-        {{ level.name }}
-        <span class="tab-count">({{ levelCounts[level.id] || 0 }})</span>
+        <span v-if="tab.color" class="tab-dot" :style="{ background: tab.color }"></span>
+        {{ tab.name }}
+        <span class="tab-count">({{ tab.count || 0 }})</span>
       </button>
     </div>
 
@@ -46,15 +65,15 @@
     <!-- 空状态 -->
     <div v-if="filteredCards.length === 0" class="empty-state">
       <span class="empty-icon">🎴</span>
-      <p>还没有{{ activeLevelName }}卡牌</p>
+      <p>还没有符合条件的卡牌</p>
       <p class="empty-hint">通关关卡即可获得卡牌</p>
     </div>
   </section>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
-import { CARD_LEVELS } from '../config/cardSystem';
+import { ref, computed, watch } from 'vue';
+import { CARD_LEVELS, CARD_TYPES } from '../config/cardSystem';
 import { useCardSystem } from '../composables/useCardSystem';
 
 const emit = defineEmits(['back', 'select-card']);
@@ -63,27 +82,86 @@ const props = defineProps({
   show: Boolean,
 });
 
-const { state, levelCounts } = useCardSystem();
+const { state, availableLocations } = useCardSystem();
 
-const activeLevel = ref('all');
+// 筛选大类：'level' | 'type' | 'location'
+const filterCategory = ref('level');
+// 二级筛选值
+const activeFilter = ref('all');
 
-const levelList = [
-  { id: 'all', name: '全部', color: '#999' },
-  ...Object.values(CARD_LEVELS),
-];
+// 当切换大类时，重置二级筛选为全部
+watch(filterCategory, () => {
+  activeFilter.value = 'all';
+});
 
-const activeLevelName = computed(() => {
-  const level = levelList.find(l => l.id === activeLevel.value);
-  return level ? level.name : '';
+// 计算各类别的数量统计
+const counts = computed(() => {
+  const result = { level: {}, type: {}, location: {} };
+  state.cards.forEach(card => {
+    // 统计等级
+    result.level[card.level] = (result.level[card.level] || 0) + 1;
+    // 统计类型
+    if (card.type) result.type[card.type] = (result.type[card.type] || 0) + 1;
+    // 统计地区
+    if (card.location) result.location[card.location] = (result.location[card.location] || 0) + 1;
+  });
+  return result;
+});
+
+// 动态生成二级标签
+const currentTabs = computed(() => {
+  const allTab = { id: 'all', name: '全部', count: state.cards.length };
+  
+  if (filterCategory.value === 'level') {
+    return [
+      allTab,
+      ...Object.values(CARD_LEVELS).map(l => ({
+        id: l.id,
+        name: l.name,
+        color: l.color,
+        count: counts.value.level[l.id] || 0
+      }))
+    ];
+  }
+  
+  if (filterCategory.value === 'type') {
+    return [
+      allTab,
+      ...Object.values(CARD_TYPES).map(t => ({
+        id: t.id,
+        name: t.name,
+        count: counts.value.type[t.id] || 0
+      }))
+    ];
+  }
+  
+  if (filterCategory.value === 'location') {
+    return [
+      allTab,
+      ...availableLocations.value.map(loc => ({
+        id: loc,
+        name: loc,
+        count: counts.value.location[loc] || 0
+      }))
+    ];
+  }
+  
+  return [allTab];
 });
 
 const totalCards = computed(() => state.cards.length);
 
 const filteredCards = computed(() => {
-  if (activeLevel.value === 'all') {
+  if (activeFilter.value === 'all') {
     return state.cards;
   }
-  return state.cards.filter(card => card.level === activeLevel.value);
+  
+  return state.cards.filter(card => {
+    if (filterCategory.value === 'level') return card.level === activeFilter.value;
+    if (filterCategory.value === 'type') return card.type === activeFilter.value;
+    if (filterCategory.value === 'location') return card.location === activeFilter.value;
+    return true;
+  });
 });
 
 function handleBack() {
@@ -147,10 +225,47 @@ function handleCardClick(card) {
   color: #8b7355;
 }
 
-.level-tabs {
+/* 筛选大类标签样式 */
+.filter-categories {
+  display: flex;
+  gap: 12px;
+  padding: 12px 16px 4px;
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.category-btn {
+  background: transparent;
+  border: none;
+  font-size: 14px;
+  color: #8b7355;
+  padding: 4px 0;
+  position: relative;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.category-btn.active {
+  color: #5a3d1a;
+  font-weight: 700;
+}
+
+.category-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 16px;
+  height: 3px;
+  background: #c4a574;
+  border-radius: 2px;
+}
+
+/* 二级筛选标签样式 */
+.filter-tabs {
   display: flex;
   gap: 8px;
-  padding: 12px 16px;
+  padding: 8px 16px 12px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
@@ -190,52 +305,65 @@ function handleCardClick(card) {
 .cards-grid {
   flex: 1;
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  /* 调整为更紧凑的手机端三列/两列混合布局，或者保留 2 列但调整高度比例 */
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: 12px;
-  padding: 16px;
+  padding: 12px 16px;
   overflow-y: auto;
 }
 
 .inventory-card {
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   cursor: pointer;
   transition: transform 200ms ease, box-shadow 200ms ease;
+  display: flex;
+  flex-direction: column;
 }
 
 .inventory-card:active {
-  transform: scale(0.97);
+  transform: scale(0.96);
 }
 
 .inventory-card.blue {
-  border: 2px solid rgba(59, 130, 246, 0.3);
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
 }
 
 .inventory-card.purple {
-  border: 2px solid rgba(147, 51, 234, 0.3);
+  border: 1px solid rgba(147, 51, 234, 0.4);
+  box-shadow: 0 2px 8px rgba(147, 51, 234, 0.15);
 }
 
 .inventory-card.gold {
-  border: 2px solid rgba(234, 179, 8, 0.4);
+  border: 1px solid rgba(234, 179, 8, 0.5);
+  box-shadow: 0 2px 8px rgba(234, 179, 8, 0.2);
 }
 
 .inventory-card.red {
-  border: 2px solid rgba(239, 68, 68, 0.4);
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
 }
 
 .inventory-card.redeemed {
-  opacity: 0.6;
+  opacity: 0.7;
+  filter: grayscale(0.5);
 }
 
 .card-image {
   position: relative;
-  aspect-ratio: 3/4;
+  width: 100%;
+  padding-top: 135%; /* 强制固定比例以模拟实体卡牌 */
   overflow: hidden;
+  background-color: #eee;
 }
 
 .card-image img {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;

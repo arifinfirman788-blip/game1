@@ -55,6 +55,7 @@ export const CARD_IMAGE_POOL = [
     description: '亚洲第一大瀑布，气势磅礴',
     level: 'blue',
     location: '安顺市',
+    type: 'scenic',
   },
   {
     id: 'img_002',
@@ -63,6 +64,7 @@ export const CARD_IMAGE_POOL = [
     description: '地球腰带上的绿宝石',
     level: 'blue',
     location: '黔南州',
+    type: 'scenic',
   },
   {
     id: 'img_003',
@@ -71,6 +73,7 @@ export const CARD_IMAGE_POOL = [
     description: '世界上最大的苗族聚居村寨',
     level: 'purple',
     location: '黔东南州',
+    type: 'culture',
   },
   {
     id: 'img_004',
@@ -79,6 +82,7 @@ export const CARD_IMAGE_POOL = [
     description: '滇楚锁钥，黔东门户',
     level: 'purple',
     location: '黔东南州',
+    type: 'culture',
   },
   {
     id: 'img_005',
@@ -87,6 +91,7 @@ export const CARD_IMAGE_POOL = [
     description: '梵天净土，弥勒道场',
     level: 'gold',
     location: '铜仁市',
+    type: 'scenic',
   },
   {
     id: 'img_006',
@@ -95,6 +100,7 @@ export const CARD_IMAGE_POOL = [
     description: '世界自然遗产，千瀑之城',
     level: 'gold',
     location: '遵义市',
+    type: 'scenic',
   },
   {
     id: 'img_007',
@@ -103,8 +109,34 @@ export const CARD_IMAGE_POOL = [
     description: '历史转折点',
     level: 'red',
     location: '遵义市',
+    type: 'culture',
   },
+  {
+    id: 'img_008',
+    url: blueCardUrl,
+    name: '凯里酸汤鱼',
+    description: '一口鲜酸开胃，像瀑布水汽一样爽快',
+    level: 'blue',
+    location: '黔东南州',
+    type: 'food',
+  },
+  {
+    id: 'img_009',
+    url: purpleCardUrl,
+    name: '遵义羊肉粉',
+    description: '热汤滚香，米粉柔滑，赶路也要吃得踏实',
+    level: 'purple',
+    location: '遵义市',
+    type: 'food',
+  }
 ];
+
+// 卡牌分类配置
+export const CARD_TYPES = {
+  scenic: { id: 'scenic', name: '景区' },
+  culture: { id: 'culture', name: '文化' },
+  food: { id: 'food', name: '美食' },
+};
 
 // 权益池（Mock数据）
 // TODO: 接入后端后，通过 API GET /api/card/reward-pool 获取
@@ -201,6 +233,7 @@ export async function mockDrawCard() {
     imageUrl: image.url,
     level: level,
     location: image.location,
+    type: image.type,
     reward: {
       id: reward.id,
       name: reward.name,
