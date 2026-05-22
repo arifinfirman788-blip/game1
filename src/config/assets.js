@@ -1,11 +1,6 @@
 import cardBlueImg from '../../image/card-blue.png';
 import cardPurpleImg from '../../image/card-purple.png';
 import cardGoldImg from '../../image/card-gold.png';
-import failTitleImg from '../../image/fail-title.png';
-import failDialogImg from '../../image/fail-dialog.png';
-import failCharacterImg from '../../image/fail-character.png';
-import failBtnRetryImg from '../../image/fail-retry.png';
-import failBtnHomeImg from '../../image/fail-home.png';
 
 const asset = (path) => `${import.meta.env.BASE_URL}${path.replace(/^\//, "")}`;
 
@@ -74,11 +69,11 @@ export const assetManifest = {
     gold: cardGoldImg,
   },
   failSettle: {
-    title: failTitleImg,
-    dialog: failDialogImg,
-    character: failCharacterImg,
-    btnRetry: failBtnRetryImg,
-    btnHome: failBtnHomeImg,
+    title: asset("/image/挑战失败副本.png"),
+    dialog: asset("/image/失败对话框副本.png"),
+    character: asset("/image/失败人物图副本.png"),
+    btnRetry: asset("/image/重新挑战副本.png"),
+    btnHome: asset("/image/返回主界面副本.png"),
   },
   map: {
     background: asset("/assets/map/mobile/level-map-bg-mobile.jpg"),
