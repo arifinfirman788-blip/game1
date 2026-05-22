@@ -49,7 +49,7 @@
         </van-grid>
       </section>
 
-      <section v-else-if="screen === 'map'" class="map-screen" :style="mapSceneStyle">
+      <section v-if="screen === 'map'" class="map-screen" :style="mapSceneStyle">
         <section class="chapter-panel">
           <img class="chapter-panel-bg" :src="assetManifest.map.titleFrame" alt="" decoding="async" fetchpriority="high" />
           <button type="button" class="map-icon-btn back" aria-label="返回首页" @click="goHome">
@@ -168,6 +168,10 @@
             <button type="button" class="map-footer-action reward" aria-label="奖励" @click="openGift">
               <img :src="assetManifest.map.buttons.reward" alt="" decoding="async" />
             </button>
+            <button type="button" class="map-footer-action cards" aria-label="我的卡牌" @click="showCardInventory = true">
+              <span class="cards-icon">🎴</span>
+              <span class="cards-label">卡牌</span>
+            </button>
             <button type="button" class="map-footer-action rules" aria-label="玩法说明" @click="openMapInfo">
               <img :src="assetManifest.map.buttons.footerRules" alt="" decoding="async" />
             </button>
@@ -256,6 +260,7 @@
             :display-score="settleDisplayScore"
             @next="closeSettleAndNext"
             @retry="closeSettleAndRetry"
+            @view-card="handleSettleViewCard"
           />
         </template>
 
@@ -381,22 +386,41 @@
         </aside>
       </section>
     </section>
+
+    <!-- 卡牌背包 -->
+    <CardInventory
+      :show="showCardInventory"
+      @back="showCardInventory = false"
+      @select-card="handleSelectCard"
+    />
+
+    <!-- 卡牌详情 -->
+    <CardDetail
+      :show="showCardDetail"
+      :card="selectedCard"
+      @close="showCardDetail = false"
+    />
   </main>
 </template>
 
 <script setup>
 import { computed, onMounted, onUnmounted, ref, watch, watchEffect } from "vue";
-import { showToast } from "vant";
+import { showToast, showDialog } from "vant";
 import { blockers, chapters, LEVELS_PER_CHAPTER, pieces, REWARD_LEVELS, TOTAL_LEVELS } from "./config/levels";
 import { assetManifest } from "./config/assets";
 import { useMatch3Game } from "./composables/useMatch3Game";
 import { usePlayerProgress } from "./composables/usePlayerProgress";
 import LevelSettle from "./components/LevelSettle.vue";
+import CardInventory from "./components/CardInventory.vue";
+import CardDetail from "./components/CardDetail.vue";
 
 const params = new URLSearchParams(window.location.search);
 const initialLevel = Number(params.get("level")) || 128;
 const screen = ref(params.has("level") ? "game" : params.get("screen") === "map" ? "map" : "home");
 const showMapRules = ref(false);
+const showCardInventory = ref(false);
+const showCardDetail = ref(false);
+const selectedCard = ref(null);
 const settleResult = ref(null);
 const settlePhase = ref(0);
 const settleDisplayScore = ref(0);
@@ -696,6 +720,16 @@ function closeSettleAndGoMap() {
   }, 500);
 }
 
+function handleSelectCard(card) {
+  selectedCard.value = card;
+  showCardDetail.value = true;
+}
+
+function handleSettleViewCard(card) {
+  selectedCard.value = card;
+  showCardDetail.value = true;
+}
+
 watch(
   () => game.state.boosterUsed,
   (booster) => {
@@ -938,7 +972,7 @@ function openSettings() {
 }
 
 function openGift() {
-  showDialog({ title: "今日奖励", message: "扫码进入可领取文旅小礼包，奖励系统入口已经预留。" });
+  showCardInventory.value = true;
 }
 
 function openMapInfo() {
