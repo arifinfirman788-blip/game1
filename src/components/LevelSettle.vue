@@ -150,13 +150,7 @@ function handleCardClick(index) {
 function getCenterOffset(index) {
   const cardWidth = 80;
   const gap = 8;
-  const totalWidth = cardWidth * 3 + gap * 2;
-  const cardPositions = [
-    -(cardWidth + gap),
-    0,
-    cardWidth + gap
-  ];
-  const centerOffset = cardPositions[index];
+  const centerOffset = (1 - index) * (cardWidth + gap);
   return { '--center-offset': `${centerOffset}px` };
 }
 
