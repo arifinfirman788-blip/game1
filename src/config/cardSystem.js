@@ -4,10 +4,10 @@
 // TODO: 后端API接入后，替换为真实数据接口
 
 // 引入本地图片，确保Vite能正确打包并处理路径
-import blueCardUrl from '../../image/蓝色卡片副本.png';
-import purpleCardUrl from '../../image/紫色卡片.png';
-import goldCardUrl from '../../image/金色卡片.png';
-import redCardUrl from '../../image/金色卡片.png'; // 暂用金色卡片代替，如果有红色卡片请修改此路径
+import blueCardUrl from '../../image/card-blue.png';
+import purpleCardUrl from '../../image/card-purple.png';
+import goldCardUrl from '../../image/card-gold.png';
+import redCardUrl from '../../image/card-gold.png'; // 暂用金色卡片代替，如果有红色卡片请修改此路径
 
 // 卡牌等级配置
 export const CARD_LEVELS = {

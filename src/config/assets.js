@@ -1,11 +1,11 @@
-import cardBlueImg from '../../image/蓝色卡片副本.png';
-import cardPurpleImg from '../../image/紫色卡片.png';
-import cardGoldImg from '../../image/金色卡片.png';
-import failTitleImg from '../../image/挑战失败副本.png';
-import failDialogImg from '../../image/失败对话框副本.png';
-import failCharacterImg from '../../image/失败人物图副本.png';
-import failBtnRetryImg from '../../image/重新挑战副本.png';
-import failBtnHomeImg from '../../image/返回主界面副本.png';
+import cardBlueImg from '../../image/card-blue.png';
+import cardPurpleImg from '../../image/card-purple.png';
+import cardGoldImg from '../../image/card-gold.png';
+import failTitleImg from '../../image/fail-title.png';
+import failDialogImg from '../../image/fail-dialog.png';
+import failCharacterImg from '../../image/fail-character.png';
+import failBtnRetryImg from '../../image/fail-retry.png';
+import failBtnHomeImg from '../../image/fail-home.png';
 
 const asset = (path) => `${import.meta.env.BASE_URL}${path.replace(/^\//, "")}`;
 
