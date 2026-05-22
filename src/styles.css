@@ -1656,6 +1656,157 @@ button {
   color: rgba(255, 244, 209, 0.7) !important;
 }
 
+/* ===== 失败结算弹窗 ===== */
+.fail-settle-overlay {
+  position: fixed;
+  inset: -2%;
+  left: calc(-2% - 6px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8, 18, 28, 0);
+  transition: background 500ms ease;
+  pointer-events: none;
+}
+
+.fail-settle-overlay.phase-1,
+.fail-settle-overlay.phase-2 {
+  background: rgba(8, 18, 28, 0.65);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  pointer-events: auto;
+}
+
+.fail-settle-overlay.exiting {
+  background: rgba(8, 18, 28, 0);
+  transition: background 400ms ease;
+  pointer-events: none;
+}
+
+.fail-settle-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 400px;
+  padding: 20px 16px 30px;
+}
+
+.fail-settle-title {
+  width: 85%;
+  transform: translateY(-30px) scale(0.8);
+  opacity: 0;
+  transition: transform 450ms cubic-bezier(0.16, 1, 0.3, 1), opacity 350ms ease;
+}
+
+.fail-settle-title.anim-in {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+.fail-settle-title img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.fail-settle-content {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 100%;
+  gap: 8px;
+  margin-top: -10px;
+}
+
+.fail-settle-character {
+  flex-shrink: 0;
+  width: 110px;
+  transform: translateX(-20px) translateY(20px);
+  opacity: 0;
+  transition: transform 400ms cubic-bezier(0.16, 1, 0.3, 1) 120ms, opacity 350ms ease 120ms;
+}
+
+.fail-settle-character.anim-in {
+  transform: translateX(0) translateY(0);
+  opacity: 1;
+}
+
+.fail-settle-character img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.fail-settle-right {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.fail-settle-dialog {
+  width: 100%;
+  transform: translateY(16px) scale(0.92);
+  opacity: 0;
+  transition: transform 420ms cubic-bezier(0.16, 1, 0.3, 1) 80ms, opacity 350ms ease 80ms;
+}
+
+.fail-settle-dialog.anim-in {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+.fail-settle-dialog img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.fail-settle-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  transform: translateY(20px);
+  opacity: 0;
+  transition: transform 380ms cubic-bezier(0.16, 1, 0.3, 1) 200ms, opacity 300ms ease 200ms;
+}
+
+.fail-settle-buttons.anim-in {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.fail-btn {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 120ms ease;
+}
+
+.fail-btn:active {
+  transform: scale(0.93);
+}
+
+.fail-btn img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.fail-btn:first-child {
+  width: 120px;
+}
+
+.fail-btn:last-child {
+  width: 120px;
+}
+
 @keyframes settle-icon-bounce {
   0% {
     transform: scale(0) rotate(-15deg);
