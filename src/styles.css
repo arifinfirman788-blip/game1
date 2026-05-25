@@ -3030,8 +3030,8 @@ button {
   position: absolute;
   inset: 0;
   z-index: 0;
-  background-size: 100% 100%; /* 强制拉伸图片以铺满整个容器，防止在不同比例下被裁剪 */
-  background-position: center;
+  background-size: cover; /* 恢复为 cover 模式 */
+  background-position: center bottom; /* 以底部对齐，保证“立即出发”按钮不被截掉 */
   background-repeat: no-repeat;
 }
 
@@ -3040,10 +3040,10 @@ button {
   position: absolute;
   z-index: 2;
   left: 50%;
-  bottom: 8%; /* 随着背景强制拉伸，热区的百分比定位能更好地自适应 */
+  bottom: 8.5%; /* 结合底部对齐的背景，按百分比精准定位热区 */
   transform: translateX(-50%);
-  width: 60%; /* 改用百分比宽度，适配各种屏幕 */
-  height: 9%;  /* 改用百分比高度 */
+  width: 55%; 
+  height: 8.5%; 
   padding: 0;
   border: 0;
   background: transparent;
