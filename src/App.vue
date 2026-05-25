@@ -1,55 +1,20 @@
 <template>
   <main class="phone-shell" aria-label="贵州文旅三消游戏">
-    <section class="game-scene" :class="{ 'has-scene-image': currentSceneImage }" :style="sceneStyle">
-      <div class="mountain-layer" aria-hidden="true"></div>
-      <div class="village-layer" aria-hidden="true"></div>
+    <section class="game-scene" :class="{ 'has-scene-image': currentSceneImage, 'is-home': screen === 'home' }" :style="sceneStyle">
+      <div v-if="screen !== 'home'" class="mountain-layer" aria-hidden="true"></div>
+      <div v-if="screen !== 'home'" class="village-layer" aria-hidden="true"></div>
 
-      <section v-if="screen === 'home'" class="home-screen">
-        <header class="home-top">
-          <van-button round icon="setting-o" class="vant-round" aria-label="设置" @click="openSettings" />
-          <span class="home-pill">贵州文旅三消</span>
-          <van-button round icon="gift-o" class="vant-round" aria-label="奖励" @click="openGift" />
-        </header>
+      <section v-if="screen === 'home'" class="home-screen home-new">
+        <div class="home-bg" :style="{ backgroundImage: `url(${assetManifest.home.bg})` }"></div>
 
-        <div class="home-hero">
-          <div class="home-title-card">
-            <p>黄小西的晚饭地图</p>
-            <h1>黄小西带你游贵州</h1>
-            <span>边吃边闯关，收集多彩贵州景区纪念章</span>
-          </div>
-          <div class="home-guide" aria-hidden="true">
-            <div class="guide-character home-character" :class="{ 'has-image': assetManifest.guide.normal }" :style="guideImageStyle">
-              <div class="silver-crown"></div>
-              <div class="guide-face"></div>
-              <div class="guide-body"></div>
-            </div>
-          </div>
+        <button class="home-start-hotzone" @click="goMap" aria-label="立即出发"></button>
+
+        <div class="home-particles" aria-hidden="true">
+          <span v-for="n in 12" :key="n" class="particle-dot" :style="homeParticleStyle(n)"></span>
         </div>
-
-        <div class="home-actions">
-          <van-button block round type="primary" class="start-button" @click="goMap">开始旅行</van-button>
-          <van-button block round type="warning" class="continue-button" @click="goGame(game.state.currentLevel)">
-            继续第 {{ game.state.currentLevel }} 关
-          </van-button>
-        </div>
-
-        <van-grid :border="false" :column-num="3" class="home-summary">
-          <van-grid-item>
-            <strong>7</strong>
-            <span>大景区</span>
-          </van-grid-item>
-          <van-grid-item>
-            <strong>700</strong>
-            <span>小关卡</span>
-          </van-grid-item>
-          <van-grid-item>
-            <strong>3</strong>
-            <span>星级评价</span>
-          </van-grid-item>
-        </van-grid>
       </section>
 
-      <section v-if="screen === 'map'" class="map-screen" :style="mapSceneStyle">
+      <section v-else-if="screen === 'map'" class="map-screen" :style="mapSceneStyle">
         <section class="chapter-panel">
           <img class="chapter-panel-bg" :src="assetManifest.map.titleFrame" alt="" decoding="async" fetchpriority="high" />
           <button type="button" class="map-icon-btn back" aria-label="返回首页" @click="goHome">
@@ -413,6 +378,7 @@ import CardDetail from "./components/CardDetail.vue";
 const params = new URLSearchParams(window.location.search);
 const initialLevel = Number(params.get("level")) || 128;
 const screen = ref(params.has("level") ? "game" : params.get("screen") === "map" ? "map" : "home");
+const homeAnimReady = ref(false);
 const showMapRules = ref(false);
 const showCardInventory = ref(false);
 const showCardDetail = ref(false);
@@ -541,12 +507,14 @@ const guideImageStyle = computed(() =>
   assetManifest.guide.normal ? { "--guide-image": `url("${assetManifest.guide.normal}")` } : {},
 );
 const currentSceneImage = computed(() => {
+  if (screen.value === "home") return null;
   if (screen.value !== "game") return assetManifest.background;
   return assetManifest.backgrounds?.[game.state.levelConfig.chapter.id] || assetManifest.background;
 });
-const sceneStyle = computed(() =>
-  currentSceneImage.value ? { ...appViewportStyle.value, "--scene-image": `url("${currentSceneImage.value}")` } : appViewportStyle.value,
-);
+const sceneStyle = computed(() => {
+  if (screen.value === "home") return appViewportStyle.value;
+  return currentSceneImage.value ? { ...appViewportStyle.value, "--scene-image": `url("${currentSceneImage.value}")` } : appViewportStyle.value;
+});
 const mapSceneStyle = computed(() => ({}));
 const preloadedImages = new Set();
 
@@ -570,6 +538,7 @@ onMounted(() => {
   updateViewportHeight();
   window.addEventListener("resize", updateViewportHeight);
   window.visualViewport?.addEventListener("resize", updateViewportHeight);
+  window.setTimeout(() => { homeAnimReady.value = true; }, 100);
 });
 
 onUnmounted(() => {
@@ -606,8 +575,12 @@ function goHome() {
 }
 
 function goMap() {
-  screen.value = "map";
-  updateUrl("map");
+  isTransitioning.value = true;
+  window.setTimeout(() => {
+    screen.value = "map";
+    updateUrl("map");
+    isTransitioning.value = false;
+  }, 500);
 }
 
 function goGame(level) {
@@ -1121,6 +1094,22 @@ function particleStyle(particle) {
     "--particle-x": `${Math.cos(angle) * distance}px`,
     "--particle-y": `${Math.sin(angle) * distance}px`,
     "--particle-delay": `${particle.index * 12}ms`,
+  };
+}
+
+function homeParticleStyle(n) {
+  const top = Math.random() * 100;
+  const left = Math.random() * 100;
+  const size = 3 + Math.random() * 5;
+  const delay = Math.random() * 4;
+  const duration = 3 + Math.random() * 4;
+  return {
+    top: `${top}%`,
+    left: `${left}%`,
+    width: `${size}px`,
+    height: `${size}px`,
+    animationDelay: `${delay}s`,
+    animationDuration: `${duration}s`,
   };
 }
 
