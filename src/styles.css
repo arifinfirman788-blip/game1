@@ -3030,8 +3030,8 @@ button {
   position: absolute;
   inset: 0;
   z-index: 0;
-  background-size: cover;
-  background-position: center top;
+  background-size: 100% 100%; /* 强制拉伸图片以铺满整个容器，防止在不同比例下被裁剪 */
+  background-position: center;
   background-repeat: no-repeat;
 }
 
@@ -3040,10 +3040,10 @@ button {
   position: absolute;
   z-index: 2;
   left: 50%;
-  bottom: calc(12% - 60px);
+  bottom: 8%; /* 随着背景强制拉伸，热区的百分比定位能更好地自适应 */
   transform: translateX(-50%);
-  width: 280px;
-  height: 90px;
+  width: 60%; /* 改用百分比宽度，适配各种屏幕 */
+  height: 9%;  /* 改用百分比高度 */
   padding: 0;
   border: 0;
   background: transparent;
