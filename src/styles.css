@@ -3040,7 +3040,7 @@ button {
   position: absolute;
   z-index: 2;
   left: 50%;
-  bottom: calc(12% - 20px);
+  bottom: calc(12% - 60px);
   transform: translateX(-50%);
   width: 280px;
   height: 90px;
