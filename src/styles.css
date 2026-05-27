@@ -3161,3 +3161,17 @@ button {
     display: none;
   }
 }
+
+/* 加速模式（用于通关结算） */
+.asset-board.fast-mode .piece.spawning {
+  animation-duration: 150ms !important;
+}
+.asset-board.fast-mode .cell.clearing {
+  animation-duration: 150ms !important;
+}
+.asset-board.fast-mode .piece {
+  transition-duration: 150ms !important;
+}
+.asset-board.fast-mode .match-particle {
+  animation-duration: 300ms !important;
+}
