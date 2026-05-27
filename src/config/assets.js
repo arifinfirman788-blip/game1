@@ -1,7 +1,14 @@
+import cardBlueImg from '../../image/card-blue.png';
+import cardPurpleImg from '../../image/card-purple.png';
+import cardGoldImg from '../../image/card-gold.png';
+
 const asset = (path) => `${import.meta.env.BASE_URL}${path.replace(/^\//, "")}`;
 
 // -
 export const assetManifest = {
+  home: {
+    bg: asset("/assets/home-bg-new.jpg"),
+  },
   pieces: {
     chili: asset("/assets/detail/pieces/chili.png"),
     bluecake: asset("/assets/detail/pieces/bluecake.png"),
@@ -61,9 +68,9 @@ export const assetManifest = {
     star3: asset("/assets/settle/star-3.png"),
   },
   cards: {
-    blue: asset("/image/蓝色卡片副本.png"),
-    purple: asset("/image/紫色卡片.png"),
-    gold: asset("/image/金色卡片.png"),
+    blue: cardBlueImg,
+    purple: cardPurpleImg,
+    gold: cardGoldImg,
   },
   failSettle: {
     title: asset("/image/挑战失败副本.png"),

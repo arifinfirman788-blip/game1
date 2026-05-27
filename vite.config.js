@@ -1,10 +1,18 @@
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
-import viteImagemin from "vite-plugin-imagemin";
+// import viteImagemin from "vite-plugin-imagemin";
 import viewport from "postcss-mobile-forever";
 
 export default defineConfig({
   base: process.env.VITE_BASE || "/",
+  server: {
+    proxy: {
+      '/game/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+    },
+  },
   css: {
     postcss: {
       plugins: [
@@ -19,35 +27,6 @@ export default defineConfig({
   },
   plugins: [
     vue(),
-    viteImagemin({
-      gifsicle: {
-        optimizationLevel: 7,
-        interlaced: false,
-      },
-      optipng: {
-        optimizationLevel: 7,
-      },
-      mozjpeg: {
-        quality: 80,
-      },
-      pngquant: {
-        quality: [0.8, 0.9],
-        speed: 4,
-      },
-      svgo: {
-        plugins: [
-          {
-            name: "removeViewBox",
-          },
-          {
-            name: "removeEmptyAttrs",
-            active: false,
-          },
-        ],
-      },
-      webp: {
-        quality: 80,
-      },
-    }),
+    // viteImagemin 已禁用 — Windows 下原生二进制编译失败，生产构建时可在 CI 中启用
   ],
 });

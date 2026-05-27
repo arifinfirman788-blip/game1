@@ -7,23 +7,10 @@
 
       <div class="settle-reward-frame" :class="{ 'frame-in': show }">
         <img :src="assetManifest.settle.rewardFrame" alt="获得奖励" decoding="async" />
-        <div class="reward-cards" :class="{ 'has-selected': selectedCardIndex !== -1 }">
-          <div
-            v-for="(card, index) in displayCards"
-            :key="index"
-            class="reward-card"
-            :class="[
-              card.revealed ? card.type : 'purple',
-              { 'glow-active': glowingCard === index || (selectedCardIndex === index && card.revealed) },
-              { 'fade-out': selectedCardIndex !== -1 && selectedCardIndex !== index },
-              { 'move-center': selectedCardIndex === index }
-            ]"
-            :style="selectedCardIndex === index ? getCenterOffset(index) : {}"
-            @click="handleCardClick(index)"
-          >
-            <img :src="card.revealed ? card.image : assetManifest.cards.purple" :alt="card.label" decoding="async" />
-          </div>
-        </div>
+        <CardDraw
+          @view-card="handleViewCard"
+          @continue="handleContinue"
+        />
       </div>
 
       <div class="settle-detail-frame" :class="{ 'frame-in': show }">
@@ -81,6 +68,7 @@
 <script setup>
 import { computed, ref, watch, onUnmounted } from 'vue';
 import { assetManifest } from '../config/assets';
+import CardDraw from './CardDraw.vue';
 
 const props = defineProps({
   visible: Boolean,
@@ -94,35 +82,14 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['next', 'retry']);
+const emit = defineEmits(['next', 'retry', 'view-card']);
 
 const show = ref(false);
 const exiting = ref(false);
 const showButtons = ref(false);
 const panelPhase = ref(0);
-const glowingCard = ref(-1);
-const selectedCardIndex = ref(-1);
 
 const starImage = assetManifest.settle.star1;
-
-const cardPool = [
-  { type: 'blue', label: '蓝色卡片', image: assetManifest.cards.blue },
-  { type: 'purple', label: '紫色卡片', image: assetManifest.cards.purple },
-  { type: 'gold', label: '金色卡片', image: assetManifest.cards.gold },
-];
-
-const displayCards = ref([
-  { ...cardPool[1], revealed: false },
-  { ...cardPool[1], revealed: false },
-  { ...cardPool[1], revealed: false },
-]);
-
-function shuffleCards() {
-  displayCards.value = displayCards.value.map(() => {
-    const randomCard = cardPool[Math.floor(Math.random() * cardPool.length)];
-    return { ...randomCard, revealed: false };
-  });
-}
 
 const perfectText = computed(() => {
   const texts = ['再接再厉', '表现不错', '完美通关'];
@@ -139,19 +106,12 @@ function handleRetry() {
   emit('retry');
 }
 
-function handleCardClick(index) {
-  if (displayCards.value[index].revealed || selectedCardIndex.value !== -1) return;
-  const randomCard = cardPool[Math.floor(Math.random() * cardPool.length)];
-  displayCards.value[index] = { ...randomCard, revealed: true };
-  glowingCard.value = index;
-  selectedCardIndex.value = index;
+function handleViewCard(card) {
+  emit('view-card', card);
 }
 
-function getCenterOffset(index) {
-  const cardWidth = 80;
-  const gap = 8;
-  const centerOffset = (1 - index) * (cardWidth + gap);
-  return { '--center-offset': `${centerOffset}px` };
+function handleContinue() {
+  handleNext();
 }
 
 let panelTimers = [];

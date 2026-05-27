@@ -95,6 +95,37 @@ button {
   align-items: stretch;
 }
 
+.auth-error-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.auth-error-box {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  max-width: 300px;
+}
+.auth-error-box p {
+  color: #b63225;
+  font-size: 16px;
+  margin-bottom: 16px;
+}
+.auth-error-box button {
+  padding: 8px 24px;
+  border: none;
+  border-radius: 6px;
+  background: #173956;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+}
+
 .game-scene {
   position: relative;
   width: 100%;
@@ -109,6 +140,11 @@ button {
   background-image: var(--scene-image);
   background-size: cover;
   background-position: center;
+}
+
+.game-scene.is-home {
+  padding: 0;
+  display: block;
 }
 
 .game-scene.has-scene-image .mountain-layer,
@@ -1256,6 +1292,30 @@ button {
   height: 100%;
   object-fit: contain;
   display: block;
+}
+
+.map-footer-action.cards {
+  left: 42%;
+  top: 25%;
+  width: 15%;
+  height: 42%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  cursor: pointer;
+}
+
+.cards-icon {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.cards-label {
+  font-size: 10px;
+  color: #5a3d1a;
+  font-weight: 600;
 }
 
 .footer-guide-rules {
@@ -2986,6 +3046,85 @@ button {
   .booster {
     height: 48px;
   }
+}
+
+/* ===== 新版首页样式 ===== */
+.home-new {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: var(--app-height, 100dvh);
+  overflow: hidden;
+}
+
+.home-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-size: cover; /* 恢复为 cover 模式 */
+  background-position: center bottom; /* 以底部对齐，保证“立即出发”按钮不被截掉 */
+  background-repeat: no-repeat;
+}
+
+/* 立即出发热区 - 根据素材图片中按钮位置定位 */
+.home-start-hotzone {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  bottom: 8.5%; /* 结合底部对齐的背景，按百分比精准定位热区 */
+  transform: translateX(-50%);
+  width: 55%; 
+  height: 8.5%; 
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.home-start-hotzone:active {
+  opacity: 0.8;
+}
+
+/* 粒子效果 */
+.home-particles {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.particle-dot {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 228, 160, 0.6);
+  box-shadow: 0 0 6px rgba(255, 228, 160, 0.4);
+  animation: particle-float linear infinite;
+}
+
+@keyframes particle-float {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(-20px) scale(1);
+  }
+  80% {
+    opacity: 1;
+    transform: translateY(-80px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-120px) scale(0);
+  }
+}
+
+/* 转场动画 */
+.screen-transition-enter {
+  animation: screen-fade-in 500ms ease forwards;
 }
 
 @media (max-width: 380px) {

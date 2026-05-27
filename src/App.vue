@@ -1,52 +1,23 @@
 <template>
   <main class="phone-shell" aria-label="贵州文旅三消游戏">
-    <section class="game-scene" :class="{ 'has-scene-image': currentSceneImage }" :style="sceneStyle">
-      <div class="mountain-layer" aria-hidden="true"></div>
-      <div class="village-layer" aria-hidden="true"></div>
+    <!-- 身份验证失败遮罩 -->
+    <div v-if="authError" class="auth-error-overlay">
+      <div class="auth-error-box">
+        <p>{{ authError }}</p>
+      </div>
+    </div>
+    <section class="game-scene" :class="{ 'has-scene-image': currentSceneImage, 'is-home': screen === 'home' }" :style="sceneStyle">
+      <div v-if="screen !== 'home'" class="mountain-layer" aria-hidden="true"></div>
+      <div v-if="screen !== 'home'" class="village-layer" aria-hidden="true"></div>
 
-      <section v-if="screen === 'home'" class="home-screen">
-        <header class="home-top">
-          <van-button round icon="setting-o" class="vant-round" aria-label="设置" @click="openSettings" />
-          <span class="home-pill">贵州文旅三消</span>
-          <van-button round icon="gift-o" class="vant-round" aria-label="奖励" @click="openGift" />
-        </header>
+      <section v-if="screen === 'home'" class="home-screen home-new">
+        <div class="home-bg" :style="{ backgroundImage: `url(${assetManifest.home.bg})` }"></div>
 
-        <div class="home-hero">
-          <div class="home-title-card">
-            <p>黄小西的晚饭地图</p>
-            <h1>黄小西带你游贵州</h1>
-            <span>边吃边闯关，收集多彩贵州景区纪念章</span>
-          </div>
-          <div class="home-guide" aria-hidden="true">
-            <div class="guide-character home-character" :class="{ 'has-image': assetManifest.guide.normal }" :style="guideImageStyle">
-              <div class="silver-crown"></div>
-              <div class="guide-face"></div>
-              <div class="guide-body"></div>
-            </div>
-          </div>
+        <button class="home-start-hotzone" @click="goMap" aria-label="立即出发"></button>
+
+        <div class="home-particles" aria-hidden="true">
+          <span v-for="n in 12" :key="n" class="particle-dot" :style="homeParticleStyle(n)"></span>
         </div>
-
-        <div class="home-actions">
-          <van-button block round type="primary" class="start-button" @click="goMap">开始旅行</van-button>
-          <van-button block round type="warning" class="continue-button" @click="goGame(game.state.currentLevel)">
-            继续第 {{ game.state.currentLevel }} 关
-          </van-button>
-        </div>
-
-        <van-grid :border="false" :column-num="3" class="home-summary">
-          <van-grid-item>
-            <strong>7</strong>
-            <span>大景区</span>
-          </van-grid-item>
-          <van-grid-item>
-            <strong>700</strong>
-            <span>小关卡</span>
-          </van-grid-item>
-          <van-grid-item>
-            <strong>3</strong>
-            <span>星级评价</span>
-          </van-grid-item>
-        </van-grid>
       </section>
 
       <section v-else-if="screen === 'map'" class="map-screen" :style="mapSceneStyle">
@@ -165,7 +136,7 @@
 
           <footer class="map-footer">
             <img class="map-footer-bg" :src="assetManifest.map.bottomBar" alt="" decoding="async" />
-            <button type="button" class="map-footer-action reward" aria-label="奖励" @click="openGift">
+            <button type="button" class="map-footer-action reward" aria-label="我的卡牌" @click="showCardInventory = true">
               <img :src="assetManifest.map.buttons.reward" alt="" decoding="async" />
             </button>
             <button type="button" class="map-footer-action rules" aria-label="玩法说明" @click="openMapInfo">
@@ -256,6 +227,7 @@
             :display-score="settleDisplayScore"
             @next="closeSettleAndNext"
             @retry="closeSettleAndRetry"
+            @view-card="handleSettleViewCard"
           />
         </template>
 
@@ -381,22 +353,46 @@
         </aside>
       </section>
     </section>
+
+    <!-- 卡牌背包 -->
+    <CardInventory
+      :show="showCardInventory"
+      @back="showCardInventory = false"
+      @select-card="handleSelectCard"
+    />
+
+    <!-- 卡牌详情 -->
+    <CardDetail
+      :show="showCardDetail"
+      :card="selectedCard"
+      @close="showCardDetail = false"
+    />
   </main>
 </template>
 
 <script setup>
 import { computed, onMounted, onUnmounted, ref, watch, watchEffect } from "vue";
-import { showToast } from "vant";
+import { showToast, showDialog } from "vant";
 import { blockers, chapters, LEVELS_PER_CHAPTER, pieces, REWARD_LEVELS, TOTAL_LEVELS } from "./config/levels";
 import { assetManifest } from "./config/assets";
 import { useMatch3Game } from "./composables/useMatch3Game";
-import { usePlayerProgress } from "./composables/usePlayerProgress";
+import { usePlayerProgress, setGameUser } from "./composables/usePlayerProgress";
+import { verifyToken, setTokens } from "./api/gameApi";
 import LevelSettle from "./components/LevelSettle.vue";
+import CardInventory from "./components/CardInventory.vue";
+import CardDetail from "./components/CardDetail.vue";
 
 const params = new URLSearchParams(window.location.search);
 const initialLevel = Number(params.get("level")) || 128;
 const screen = ref(params.has("level") ? "game" : params.get("screen") === "map" ? "map" : "home");
+const gameAccessToken = params.get("accessToken") || "";
+const gameRefreshToken = params.get("refreshToken") || "";
+const authError = ref("");
+const homeAnimReady = ref(false);
 const showMapRules = ref(false);
+const showCardInventory = ref(false);
+const showCardDetail = ref(false);
+const selectedCard = ref(null);
 const settleResult = ref(null);
 const settlePhase = ref(0);
 const settleDisplayScore = ref(0);
@@ -521,12 +517,14 @@ const guideImageStyle = computed(() =>
   assetManifest.guide.normal ? { "--guide-image": `url("${assetManifest.guide.normal}")` } : {},
 );
 const currentSceneImage = computed(() => {
+  if (screen.value === "home") return null;
   if (screen.value !== "game") return assetManifest.background;
   return assetManifest.backgrounds?.[game.state.levelConfig.chapter.id] || assetManifest.background;
 });
-const sceneStyle = computed(() =>
-  currentSceneImage.value ? { ...appViewportStyle.value, "--scene-image": `url("${currentSceneImage.value}")` } : appViewportStyle.value,
-);
+const sceneStyle = computed(() => {
+  if (screen.value === "home") return appViewportStyle.value;
+  return currentSceneImage.value ? { ...appViewportStyle.value, "--scene-image": `url("${currentSceneImage.value}")` } : appViewportStyle.value;
+});
 const mapSceneStyle = computed(() => ({}));
 const preloadedImages = new Set();
 
@@ -546,10 +544,41 @@ function updateViewportHeight() {
   document.documentElement.style.setProperty("--app-height", `${height}px`);
 }
 
-onMounted(() => {
+onMounted(async () => {
   updateViewportHeight();
   window.addEventListener("resize", updateViewportHeight);
   window.visualViewport?.addEventListener("resize", updateViewportHeight);
+  window.setTimeout(() => { homeAnimReady.value = true; }, 100);
+
+  // 后端初始化：验证token + 加载游戏数据
+  if (gameAccessToken) {
+    try {
+      // 先设置 accessToken 和 refreshToken，后续请求自动带 Authorization header
+      setTokens(gameAccessToken, gameRefreshToken);
+      const verifyResult = await verifyToken(gameAccessToken);
+      if (!verifyResult.valid) {
+        authError.value = "accessToken无效或已过期，请重新进入游戏";
+        return;
+      }
+      // 从验证结果获取 uid/phone
+      const uid = verifyResult.uid || '';
+      const phone = verifyResult.phone || '';
+      if (!uid || !phone) {
+        authError.value = "用户信息缺失，请重新进入游戏";
+        return;
+      }
+      setGameUser(uid, phone);
+      const gameData = await player.loadFromBackend();
+      // 将后端返回的卡牌数据写入localStorage，供useCardSystem读取
+      if (gameData && gameData.cards) {
+        window.localStorage.setItem('guizhou-card-inventory', JSON.stringify(gameData.cards));
+      }
+    } catch (err) {
+      authError.value = err.message || "身份验证失败，无法进入游戏";
+    }
+  } else {
+    authError.value = "缺少身份凭证，请从微信小程序重新进入游戏";
+  }
 });
 
 onUnmounted(() => {
@@ -586,8 +615,12 @@ function goHome() {
 }
 
 function goMap() {
-  screen.value = "map";
-  updateUrl("map");
+  isTransitioning.value = true;
+  window.setTimeout(() => {
+    screen.value = "map";
+    updateUrl("map");
+    isTransitioning.value = false;
+  }, 500);
 }
 
 function goGame(level) {
@@ -694,6 +727,16 @@ function closeSettleAndGoMap() {
     isTransitioning.value = false;
     goMap();
   }, 500);
+}
+
+function handleSelectCard(card) {
+  selectedCard.value = card;
+  showCardDetail.value = true;
+}
+
+function handleSettleViewCard(card) {
+  selectedCard.value = card;
+  showCardDetail.value = true;
 }
 
 watch(
@@ -938,7 +981,7 @@ function openSettings() {
 }
 
 function openGift() {
-  showDialog({ title: "今日奖励", message: "扫码进入可领取文旅小礼包，奖励系统入口已经预留。" });
+  showCardInventory.value = true;
 }
 
 function openMapInfo() {
@@ -1091,6 +1134,22 @@ function particleStyle(particle) {
     "--particle-x": `${Math.cos(angle) * distance}px`,
     "--particle-y": `${Math.sin(angle) * distance}px`,
     "--particle-delay": `${particle.index * 12}ms`,
+  };
+}
+
+function homeParticleStyle(n) {
+  const top = Math.random() * 100;
+  const left = Math.random() * 100;
+  const size = 3 + Math.random() * 5;
+  const delay = Math.random() * 4;
+  const duration = 3 + Math.random() * 4;
+  return {
+    top: `${top}%`,
+    left: `${left}%`,
+    width: `${size}px`,
+    height: `${size}px`,
+    animationDelay: `${delay}s`,
+    animationDuration: `${duration}s`,
   };
 }
 
