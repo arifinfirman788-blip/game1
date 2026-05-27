@@ -833,30 +833,53 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
   async function autoPlayRemainingMoves() {
     state.busy = true;
     state.effects.levelClearBanner = { id: crypto.randomUUID() };
-    state.guideText = "🎉 关卡通关！剩余步数结算中...";
+    state.guideText = "🎉 关卡通关！剩余步数转化为道具...";
 
-    await delay(1200);
+    await delay(800);
     state.effects.levelClearBanner = null;
 
-    let safetyCounter = state.movesLeft * 4;
+    // 1. 将所有剩余步数快速转化为场上的特殊道具
+    while (state.movesLeft > 0) {
+      const normalCells = state.board.flat().filter(c => c && c.type && !c.special && !c.blocker);
+      if (normalCells.length === 0) break; // 没有可转化的普通方块了
+      
+      const randomCell = normalCells[Math.floor(Math.random() * normalCells.length)];
+      const kinds = ["bomb", "row", "col"]; // 随机转化为炸弹或横竖火箭
+      randomCell.special = { kind: kinds[Math.floor(Math.random() * kinds.length)] };
+      
+      state.movesLeft -= 1;
+      state.score += 100; // 转化奖励分
+      await delay(60); // 极短的延迟，形成快速转化的视觉效果
+    }
 
-    while (state.movesLeft > 0 && safetyCounter > 0) {
+    // 补偿分（如果步数多到格子不够转）
+    if (state.movesLeft > 0) {
+      state.score += state.movesLeft * 200;
+      state.movesLeft = 0;
+    }
+
+    state.guideText = "🎉 道具连环引爆中！";
+
+    // 2. 引爆场上所有的特殊道具，直到彻底平静
+    let safetyCounter = 100;
+    while (safetyCounter > 0) {
       safetyCounter -= 1;
       const specialCell = findSpecialCell();
       if (specialCell) {
-        await autoTriggerSpecial(specialCell);
+        await autoTriggerSpecial(specialCell, false); // 引爆不消耗步数
         continue;
       }
 
-      const swapped = await autoFindAndSwap();
-      if (!swapped) break;
-    }
-
-    while (findMatchGroups().length > 0) {
+      // 掉落过程中意外合成的三消也一并处理
       const groups = findMatchGroups();
-      await resolveMatches(groups, [], { autoClear: true });
-      clearEffects();
-      await delay(120);
+      if (groups.length > 0) {
+        await resolveMatches(groups, [], { autoClear: true });
+        clearEffects();
+        await delay(100);
+        continue;
+      }
+      
+      break;
     }
 
     state.movesLeft = 0;
@@ -874,7 +897,7 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
     return null;
   }
 
-  async function autoTriggerSpecial(cell) {
+  async function autoTriggerSpecial(cell, consumeMove = true) {
     state.guideText = `自动释放特殊棋子！`;
 
     if (cell.special?.kind === "rainbow") {
@@ -890,7 +913,7 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
         : state.board.flat().find(c => c && c.type && c !== cell);
         
       if (targetCell) {
-        state.movesLeft -= 1;
+        if (consumeMove) state.movesLeft -= 1;
         await triggerRainbowSwap([cell, targetCell], { autoClear: true });
         return;
       }
@@ -898,14 +921,14 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
 
     const targets = expandSpecials([cell]);
     playMatchEffects(targets, 1);
-    await delay(150);
+    await delay(100); // 结算动画稍微调快一点
     clearMatches(targets, 1, { specialScore: true, autoClear: true });
     damageAdjacentCrates(targets);
-    state.movesLeft -= 1;
+    if (consumeMove) state.movesLeft -= 1;
     state.effects.falling = collapseBoard();
     state.effects.spawning = refillBoard();
     await nextTick();
-    await delay(120);
+    await delay(80); // 掉落等待也调快一点
     clearEffects();
 
     const groups = findMatchGroups();
