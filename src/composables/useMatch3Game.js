@@ -60,6 +60,7 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
     busy: false,
     completed: false,
     failed: false,
+    fastMode: false,
     goalsCompleted: false,
     activeBooster: null,
     boosterUsed: null,
@@ -832,25 +833,38 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
 
   async function autoPlayRemainingMoves() {
     state.busy = true;
+    state.fastMode = true;
     state.effects.levelClearBanner = { id: crypto.randomUUID() };
     state.guideText = "🎉 关卡通关！剩余步数转化为道具...";
 
     await delay(800);
     state.effects.levelClearBanner = null;
 
-    // 1. 将所有剩余步数快速转化为场上的特殊道具
+    // 1. 将所有剩余步数快速转化为场上的特殊道具（带连续脉冲特效）
+    const convertedCells = [];
     while (state.movesLeft > 0) {
-      const normalCells = state.board.flat().filter(c => c && c.type && !c.special && !c.blocker);
+      const normalCells = state.board.flat().filter(c => c && c.type && !c.special && !c.blocker && !convertedCells.includes(c));
       if (normalCells.length === 0) break; // 没有可转化的普通方块了
       
       const randomCell = normalCells[Math.floor(Math.random() * normalCells.length)];
       const kinds = ["bomb", "row", "col"]; // 随机转化为炸弹或横竖火箭
       randomCell.special = { kind: kinds[Math.floor(Math.random() * kinds.length)] };
+      convertedCells.push(randomCell);
+      
+      // 增加转化时的闪光和粒子特效
+      state.effects.clearing.add(cellKey(randomCell));
+      for (let index = 0; index < 5; index += 1) {
+        state.effects.particles.push({ id: crypto.randomUUID(), row: randomCell.row, col: randomCell.col, index });
+      }
       
       state.movesLeft -= 1;
       state.score += 100; // 转化奖励分
-      await delay(60); // 极短的延迟，形成快速转化的视觉效果
+      await delay(40); // 极短的延迟，形成像多米诺骨牌一样的快速转化视觉效果
     }
+
+    // 给最后一个转化动画留出展示时间
+    await delay(200);
+    clearEffects();
 
     // 补偿分（如果步数多到格子不够转）
     if (state.movesLeft > 0) {
@@ -884,6 +898,7 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
 
     state.movesLeft = 0;
     state.busy = false;
+    state.fastMode = false;
     completeLevel();
   }
 

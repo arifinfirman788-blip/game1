@@ -228,7 +228,7 @@
         <!-- 正常游戏区域：未通关时显示 -->
         <template v-else>
           <section class="board-wrap">
-            <div class="game-board asset-board">
+            <div class="game-board asset-board" :class="{ 'fast-mode': game.state.fastMode }">
               <button
                 v-for="cell in flatBoard"
                 :key="`${cell.row}-${cell.col}`"
