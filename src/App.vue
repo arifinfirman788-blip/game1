@@ -17,17 +17,6 @@
 
         <div class="home-particles" aria-hidden="true">
           <span v-for="n in 12" :key="n" class="particle-dot" :style="homeParticleStyle(n)"></span>
-    <section class="game-scene" :class="{ 'has-scene-image': currentSceneImage, 'is-home': screen === 'home' }" :style="sceneStyle">
-      <div v-if="screen !== 'home'" class="mountain-layer" aria-hidden="true"></div>
-      <div v-if="screen !== 'home'" class="village-layer" aria-hidden="true"></div>
-
-      <section v-if="screen === 'home'" class="home-screen home-new">
-        <div class="home-bg" :style="{ backgroundImage: `url(${assetManifest.home.bg})` }"></div>
-
-        <button class="home-start-hotzone" @click="goMap" aria-label="立即出发"></button>
-
-        <div class="home-particles" aria-hidden="true">
-          <span v-for="n in 12" :key="n" class="particle-dot" :style="homeParticleStyle(n)"></span>
         </div>
       </section>
 
