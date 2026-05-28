@@ -9,6 +9,7 @@ import {
 } from '../config/cardSystem';
 import { drawCardApi, redeemCardApi } from '../api/gameApi';
 import { getGameUser } from './usePlayerProgress';
+import { showToast } from 'vant';
 
 const STORAGE_KEY = 'guizhou-card-inventory';
 
@@ -102,6 +103,7 @@ export function useCardSystem() {
     } catch (err) {
       state.error = err.message;
       console.error('抽卡失败:', err);
+      showToast(err.message || '抽卡失败');
       return null;
     } finally {
       state.isLoading = false;
@@ -137,6 +139,7 @@ export function useCardSystem() {
     } catch (err) {
       state.error = err.message;
       console.error('兑换失败:', err);
+      showToast(err.message || '兑换失败');
       return null;
     } finally {
       state.isLoading = false;

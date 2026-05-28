@@ -92,9 +92,14 @@ async function request(url, options = {}) {
         return request(url, options);
       } catch (err) {
         isRefreshing = false;
-        clearTokens();
-        const data = { code: 401, msg: '登录已过期，请重新进入游戏' };
-        throw new Error(data.msg);
+        _accessToken = '';
+        sessionStorage.removeItem('game_access_token');
+        // 保留refreshToken，让用户可以点击重试按钮重新登录
+        // 通知App层认证已过期，显示错误遮罩
+        window.dispatchEvent(new CustomEvent('game:auth-expired', {
+          detail: { message: '登录已过期，请重新进入游戏' }
+        }));
+        throw new Error('登录已过期，请重新进入游戏');
       }
     } else {
       // 正在刷新，等待刷新完成后重试
@@ -114,39 +119,40 @@ async function request(url, options = {}) {
 }
 
 /**
+ * 认证接口专用请求（不带Authorization头，避免过期token干扰Spring Security）
+ */
+async function authRequest(url, body) {
+  const response = await fetch(BASE_URL + url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  const data = await response.json();
+  if (data.code !== 200) {
+    throw new Error(data.msg || '请求失败');
+  }
+  return data.data;
+}
+
+/**
  * 颁发 Token（由小程序后端调用）
  */
 export async function requestToken(appId, appSecret, uid, phone) {
-  return request('/game/api/auth/token', {
-    method: 'POST',
-    body: JSON.stringify({ appId, appSecret, uid, phone }),
-  });
+  return authRequest('/game/api/auth/token', { appId, appSecret, uid, phone });
 }
 
 /**
  * 刷新 Token
  */
 export async function doRefreshToken(refreshToken) {
-  const response = await fetch(BASE_URL + '/game/api/auth/refresh', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ refreshToken }),
-  });
-  const data = await response.json();
-  if (data.code !== 200) {
-    throw new Error(data.msg || '刷新Token失败');
-  }
-  return data.data;
+  return authRequest('/game/api/auth/refresh', { refreshToken });
 }
 
 /**
  * 验证accessToken
  */
 export async function verifyToken(accessToken) {
-  return request('/game/api/auth/verify', {
-    method: 'POST',
-    body: JSON.stringify({ accessToken }),
-  });
+  return authRequest('/game/api/auth/verify', { accessToken });
 }
 
 /**

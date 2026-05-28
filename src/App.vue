@@ -4,6 +4,7 @@
     <div v-if="authError" class="auth-error-overlay">
       <div class="auth-error-box">
         <p>{{ authError }}</p>
+        <button v-if="authRetryable" @click="retryAuth">重新登录</button>
       </div>
     </div>
     <section class="game-scene" :class="{ 'has-scene-image': currentSceneImage, 'is-home': screen === 'home' }" :style="sceneStyle">
@@ -377,7 +378,7 @@ import { blockers, chapters, LEVELS_PER_CHAPTER, pieces, REWARD_LEVELS, TOTAL_LE
 import { assetManifest } from "./config/assets";
 import { useMatch3Game } from "./composables/useMatch3Game";
 import { usePlayerProgress, setGameUser } from "./composables/usePlayerProgress";
-import { verifyToken, setTokens, doRefreshToken, updateUrlTokens } from "./api/gameApi";
+import { verifyToken, setTokens, doRefreshToken, updateUrlTokens, getRefreshToken, getAccessToken } from "./api/gameApi";
 import LevelSettle from "./components/LevelSettle.vue";
 import CardInventory from "./components/CardInventory.vue";
 import CardDetail from "./components/CardDetail.vue";
@@ -388,6 +389,7 @@ const screen = ref(params.has("level") ? "game" : params.get("screen") === "map"
 const gameAccessToken = params.get("accessToken") || "";
 const gameRefreshToken = params.get("refreshToken") || "";
 const authError = ref("");
+const authRetryable = ref(false);
 const homeAnimReady = ref(false);
 const showMapRules = ref(false);
 const showCardInventory = ref(false);
@@ -544,64 +546,102 @@ function updateViewportHeight() {
   document.documentElement.style.setProperty("--app-height", `${height}px`);
 }
 
+async function initAuth() {
+  // 每次动态从URL和内存获取最新token
+  const currentUrl = new URL(window.location.href);
+  const urlAccessToken = currentUrl.searchParams.get('accessToken') || getAccessToken();
+  const urlRefreshToken = currentUrl.searchParams.get('refreshToken') || getRefreshToken();
+
+  if (!urlAccessToken && !urlRefreshToken) {
+    authError.value = "缺少身份凭证，请从微信小程序重新进入游戏";
+    authRetryable.value = false;
+    return;
+  }
+
+  try {
+    setTokens(urlAccessToken || '', urlRefreshToken || '');
+
+    let verifyResult;
+    if (urlAccessToken) {
+      try {
+        verifyResult = await verifyToken(urlAccessToken);
+      } catch {
+        verifyResult = null;
+      }
+    }
+
+    // accessToken过期或缺失，尝试用refreshToken刷新
+    if ((!verifyResult || !verifyResult.valid) && urlRefreshToken) {
+      try {
+        const newTokens = await doRefreshToken(urlRefreshToken);
+        setTokens(newTokens.accessToken, newTokens.refreshToken);
+        updateUrlTokens(newTokens.accessToken, newTokens.refreshToken);
+        verifyResult = await verifyToken(newTokens.accessToken);
+      } catch (err) {
+        // 区分：refreshToken永久失效 vs 临时网络错误
+        const permanentFailure = /无效|已过期/.test(err.message);
+        authError.value = permanentFailure
+          ? "登录已过期，请从微信小程序重新进入游戏"
+          : "网络异常，请点击重试";
+        authRetryable.value = !permanentFailure;
+        return;
+      }
+    } else if (verifyResult && verifyResult.valid) {
+      updateUrlTokens(urlAccessToken, urlRefreshToken);
+    }
+
+    if (!verifyResult || !verifyResult.valid) {
+      authError.value = "accessToken无效，且无可用refreshToken";
+      authRetryable.value = !!urlRefreshToken;
+      return;
+    }
+
+    const uid = verifyResult.uid || '';
+    const phone = verifyResult.phone || '';
+    if (!uid || !phone) {
+      authError.value = "用户信息缺失，请重新进入游戏";
+      authRetryable.value = false;
+      return;
+    }
+    setGameUser(uid, phone);
+    authError.value = "";
+    authRetryable.value = false;
+    const gameData = await player.loadFromBackend();
+    if (gameData && gameData.cards) {
+      window.localStorage.setItem('guizhou-card-inventory', JSON.stringify(gameData.cards));
+    }
+  } catch (err) {
+    authError.value = err.message || "身份验证失败，无法进入游戏";
+    authRetryable.value = !!urlRefreshToken;
+  }
+}
+
+async function retryAuth() {
+  authError.value = "正在重新登录...";
+  authRetryable.value = false;
+  await initAuth();
+}
+
 onMounted(async () => {
   updateViewportHeight();
   window.addEventListener("resize", updateViewportHeight);
   window.visualViewport?.addEventListener("resize", updateViewportHeight);
   window.setTimeout(() => { homeAnimReady.value = true; }, 100);
 
-  // 后端初始化：验证token + 加载游戏数据
-  if (gameAccessToken) {
-    try {
-      // 先设置 accessToken 和 refreshToken，后续请求自动带 Authorization header
-      setTokens(gameAccessToken, gameRefreshToken);
-
-      let verifyResult;
-      try {
-        verifyResult = await verifyToken(gameAccessToken);
-      } catch {
-        verifyResult = null;
-      }
-
-      // accessToken过期或验证失败，尝试用refreshToken刷新
-      if ((!verifyResult || !verifyResult.valid) && gameRefreshToken) {
-        try {
-          const newTokens = await doRefreshToken(gameRefreshToken);
-          setTokens(newTokens.accessToken, newTokens.refreshToken);
-          updateUrlTokens(newTokens.accessToken, newTokens.refreshToken);
-          verifyResult = await verifyToken(newTokens.accessToken);
-        } catch {
-          authError.value = "登录已过期，请重新进入游戏";
-          return;
-        }
-      } else if (verifyResult && verifyResult.valid) {
-        // accessToken有效，仅清理URL中多余的uid/phone参数
-        updateUrlTokens(gameAccessToken, gameRefreshToken);
-      }
-
-      if (!verifyResult || !verifyResult.valid) {
-        authError.value = "accessToken无效或已过期，请重新进入游戏";
-        return;
-      }
-      // 从验证结果获取 uid/phone
-      const uid = verifyResult.uid || '';
-      const phone = verifyResult.phone || '';
-      if (!uid || !phone) {
-        authError.value = "用户信息缺失，请重新进入游戏";
-        return;
-      }
-      setGameUser(uid, phone);
-      const gameData = await player.loadFromBackend();
-      // 将后端返回的卡牌数据写入localStorage，供useCardSystem读取
-      if (gameData && gameData.cards) {
-        window.localStorage.setItem('guizhou-card-inventory', JSON.stringify(gameData.cards));
-      }
-    } catch (err) {
-      authError.value = err.message || "身份验证失败，无法进入游戏";
-    }
-  } else {
-    authError.value = "缺少身份凭证，请从微信小程序重新进入游戏";
+  // 监听游戏中认证过期事件，显示错误遮罩
+  function handleAuthExpired(e) {
+    const msg = e.detail.message || '登录已过期，请重新进入游戏';
+    const permanentFailure = /无效|已过期/.test(msg);
+    authError.value = permanentFailure
+      ? "登录已过期，请从微信小程序重新进入游戏"
+      : "网络异常，请点击重试";
+    authRetryable.value = !permanentFailure;
   }
+  window.addEventListener('game:auth-expired', handleAuthExpired);
+  onUnmounted(() => window.removeEventListener('game:auth-expired', handleAuthExpired));
+
+  // 后端初始化：验证token + 加载游戏数据
+  await initAuth();
 });
 
 onUnmounted(() => {
