@@ -37,6 +37,19 @@ export function clearTokens() {
   sessionStorage.removeItem('game_refresh_token');
 }
 
+export function updateUrlTokens(accessToken, refreshToken) {
+  try {
+    const url = new URL(window.location.href);
+    if (accessToken) url.searchParams.set('accessToken', accessToken);
+    if (refreshToken) url.searchParams.set('refreshToken', refreshToken);
+    url.searchParams.delete('uid');
+    url.searchParams.delete('phone');
+    window.history.replaceState({}, '', url.toString());
+  } catch {
+    // ignore URL update errors
+  }
+}
+
 // 初始化：从sessionStorage恢复token
 (function initTokens() {
   _accessToken = sessionStorage.getItem('game_access_token') || '';
@@ -72,6 +85,7 @@ async function request(url, options = {}) {
       try {
         const newTokens = await doRefreshToken(_refreshToken);
         setTokens(newTokens.accessToken, newTokens.refreshToken);
+        updateUrlTokens(newTokens.accessToken, newTokens.refreshToken);
         isRefreshing = false;
         onTokenRefreshed(newTokens.accessToken);
         // 重试原请求

@@ -377,7 +377,7 @@ import { blockers, chapters, LEVELS_PER_CHAPTER, pieces, REWARD_LEVELS, TOTAL_LE
 import { assetManifest } from "./config/assets";
 import { useMatch3Game } from "./composables/useMatch3Game";
 import { usePlayerProgress, setGameUser } from "./composables/usePlayerProgress";
-import { verifyToken, setTokens } from "./api/gameApi";
+import { verifyToken, setTokens, doRefreshToken, updateUrlTokens } from "./api/gameApi";
 import LevelSettle from "./components/LevelSettle.vue";
 import CardInventory from "./components/CardInventory.vue";
 import CardDetail from "./components/CardDetail.vue";
@@ -555,8 +555,31 @@ onMounted(async () => {
     try {
       // 先设置 accessToken 和 refreshToken，后续请求自动带 Authorization header
       setTokens(gameAccessToken, gameRefreshToken);
-      const verifyResult = await verifyToken(gameAccessToken);
-      if (!verifyResult.valid) {
+
+      let verifyResult;
+      try {
+        verifyResult = await verifyToken(gameAccessToken);
+      } catch {
+        verifyResult = null;
+      }
+
+      // accessToken过期或验证失败，尝试用refreshToken刷新
+      if ((!verifyResult || !verifyResult.valid) && gameRefreshToken) {
+        try {
+          const newTokens = await doRefreshToken(gameRefreshToken);
+          setTokens(newTokens.accessToken, newTokens.refreshToken);
+          updateUrlTokens(newTokens.accessToken, newTokens.refreshToken);
+          verifyResult = await verifyToken(newTokens.accessToken);
+        } catch {
+          authError.value = "登录已过期，请重新进入游戏";
+          return;
+        }
+      } else if (verifyResult && verifyResult.valid) {
+        // accessToken有效，仅清理URL中多余的uid/phone参数
+        updateUrlTokens(gameAccessToken, gameRefreshToken);
+      }
+
+      if (!verifyResult || !verifyResult.valid) {
         authError.value = "accessToken无效或已过期，请重新进入游戏";
         return;
       }
