@@ -1,6 +1,5 @@
 import { defineConfig, loadEnv } from "vite";
 import vue from "@vitejs/plugin-vue";
-// import viteImagemin from "vite-plugin-imagemin";
 import viewport from "postcss-mobile-forever";
 
 export default defineConfig(({ mode }) => {
@@ -29,8 +28,7 @@ export default defineConfig(({ mode }) => {
       },
     },
     plugins: [
-      vue(),
-      // viteImagemin 已禁用 — Windows 下原生二进制编译失败，生产构建时可在 CI 中启用
+      vue()
     ],
   };
 });
