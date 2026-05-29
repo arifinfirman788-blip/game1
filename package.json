@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
+    "build:prod": "vite build && rimraf ./dist/assets/*.map && rimraf stats.html",
+    "build:stage": "vite build --mode staging",
     "build": "vite build",
     "preview": "vite preview --host 0.0.0.0"
   },
