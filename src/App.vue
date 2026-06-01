@@ -386,8 +386,13 @@ import CardDetail from "./components/CardDetail.vue";
 const params = new URLSearchParams(window.location.search);
 const initialLevel = Number(params.get("level")) || 128;
 const screen = ref(params.has("level") ? "game" : params.get("screen") === "map" ? "map" : "home");
-const gameAccessToken = params.get("accessToken") || "";
-const gameRefreshToken = params.get("refreshToken") || "";
+
+// 硬编码注入开发环境使用的默认 Token
+const DEV_DEFAULT_ACCESS_TOKEN = "a645ab9432df48b8bb34e26c5d5e26ed";
+const DEV_DEFAULT_REFRESH_TOKEN = "9bf79a4b853c40c3a83fadd1a0a15123";
+
+const gameAccessToken = params.get("accessToken") || DEV_DEFAULT_ACCESS_TOKEN;
+const gameRefreshToken = params.get("refreshToken") || DEV_DEFAULT_REFRESH_TOKEN;
 const authError = ref("");
 const authRetryable = ref(false);
 const homeAnimReady = ref(false);
@@ -547,10 +552,10 @@ function updateViewportHeight() {
 }
 
 async function initAuth() {
-  // 每次动态从URL和内存获取最新token
+  // 每次动态从URL和内存获取最新token，如果没有则降级使用硬编码的默认 Token
   const currentUrl = new URL(window.location.href);
-  const urlAccessToken = currentUrl.searchParams.get('accessToken') || getAccessToken();
-  const urlRefreshToken = currentUrl.searchParams.get('refreshToken') || getRefreshToken();
+  const urlAccessToken = currentUrl.searchParams.get('accessToken') || getAccessToken() || DEV_DEFAULT_ACCESS_TOKEN;
+  const urlRefreshToken = currentUrl.searchParams.get('refreshToken') || getRefreshToken() || DEV_DEFAULT_REFRESH_TOKEN;
 
   if (!urlAccessToken && !urlRefreshToken) {
     authError.value = "缺少身份凭证，请从微信小程序重新进入游戏";
