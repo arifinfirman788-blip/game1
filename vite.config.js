@@ -5,8 +5,16 @@ import viewport from "postcss-mobile-forever";
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
 
+  const define = {};
+  Object.keys(env).forEach(key => {
+    if (key.startsWith('VITE_')) {
+      define[`import.meta.env.${key}`] = JSON.stringify(env[key]);
+    }
+  });
+
   return {
     base: env.VITE_BASE || "/",
+    define,
     server: {
       proxy: {
         '/game/api': {
