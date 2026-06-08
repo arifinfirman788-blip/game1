@@ -1,5 +1,9 @@
 <template>
   <main class="phone-shell" aria-label="贵州文旅三消游戏">
+    <!-- 开发调试面板 (隐藏在左上角) -->
+    <div class="dev-tools" @click="handleClearInventory">
+      <span class="dev-text">清空卡包(Dev)</span>
+    </div>
     <!-- 身份验证失败遮罩 -->
     <div v-if="authError" class="auth-error-overlay">
       <div class="auth-error-box">
@@ -31,7 +35,7 @@
           <button type="button" class="map-icon-btn setting" aria-label="设置" @click="openSettings">
             <img :src="assetManifest.map.buttons.setting" alt="" decoding="async" />
           </button>
-          <div class="chapter-list" aria-label="7大关">
+          <div class="chapter-list" aria-label="8大关">
             <van-button
               v-for="(chapter, index) in chapters"
               :key="chapter.id"
@@ -382,6 +386,7 @@ import { verifyToken, setTokens, doRefreshToken, updateUrlTokens, getRefreshToke
 import LevelSettle from "./components/LevelSettle.vue";
 import CardInventory from "./components/CardInventory.vue";
 import CardDetail from "./components/CardDetail.vue";
+import { useCardSystem } from "./composables/useCardSystem";
 
 const params = new URLSearchParams(window.location.search);
 const initialLevel = Number(params.get("level")) || 128;
@@ -394,6 +399,20 @@ const homeAnimReady = ref(false);
 const showMapRules = ref(false);
 const showCardInventory = ref(false);
 const showCardDetail = ref(false);
+
+const { clearInventory, loadCards } = useCardSystem();
+const handleClearInventory = () => {
+  clearInventory();
+  showToast('本地卡包已清空');
+};
+
+// 每次打开卡包，都强制刷新一下本地数据，确保抽出来的卡能立刻显示
+watch(showCardInventory, (val) => {
+  if (val) {
+    loadCards();
+  }
+});
+
 const selectedCard = ref(null);
 const settleResult = ref(null);
 const settlePhase = ref(0);
@@ -607,9 +626,15 @@ async function initAuth() {
     authError.value = "";
     authRetryable.value = false;
     const gameData = await player.loadFromBackend();
+    
+    // 开发/测试环境隔离：由于前端正在强制进行 Mock 发卡测试，
+    // 这里暂时屏蔽从后端拉取卡片直接覆盖 localStorage 的逻辑，防止出现不认识的旧卡。
+    // 如果后续后端真实逻辑完成并取消了 FORCE_MOCK，可以将下面这几行取消注释恢复。
+    /*
     if (gameData && gameData.cards) {
       window.localStorage.setItem('guizhou-card-inventory', JSON.stringify(gameData.cards));
     }
+    */
   } catch (err) {
     authError.value = err.message || "身份验证失败，无法进入游戏";
     authRetryable.value = !!urlRefreshToken;
@@ -691,14 +716,20 @@ function goGame(level) {
     showToast("先完成前置关卡再来挑战吧");
     return;
   }
+  
+  // 在进入游戏前，确保清理之前的结算状态
+  settleResult.value = null;
+  settlePhase.value = 0;
+  
   game.changeLevel(level);
   screen.value = "game";
   updateUrl("game");
 }
 
 function handleLevelComplete(result) {
+  const isFirstClear = player.getStars(result.level) === 0;
   player.completeLevel(result.level, result.stars);
-  settleResult.value = result;
+  settleResult.value = { ...result, isFirstClear };
   settlePhase.value = 0;
   settleDisplayScore.value = 0;
 
@@ -1218,3 +1249,21 @@ function homeParticleStyle(n) {
 
 showToast({ message: "黄小西准备好啦", duration: 900 });
 </script>
+
+<style scoped>
+.dev-tools {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 9999;
+  background: rgba(0,0,0,0.5);
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  cursor: pointer;
+}
+.dev-tools:active {
+  background: rgba(0,0,0,0.8);
+}
+</style>

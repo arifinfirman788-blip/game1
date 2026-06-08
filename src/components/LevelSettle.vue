@@ -8,9 +8,13 @@
       <div class="settle-reward-frame" :class="{ 'frame-in': show }">
         <img :src="assetManifest.settle.rewardFrame" alt="获得奖励" decoding="async" />
         <CardDraw
+          v-if="result.isFirstClear"
           @view-card="handleViewCard"
           @continue="handleContinue"
         />
+        <div v-else class="already-cleared-prompt">
+          该关卡奖励已发放<br/>再次挑战只能更新积分及星级<br/>无法再次抽取权益
+        </div>
       </div>
 
       <div class="settle-detail-frame" :class="{ 'frame-in': show }">
@@ -216,7 +220,7 @@ defineExpose({ close });
 .settle-reward-frame {
   position: relative;
   width: min(85%, 340px);
-  margin-top: -25px;
+  margin-top: -35px;
   transform: translateY(20px) scale(0.94);
   opacity: 0;
   transition: transform 400ms cubic-bezier(0.16, 1, 0.3, 1) 80ms, opacity 350ms ease 80ms;
@@ -232,6 +236,20 @@ defineExpose({ close });
   width: 100%;
   height: auto;
   display: block;
+}
+
+.already-cleared-prompt {
+  position: absolute;
+  inset: 20% 10% 20%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 13px;
+  color: #8b7355;
+  line-height: 1.6;
+  font-weight: 500;
+  z-index: 5;
 }
 
 .reward-cards {

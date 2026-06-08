@@ -3,11 +3,10 @@
 // ============================================
 // TODO: 后端API接入后，替换为真实数据接口
 
-// 引入本地图片，确保Vite能正确打包并处理路径
+// 引入本地图片作为占位，但主要使用真实的在线实景图片
 import blueCardUrl from '../../image/card-blue.png';
 import purpleCardUrl from '../../image/card-purple.png';
 import goldCardUrl from '../../image/card-gold.png';
-import redCardUrl from '../../image/card-gold.png'; // 暂用金色卡片代替，如果有红色卡片请修改此路径
 
 // 卡牌等级配置
 export const CARD_LEVELS = {
@@ -22,9 +21,9 @@ export const CARD_LEVELS = {
   purple: {
     id: 'purple',
     name: '稀有',
-    shortName: 'SR',
+    shortName: 'AR',
     color: '#9333ea',
-    probability: 0.3,
+    probability: 0.25,
     glowColor: 'rgba(147, 51, 234, 0.9)',
   },
   gold: {
@@ -32,25 +31,25 @@ export const CARD_LEVELS = {
     name: '史诗',
     shortName: 'SSR',
     color: '#eab308',
-    probability: 0.09,
+    probability: 0.05,
     glowColor: 'rgba(234, 179, 8, 0.9)',
   },
   red: {
     id: 'red',
     name: '传说',
-    shortName: 'UR',
+    shortName: 'SR',
     color: '#ef4444',
-    probability: 0.01,
+    probability: 0.1,
     glowColor: 'rgba(239, 68, 68, 0.9)',
   },
 };
 
-// 卡牌图片库（Mock数据）
+// 卡牌图片库（Mock数据，使用真实的网图，这里使用 Picsum 防止 ORB 拦截）
 // TODO: 接入后端后，通过 API GET /api/card/image-pool 获取
 export const CARD_IMAGE_POOL = [
   {
     id: 'img_001',
-    url: blueCardUrl,
+    url: 'https://picsum.photos/seed/hgs/400/600', // 瀑布意境图
     name: '黄果树瀑布',
     description: '亚洲第一大瀑布，气势磅礴',
     level: 'blue',
@@ -59,7 +58,7 @@ export const CARD_IMAGE_POOL = [
   },
   {
     id: 'img_002',
-    url: blueCardUrl,
+    url: 'https://picsum.photos/seed/lb/400/600', // 绿水意境图
     name: '荔波小七孔',
     description: '地球腰带上的绿宝石',
     level: 'blue',
@@ -68,7 +67,7 @@ export const CARD_IMAGE_POOL = [
   },
   {
     id: 'img_003',
-    url: purpleCardUrl,
+    url: 'https://picsum.photos/seed/xj/400/600', // 苗寨意境图
     name: '西江千户苗寨',
     description: '世界上最大的苗族聚居村寨',
     level: 'purple',
@@ -77,7 +76,7 @@ export const CARD_IMAGE_POOL = [
   },
   {
     id: 'img_004',
-    url: purpleCardUrl,
+    url: 'https://picsum.photos/seed/zy/400/600', // 古镇意境图
     name: '镇远古镇',
     description: '滇楚锁钥，黔东门户',
     level: 'purple',
@@ -86,7 +85,7 @@ export const CARD_IMAGE_POOL = [
   },
   {
     id: 'img_005',
-    url: goldCardUrl,
+    url: 'https://picsum.photos/seed/fj/400/600', // 梵净山红云金顶意境图
     name: '梵净山',
     description: '梵天净土，弥勒道场',
     level: 'gold',
@@ -95,7 +94,7 @@ export const CARD_IMAGE_POOL = [
   },
   {
     id: 'img_006',
-    url: goldCardUrl,
+    url: 'https://picsum.photos/seed/cs/400/600', // 丹霞山意境图
     name: '赤水丹霞',
     description: '世界自然遗产，千瀑之城',
     level: 'gold',
@@ -104,7 +103,7 @@ export const CARD_IMAGE_POOL = [
   },
   {
     id: 'img_007',
-    url: redCardUrl,
+    url: 'https://picsum.photos/seed/zyhy/400/600', // 会议建筑意境图
     name: '遵义会议会址',
     description: '历史转折点',
     level: 'red',
@@ -113,7 +112,7 @@ export const CARD_IMAGE_POOL = [
   },
   {
     id: 'img_008',
-    url: blueCardUrl,
+    url: 'https://picsum.photos/seed/sty/400/600', // 酸汤鱼意境图
     name: '凯里酸汤鱼',
     description: '一口鲜酸开胃，像瀑布水汽一样爽快',
     level: 'blue',
@@ -122,12 +121,30 @@ export const CARD_IMAGE_POOL = [
   },
   {
     id: 'img_009',
-    url: purpleCardUrl,
+    url: 'https://picsum.photos/seed/yrf/400/600', // 羊肉粉意境图
     name: '遵义羊肉粉',
     description: '热汤滚香，米粉柔滑，赶路也要吃得踏实',
     level: 'purple',
     location: '遵义市',
     type: 'food',
+  },
+  {
+    id: 'img_010',
+    url: 'https://picsum.photos/seed/cwm/400/600', // 肠旺面意境图
+    name: '肠旺面',
+    description: '肥肠与血旺的完美交响',
+    level: 'blue',
+    location: '贵阳市',
+    type: 'food',
+  },
+  {
+    id: 'img_011',
+    url: 'https://picsum.photos/seed/tht/400/600', // 溶洞意境图
+    name: '天河潭',
+    description: '水旱溶洞，奇特喀斯特景观',
+    level: 'gold',
+    location: '贵阳市',
+    type: 'scenic',
   }
 ];
 
@@ -141,50 +158,71 @@ export const CARD_TYPES = {
 // 权益池（Mock数据）
 // TODO: 接入后端后，通过 API GET /api/card/reward-pool 获取
 export const REWARD_POOL = [
+  // 游戏道具 (R卡 蓝, AR卡 紫)
   {
-    id: 'reward_001',
-    name: '游戏道具礼包',
-    description: '锤子×3 + 步数+5',
+    id: 'reward_ingame_001',
+    name: '游戏道具: 锤子+1',
+    description: '砸碎任意一个障碍物',
     type: 'ingame',
-    applicableLevels: ['blue'],
-    miniProgramPath: '',
-    icon: '🎁',
-  },
-  {
-    id: 'reward_002',
-    name: '景区门票9折',
-    description: '贵州任意景区门票9折优惠',
-    type: 'discount',
     applicableLevels: ['blue', 'purple'],
-    miniProgramPath: '/pages/ticket/list',
-    icon: '🎫',
-  },
-  {
-    id: 'reward_003',
-    name: '酸汤鱼代金券',
-    description: '满100减20元',
-    type: 'coupon',
-    applicableLevels: ['purple', 'gold'],
-    miniProgramPath: '/pages/coupon/detail?id=123',
-    icon: '🍲',
-  },
-  {
-    id: 'reward_004',
-    name: '苗银手作体验',
-    description: '免费体验苗银锻造1次',
-    type: 'experience',
-    applicableLevels: ['gold', 'red'],
-    miniProgramPath: '/pages/experience/silver',
+    miniProgramPath: '',
     icon: '🔨',
   },
   {
-    id: 'reward_005',
-    name: '贵州5日游免单',
-    description: '包含机票+酒店+门票',
-    type: 'grand',
+    id: 'reward_ingame_002',
+    name: '游戏道具: 魔法瓶+1',
+    description: '消除同色元素',
+    type: 'ingame',
+    applicableLevels: ['blue', 'purple'],
+    miniProgramPath: '',
+    icon: '🧪',
+  },
+  // 代金券 (SR卡 红)
+  {
+    id: 'reward_voucher_001',
+    name: '酸汤鱼代金券',
+    description: '满100减20元',
+    type: 'voucher',
     applicableLevels: ['red'],
-    miniProgramPath: '/pages/travel/detail?id=999',
-    icon: '✈️',
+    miniProgramPath: '',
+    icon: '🍲',
+  },
+  {
+    id: 'reward_voucher_002',
+    name: '特产礼包代金券',
+    description: '满200减50元',
+    type: 'voucher',
+    applicableLevels: ['red'],
+    miniProgramPath: '',
+    icon: '🎁',
+  },
+  // 1分购 (SSR卡 金)
+  {
+    id: 'reward_discount_001',
+    name: '黄果树门票1分购',
+    description: '1分钱购买黄果树瀑布门票',
+    type: 'discount',
+    applicableLevels: ['gold'],
+    miniProgramPath: '/pages/ticket/detail?id=hgs',
+    icon: '🎫',
+  },
+  {
+    id: 'reward_discount_002',
+    name: '小七孔门票1分购',
+    description: '1分钱购买荔波小七孔门票',
+    type: 'discount',
+    applicableLevels: ['gold'],
+    miniProgramPath: '/pages/ticket/detail?id=xqk',
+    icon: '🎫',
+  },
+  {
+    id: 'reward_discount_003',
+    name: '苗银手作体验1分购',
+    description: '1分钱体验苗银锻造',
+    type: 'discount',
+    applicableLevels: ['gold'],
+    miniProgramPath: '/pages/experience/silver',
+    icon: '🔨',
   },
 ];
 
@@ -208,21 +246,43 @@ export async function mockDrawCard() {
   const random = Math.random();
   let level;
   if (random < CARD_LEVELS.red.probability) {
-    level = 'red';
+    level = 'red'; // SR 代金券
   } else if (random < CARD_LEVELS.red.probability + CARD_LEVELS.gold.probability) {
-    level = 'gold';
+    level = 'gold'; // SSR 1分购
   } else if (random < CARD_LEVELS.red.probability + CARD_LEVELS.gold.probability + CARD_LEVELS.purple.probability) {
-    level = 'purple';
+    level = 'purple'; // AR 游戏道具
   } else {
-    level = 'blue';
+    level = 'blue'; // R 游戏道具
+  }
+
+  // 获取用户已经拥有的权益（用于代金券和1分购的去重）
+  const stored = localStorage.getItem('guizhou-card-inventory');
+  let ownedRewardIds = [];
+  if (stored) {
+    try {
+      const parsedCards = JSON.parse(stored);
+      ownedRewardIds = parsedCards.map(c => c.reward?.id).filter(Boolean);
+    } catch (e) {}
+  }
+
+  // 从适用权益中筛选，对于 voucher 和 discount 需要去重
+  let applicableRewards = REWARD_POOL.filter(r => r.applicableLevels.includes(level));
+  if (level === 'red' || level === 'gold') {
+    applicableRewards = applicableRewards.filter(r => !ownedRewardIds.includes(r.id));
+    // 如果当前级别的所有奖品都已经抽过了，就降级为游戏道具 (blue)
+    if (applicableRewards.length === 0) {
+      level = 'blue';
+      applicableRewards = REWARD_POOL.filter(r => r.applicableLevels.includes('blue'));
+    }
   }
 
   // 从对应等级的图片中随机选择
   const levelImages = CARD_IMAGE_POOL.filter(img => img.level === level);
-  const image = levelImages[Math.floor(Math.random() * levelImages.length)];
+  // 如果没有对应等级的图片（极少情况），使用所有图片兜底
+  const imagesPool = levelImages.length > 0 ? levelImages : CARD_IMAGE_POOL;
+  const image = imagesPool[Math.floor(Math.random() * imagesPool.length)];
 
-  // 从适用权益中随机选择
-  const applicableRewards = REWARD_POOL.filter(r => r.applicableLevels.includes(level));
+  // 从过滤后的适用权益中随机选择
   const reward = applicableRewards[Math.floor(Math.random() * applicableRewards.length)];
 
   return {
@@ -279,6 +339,7 @@ export async function mockGetUserCards() {
       const template = CARD_IMAGE_POOL.find(img => img.id === card.imageId);
       if (template) {
         card.imageUrl = template.url;
+        card.name = template.name; // 同步更新名称，防止缓存里的旧名称
       }
       return card;
     });

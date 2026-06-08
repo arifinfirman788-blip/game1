@@ -96,8 +96,10 @@ function loadProgress() {
   }
 }
 
+const globalProgress = reactive(loadProgress());
+
 export function usePlayerProgress() {
-  const progress = reactive(loadProgress());
+  const progress = globalProgress;
 
   watch(
     progress,
@@ -164,6 +166,11 @@ export function usePlayerProgress() {
       if (stage === 20) return { bottle: 1, mask: 1 };
     }
     return { hammer: 1 };
+  }
+
+  function addBooster(booster, count = 1) {
+    progress.inventory[booster] = Number(progress.inventory[booster] || 0) + count;
+    syncToBackend();
   }
 
   function consumeBooster(booster) {
@@ -267,6 +274,7 @@ export function usePlayerProgress() {
     isRewardClaimable,
     claimReward,
     getBoosterReward,
+    addBooster,
     consumeBooster,
     resetInventory,
     seedRewardTestProgress,
