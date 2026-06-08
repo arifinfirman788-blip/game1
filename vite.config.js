@@ -9,9 +9,10 @@ export default defineConfig(({ mode }) => {
     base: env.VITE_BASE || "/",
     server: {
       proxy: {
-        '/game/api': {
-          target: env.VITE_DEV_PROXY_TARGET || 'http://localhost:8080',
+        '/api': {
+          target: env.VITE_DEV_PROXY_TARGET || 'https://scenicagent-h5-game-test.aihuangxiaoxi.com/api',
           changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api/, ''),
         },
       },
     },

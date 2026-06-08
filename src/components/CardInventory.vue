@@ -48,12 +48,14 @@
         v-for="card in filteredCards"
         :key="card.instanceId"
         class="inventory-card"
-        :class="[card.level, { 'redeemed': card.status === 'redeemed' }]"
+        :class="[card.level, { 'redeemed': card.status === 'redeemed' || card.status === 'used' || card.status === 'added' }]"
         @click="handleCardClick(card)"
       >
         <div class="card-image">
           <img :src="card.imageUrl" :alt="card.name" decoding="async" />
-          <div v-if="card.status === 'redeemed'" class="redeemed-badge">已兑换</div>
+          <div v-if="card.status === 'redeemed' || card.status === 'used' || card.status === 'added'" class="redeemed-badge">
+            {{ card.status === 'added' ? '已添加' : (card.status === 'used' ? '已核销' : '已兑换') }}
+          </div>
         </div>
         <div class="card-info">
           <span class="card-name">{{ card.name }}</span>
@@ -304,15 +306,17 @@ function handleCardClick(card) {
 
 .cards-grid {
   flex: 1;
-  display: grid;
-  /* 调整为更紧凑的手机端三列/两列混合布局，或者保留 2 列但调整高度比例 */
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  /* 调整为更原生的瀑布流排列/紧凑多列布局 */
+  display: flex;
+  flex-wrap: wrap;
   gap: 12px;
   padding: 12px 16px;
   overflow-y: auto;
+  align-content: flex-start;
 }
 
 .inventory-card {
+  width: calc(50% - 6px); /* 保持两列排列，间距12px的一半 */
   background: rgba(255, 255, 255, 0.95);
   border-radius: 8px;
   overflow: hidden;

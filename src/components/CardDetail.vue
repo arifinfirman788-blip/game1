@@ -30,35 +30,54 @@
         </div>
       </div>
 
-      <!-- 兑换区域 -->
-      <div v-if="card?.status === 'unused'" class="redeem-section">
-        <button
-          class="redeem-btn"
-          :disabled="isRedeeming"
-          @click="handleRedeem"
-        >
-          <span v-if="isRedeeming">兑换中...</span>
-          <span v-else>立即兑换</span>
-        </button>
-        <p class="redeem-hint">兑换后请在24小时内使用</p>
-      </div>
-
-      <!-- 已兑换状态 -->
-      <div v-else-if="card?.status === 'redeemed'" class="redeemed-section">
-        <div class="code-display">
-          <span class="code-label">兑换码</span>
-          <span class="code-value">{{ card?.redemptionCode }}</span>
-          <button class="copy-btn" @click="handleCopyCode">
-            复制
+      <!-- 代金券：商家核销区域 -->
+      <template v-if="card?.reward?.type === 'voucher'">
+        <div v-if="card?.status === 'unused'" class="redeem-section">
+          <button
+            class="redeem-btn merchant-btn"
+            :disabled="isRedeeming"
+            @click="handleMerchantRedeem"
+          >
+            <span v-if="isRedeeming">核销中...</span>
+            <span v-else>商家核销</span>
           </button>
+          <p class="redeem-hint">请向商家出示此页面，由商家点击核销</p>
         </div>
-        <button class="mini-program-btn" @click="handleJumpToMiniProgram">
-          跳转小程序使用
-        </button>
-        <p class="expire-hint" v-if="card?.expireAt">
-          有效期至：{{ formatExpireTime(card.expireAt) }}
-        </p>
-      </div>
+        <div v-else-if="card?.status === 'redeemed' || card?.status === 'used'" class="redeemed-section">
+          <div class="used-stamp">已核销</div>
+          <p class="expire-hint" v-if="card?.usedAt">核销时间：{{ formatExpireTime(card.usedAt) }}</p>
+        </div>
+      </template>
+
+      <!-- 1分购：生成兑换码区域 -->
+      <template v-else-if="card?.reward?.type === 'discount'">
+        <div v-if="card?.status === 'unused'" class="redeem-section">
+          <button
+            class="redeem-btn"
+            :disabled="isRedeeming"
+            @click="handleRedeem"
+          >
+            <span v-if="isRedeeming">兑换中...</span>
+            <span v-else>立即兑换 (1分购)</span>
+          </button>
+          <p class="redeem-hint">兑换后请前往小程序完成购买</p>
+        </div>
+        <div v-else-if="card?.status === 'redeemed'" class="redeemed-section">
+          <div class="code-display">
+            <span class="code-label">兑换码</span>
+            <span class="code-value">{{ card?.redemptionCode }}</span>
+            <button class="copy-btn" @click="handleCopyCode">
+              复制
+            </button>
+          </div>
+          <button class="mini-program-btn" @click="handleJumpToMiniProgram">
+            跳转小程序购买
+          </button>
+          <p class="expire-hint" v-if="card?.expireAt">
+            有效期至：{{ formatExpireTime(card.expireAt) }}
+          </p>
+        </div>
+      </template>
     </div>
   </section>
 </template>
@@ -91,6 +110,23 @@ async function handleRedeem() {
     props.card.status = 'redeemed';
     props.card.redemptionCode = result.redemptionCode;
     props.card.expireAt = result.expireAt;
+  }
+}
+
+async function handleMerchantRedeem() {
+  if (!props.card || isRedeeming.value) return;
+
+  const confirmed = window.confirm("请确认由商家操作：确定要核销该代金券吗？");
+  if (!confirmed) return;
+
+  isRedeeming.value = true;
+  // TODO: 后续可以替换为专门的核销API
+  const result = await redeemCard(props.card.instanceId);
+  isRedeeming.value = false;
+
+  if (result) {
+    props.card.status = 'used';
+    props.card.usedAt = new Date().toISOString();
   }
 }
 
@@ -301,6 +337,24 @@ function formatExpireTime(isoString) {
   border-radius: 24px;
   cursor: pointer;
   transition: transform 200ms ease, opacity 200ms ease;
+}
+
+.redeem-btn.merchant-btn {
+  background: linear-gradient(135deg, #f87171 0%, #dc2626 100%);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+.used-stamp {
+  font-size: 20px;
+  font-weight: 800;
+  color: #dc2626;
+  border: 3px solid #dc2626;
+  border-radius: 8px;
+  padding: 8px 24px;
+  display: inline-block;
+  transform: rotate(-10deg);
+  margin: 10px 0;
+  opacity: 0.8;
 }
 
 .redeem-btn:disabled {

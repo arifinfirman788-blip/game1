@@ -12,7 +12,7 @@
               'glow': isGlowing && glowingIndex === index - 1,
               'flip': isFlipping && flippingIndex === index - 1
             },
-            (isGlowing || isFlipping) && (glowingIndex === index - 1 || flippingIndex === index - 1) && predictedLevel ? `glow-${predictedLevel}` : ''
+            ((isGlowing && glowingIndex === index - 1) || (isFlipping && flippingIndex === index - 1)) && predictedLevel ? `glow-${predictedLevel}` : ''
           ]"
           @click="handleDraw(index - 1)"
         >
@@ -23,20 +23,25 @@
       <!-- 抽中的卡牌正面 -->
       <div
         v-else
-        class="draw-card front"
-        :class="[drawnCard.level, 'revealed']"
+        class="draw-card front physical-card"
+        :class="[(drawnCard.level || drawnCard.cardLevel || 'blue').toLowerCase(), 'revealed']"
+        :style="{ '--level-color': CARD_LEVELS[(drawnCard.level || drawnCard.cardLevel || 'blue').toLowerCase()]?.color }"
       >
-        <div class="card-image-wrapper">
-          <img :src="drawnCard.imageUrl" :alt="drawnCard.name" decoding="async" />
-          <!-- 卡牌信息叠加在图片上 -->
-          <div class="card-info-overlay">
-            <div class="card-name">{{ drawnCard.name }}</div>
-            <div class="card-level" :style="{ color: CARD_LEVELS[drawnCard.level]?.color }">
-              {{ CARD_LEVELS[drawnCard.level]?.shortName }}
-            </div>
-            <div class="card-reward">
-              <span class="reward-icon">{{ drawnCard.reward?.icon }}</span>
-              <span class="reward-name">{{ drawnCard.reward?.name }}</span>
+        <div class="physical-card-inner">
+          <!-- 上方风景图 -->
+          <div class="card-top-scenic">
+            <img :src="drawnCard.imageUrl" :alt="drawnCard.name" decoding="async" />
+            <div class="card-badge">{{ CARD_LEVELS[(drawnCard.level || drawnCard.cardLevel || 'blue').toLowerCase()]?.shortName }}</div>
+          </div>
+          <!-- 下方权益区 -->
+          <div class="card-bottom-content">
+            <div class="scenic-name">{{ drawnCard.name }}</div>
+            <div class="divider"></div>
+            <div class="reward-box">
+              <div class="reward-title">包含权益</div>
+              <div class="reward-info">
+                <span class="reward-name">{{ drawnCard.reward?.name }}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -68,7 +73,8 @@ async function handleDraw(index) {
   // 第一阶段：发光前先获取抽卡结果，以知晓颜色
   const card = await drawCard();
   if (card) {
-    predictedLevel.value = card.level;
+    // 确保level统一为小写，防止后端返回大写导致样式不匹配
+    predictedLevel.value = (card.level || card.cardLevel || 'blue').toLowerCase();
   }
 
   isGlowing.value = true;
@@ -96,7 +102,7 @@ async function handleDraw(index) {
 <style scoped>
 .card-draw-container {
   position: absolute;
-  inset: 18% 12% 10%;
+  inset: 12% 10% 12%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -115,11 +121,12 @@ async function handleDraw(index) {
 
 .card-draw-area.has-drawn {
   gap: 0;
+  transform: translateY(35px);
 }
 
 .draw-card {
-  width: 22%;
-  max-width: 60px;
+  width: 25%;
+  max-width: 55px;
   cursor: pointer;
   transition: transform 300ms ease, opacity 400ms ease;
   -webkit-tap-highlight-color: transparent;
@@ -190,96 +197,115 @@ async function handleDraw(index) {
   border-radius: 6px;
 }
 
-/* 正面卡牌样式 */
-.draw-card.front {
-  width: 40%;
-  max-width: 100px;
-  margin-top: 40px;
+/* 正面卡牌样式 - 实体卡片造型 */
+.draw-card.front.physical-card {
+  width: 50%;
+  max-width: 110px;
+  margin-top: 0px;
   animation: cardReveal 500ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.draw-card.front.blue {
-  filter: drop-shadow(0 0 12px rgba(59, 130, 246, 0.9))
-          drop-shadow(0 0 24px rgba(59, 130, 246, 0.7));
+.physical-card-inner {
+  width: 100%;
+  background: #fff;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15), inset 0 0 0 1px var(--level-color, #ccc);
+  display: flex;
+  flex-direction: column;
 }
 
-.draw-card.front.purple {
-  filter: drop-shadow(0 0 12px rgba(147, 51, 234, 0.9))
-          drop-shadow(0 0 24px rgba(147, 51, 234, 0.7));
-}
-
-.draw-card.front.gold {
-  filter: drop-shadow(0 0 16px rgba(234, 179, 8, 0.9))
-          drop-shadow(0 0 32px rgba(234, 179, 8, 0.7));
-}
-
-.draw-card.front.red {
-  filter: drop-shadow(0 0 20px rgba(239, 68, 68, 0.9))
-          drop-shadow(0 0 40px rgba(239, 68, 68, 0.7));
-}
-
-.card-image-wrapper {
+.card-top-scenic {
   position: relative;
   width: 100%;
+  height: 85px;
+  background-color: #f0f0f0;
 }
 
-.card-image-wrapper img {
+.card-top-scenic img {
   width: 100%;
-  height: auto;
-  border-radius: 6px;
+  height: 100%;
+  object-fit: cover;
   display: block;
 }
 
-/* 卡牌信息叠加层 */
-.card-info-overlay {
+.card-badge {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 8px 6px;
-  background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.7) 30%, rgba(0, 0, 0, 0.85) 100%);
-  border-radius: 0 0 6px 6px;
-  text-align: center;
+  top: 4px;
+  left: 4px;
+  background: var(--level-color, #ccc);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 4px;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
 }
 
-.card-name {
+.card-bottom-content {
+  padding: 6px 4px;
+  text-align: center;
+  background: linear-gradient(180deg, #ffffff 0%, #fdfbf7 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.scenic-name {
   font-size: 11px;
   font-weight: 700;
-  color: #fff;
+  color: #333;
+  margin-bottom: 4px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
 }
 
-.card-level {
-  font-size: 10px;
-  font-weight: 600;
-  margin-top: 2px;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+.divider {
+  width: 70%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0,0,0,0.1), transparent);
+  margin: 0 auto 4px;
 }
 
-.card-reward {
+.reward-box {
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.reward-title {
+  font-size: 8px;
+  color: #888;
+}
+
+.reward-info {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 3px;
-  margin-top: 4px;
-  padding: 2px 6px;
   background: rgba(255, 244, 209, 0.95);
-  border-radius: 4px;
-  font-size: 9px;
-  color: #5a3d1a;
+  padding: 2px 4px;
+  border-radius: 8px;
+  border: 1px solid rgba(217, 119, 6, 0.2);
+  width: 95%;
+  box-sizing: border-box;
 }
 
-.reward-icon {
-  font-size: 10px;
-}
+/* 删除reward-icon相关样式 */
 
 .reward-name {
-  white-space: nowrap;
+  font-size: 9px;
+  color: #d97706;
+  font-weight: 600;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: normal;
+  line-height: 1.1;
+  text-align: center;
 }
 
 @keyframes cardFloat {
