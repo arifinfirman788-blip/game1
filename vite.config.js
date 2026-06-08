@@ -1,6 +1,5 @@
 import { defineConfig, loadEnv } from "vite";
 import vue from "@vitejs/plugin-vue";
-// import viteImagemin from "vite-plugin-imagemin";
 import viewport from "postcss-mobile-forever";
 
 export default defineConfig(({ mode }) => {
@@ -10,9 +9,10 @@ export default defineConfig(({ mode }) => {
     base: env.VITE_BASE || "/",
     server: {
       proxy: {
-        '/game/api': {
-          target: env.VITE_DEV_PROXY_TARGET || 'http://localhost:8080',
+        '/api': {
+          target: env.VITE_DEV_PROXY_TARGET || 'https://scenicagent-h5-game-test.aihuangxiaoxi.com/api',
           changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api/, ''),
         },
       },
     },
@@ -29,8 +29,7 @@ export default defineConfig(({ mode }) => {
       },
     },
     plugins: [
-      vue(),
-      // viteImagemin 已禁用 — Windows 下原生二进制编译失败，生产构建时可在 CI 中启用
+      vue()
     ],
   };
 });

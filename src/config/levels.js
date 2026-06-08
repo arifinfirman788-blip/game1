@@ -1,6 +1,6 @@
 export const BOARD_SIZE = 8;
 export const LEVELS_PER_CHAPTER = 100;
-export const TOTAL_CHAPTERS = 7;
+export const TOTAL_CHAPTERS = 8;
 export const TOTAL_LEVELS = LEVELS_PER_CHAPTER * TOTAL_CHAPTERS;
 export const REWARD_LEVELS = Array.from({ length: LEVELS_PER_CHAPTER / 20 }, (_, groupIndex) => {
   const offset = groupIndex * 20;
@@ -30,6 +30,7 @@ export const chapters = [
   { id: "chishui", name: "赤水丹霞", title: "第五章 丹霞竹香宴", scenicSpot: "赤水丹霞", featureFood: "竹笋宴" },
   { id: "wanfenglin", name: "万峰林", title: "第六章 峰林稻花宴", scenicSpot: "万峰林", featureFood: "豆腐圆子" },
   { id: "fanjing", name: "梵净山", title: "第七章 云顶黄粑香", scenicSpot: "梵净山", featureFood: "黄粑" },
+  { id: "tianhetan", name: "天河潭", title: "第八章 溶洞肠旺香", scenicSpot: "天河潭", featureFood: "肠旺面" },
 ];
 
 export const blockerRules = [
