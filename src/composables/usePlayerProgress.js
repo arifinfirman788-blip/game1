@@ -7,6 +7,9 @@ const STORAGE_KEY = "guizhou-match3-progress";
 /** 当前登录用户信息（由App.vue初始化设置） */
 let currentUser = { uid: '', phone: '' };
 
+/** 第三方小程序 AppID（由后端配置下发） */
+let _miniProgramAppid = '';
+
 const GAME_USER_KEY = 'guizhou-game-user';
 let userSwitched = false;
 
@@ -28,6 +31,14 @@ export function setGameUser(uid, phone) {
 
 export function getGameUser() {
   return currentUser;
+}
+
+export function setMiniProgramAppid(appid) {
+  _miniProgramAppid = appid || '';
+}
+
+export function getMiniProgramAppid() {
+  return _miniProgramAppid;
 }
 
 export function isUserSwitched() {
@@ -200,7 +211,8 @@ export function usePlayerProgress() {
 
   /** 同步进度到后端 */
   async function syncToBackend() {
-    if (!currentUser.uid || !currentUser.phone) return;
+    // V1.1.0：用户身份从 (uid, phone) 简化为 uid（phone 仅业务透传）
+    if (!currentUser.uid) return;
     try {
       await syncProgress({ ...progress });
     } catch (err) {
@@ -210,7 +222,7 @@ export function usePlayerProgress() {
 
   /** 从后端加载进度并同步到本地 */
   async function loadFromBackend() {
-    if (!currentUser.uid || !currentUser.phone) return;
+    if (!currentUser.uid) return;
     try {
       // 用户切换时，先重置为默认值
       if (userSwitched) {

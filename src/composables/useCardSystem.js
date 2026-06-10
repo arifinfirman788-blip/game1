@@ -7,7 +7,7 @@ import {
   CARD_TYPES,
   CARD_IMAGE_POOL
 } from '../config/cardSystem';
-import { drawCardApi, redeemCardApi } from '../api/gameApi';
+import { drawCardApi, redeemCardApi, consumeCardApi } from '../api/gameApi';
 import { getGameUser, usePlayerProgress } from './usePlayerProgress';
 import { showToast } from 'vant';
 
@@ -120,12 +120,13 @@ export function useCardSystem() {
     try {
       const user = getGameUser();
       let card;
-      // 强制开启前端Mock测试，为了给您展示严格的“3种权益”及“1分购/代金券去重”逻辑。
-      // 后续如果后端接口开发完毕，将 FORCE_MOCK 改为 false 即可。
-      const FORCE_MOCK = true; 
-      
-      if (user.uid && user.phone && !FORCE_MOCK) {
+      // V1.1.0：后端已实现 base_price/voucher 限抽 + game_item 降级逻辑
+      // 用户登录后默认调用后端真实接口；未登录时降级到本地 mock
+      const FORCE_MOCK = false;
+
+      if (user.uid && !FORCE_MOCK) {
         // 调用后端API（token自动带在header中）
+        // 返回字段含 productType / productCode / callbackToken 等 V1.1.0 新字段
         card = await drawCardApi();
       } else {
         // 降级：使用本地mock逻辑
@@ -141,7 +142,7 @@ export function useCardSystem() {
         else if (card.reward.name.includes('花')) boosterType = 'flower';
         else if (card.reward.name.includes('面具')) boosterType = 'mask';
         else if (card.reward.name.includes('手')) boosterType = 'hand';
-        
+
         player.addBooster(boosterType, 1);
         card.status = 'added'; // 标记为已使用（已添加至背包）
       }
@@ -159,15 +160,16 @@ export function useCardSystem() {
     }
   }
 
-  // 兑换卡牌
+  // 兑换卡牌（V1.1.0：仅 base_price 类型可生成兑换码；voucher/game_item 由后端拒绝）
   async function redeemCard(instanceId) {
     state.isLoading = true;
     state.error = null;
     try {
       const user = getGameUser();
       let result;
-      if (user.uid && user.phone) {
+      if (user.uid) {
         // 调用后端API（token自动带在header中）
+        // V1.1.0 返回字段：redemptionCode / expireAt / miniProgramPath / callbackToken
         result = await redeemCardApi(instanceId);
       } else {
         // 降级：使用本地mock逻辑
@@ -181,6 +183,10 @@ export function useCardSystem() {
         card.status = 'redeemed';
         card.redemptionCode = result.redemptionCode;
         card.expireAt = result.expireAt;
+        // V1.1.0：保存 callbackToken 以便后续核销使用
+        if (result.callbackToken) {
+          card.callbackToken = result.callbackToken;
+        }
         saveToStorage();
       }
 
@@ -189,6 +195,38 @@ export function useCardSystem() {
       state.error = err.message;
       console.error('兑换卡牌失败:', err);
       showToast(err.message || '兑换失败');
+      throw err;
+    } finally {
+      state.isLoading = false;
+    }
+  }
+
+  // 核销卡牌（V1.1.0 新增）
+  // 用于商家核销 voucher 或 base_price 类型的卡片
+  // 需要事先已 redeem 获得 callbackToken
+  async function consumeCard(instanceId, callbackToken) {
+    state.isLoading = true;
+    state.error = null;
+    try {
+      const user = getGameUser();
+      if (user.uid && callbackToken) {
+        // 调用后端核销接口（无需 accessToken）
+        await consumeCardApi(instanceId, callbackToken);
+      }
+      // 更新本地状态
+      const card = state.cards.find(c => c.instanceId === instanceId);
+      if (card) {
+        card.status = 'consumed';
+        card.consumedAt = new Date().toISOString();
+        // 销毁本地保存的 callbackToken
+        card.callbackToken = null;
+        saveToStorage();
+      }
+      return true;
+    } catch (err) {
+      state.error = err.message;
+      console.error('核销卡牌失败:', err);
+      showToast(err.message || '核销失败');
       throw err;
     } finally {
       state.isLoading = false;
@@ -216,6 +254,7 @@ export function useCardSystem() {
     loadFromBackend,
     drawCard,
     redeemCard,
+    consumeCard,
     CARD_LEVELS,
     CARD_TYPES,
     availableLocations,

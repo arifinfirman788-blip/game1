@@ -30,52 +30,50 @@
         </div>
       </div>
 
-      <!-- 代金券：商家核销区域 -->
-      <template v-if="card?.reward?.type === 'voucher'">
+      <!-- 代金券(Voucher)：查看代金券编码 -->
+      <template v-if="card?.productType === 'voucher'">
+        <div v-if="card?.status === 'unused'" class="redeem-section">
+          <!-- 查看代金券编码 -->
+          <button class="view-code-btn" @click="toggleCodeVisible">
+            {{ codeVisible ? '隐藏代金券编码' : '查看代金券编码' }}
+          </button>
+          <div class="voucher-code-wrap" :class="{ 'open': codeVisible }">
+            <div class="voucher-code-inner">
+              <span class="voucher-code-label">代金券编码</span>
+              <span class="voucher-code-value">{{ card?.instanceId }}</span>
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <!-- 底价购(base_price)：立即兑换 -->
+      <template v-else-if="card?.productType === 'base_price'">
         <div v-if="card?.status === 'unused'" class="redeem-section">
           <button
             class="redeem-btn merchant-btn"
             :disabled="isRedeeming"
-            @click="handleMerchantRedeem"
-          >
-            <span v-if="isRedeeming">核销中...</span>
-            <span v-else>商家核销</span>
-          </button>
-          <p class="redeem-hint">请向商家出示此页面，由商家点击核销</p>
-        </div>
-        <div v-else-if="card?.status === 'redeemed' || card?.status === 'used'" class="redeemed-section">
-          <div class="used-stamp">已核销</div>
-          <p class="expire-hint" v-if="card?.usedAt">核销时间：{{ formatExpireTime(card.usedAt) }}</p>
-        </div>
-      </template>
-
-      <!-- 1分购：生成兑换码区域 -->
-      <template v-else-if="card?.reward?.type === 'discount'">
-        <div v-if="card?.status === 'unused'" class="redeem-section">
-          <button
-            class="redeem-btn"
-            :disabled="isRedeeming"
             @click="handleRedeem"
           >
             <span v-if="isRedeeming">兑换中...</span>
-            <span v-else>立即兑换 (1分购)</span>
+            <span v-else>立即兑换</span>
           </button>
           <p class="redeem-hint">兑换后请前往小程序完成购买</p>
         </div>
         <div v-else-if="card?.status === 'redeemed'" class="redeemed-section">
-          <div class="code-display">
-            <span class="code-label">兑换码</span>
-            <span class="code-value">{{ card?.redemptionCode }}</span>
-            <button class="copy-btn" @click="handleCopyCode">
-              复制
-            </button>
+          <div class="voucher-code-wrap open">
+            <div class="voucher-code-inner">
+              <span class="voucher-code-label">兑换码</span>
+              <span class="voucher-code-value">{{ card?.redemptionCode }}</span>
+              <button class="copy-btn" @click="handleCopyCode">复制</button>
+            </div>
           </div>
           <button class="mini-program-btn" @click="handleJumpToMiniProgram">
-            跳转小程序购买
+            去购买
           </button>
-          <p class="expire-hint" v-if="card?.expireAt">
-            有效期至：{{ formatExpireTime(card.expireAt) }}
-          </p>
+        </div>
+        <div v-else-if="card?.status === 'consumed' || card?.status === 'used'" class="redeemed-section">
+          <div class="used-stamp">已核销</div>
+          <p class="expire-hint" v-if="card?.consumedAt || card?.usedAt">核销时间：{{ formatExpireTime(card.consumedAt || card.usedAt) }}</p>
         </div>
       </template>
     </div>
@@ -86,6 +84,8 @@
 import { ref } from 'vue';
 import { CARD_LEVELS } from '../config/cardSystem';
 import { useCardSystem } from '../composables/useCardSystem';
+import { getMiniProgramAppid } from '../composables/usePlayerProgress';
+import { showToast } from 'vant';
 
 const emit = defineEmits(['close']);
 
@@ -97,6 +97,11 @@ const props = defineProps({
 const { redeemCard } = useCardSystem();
 
 const isRedeeming = ref(false);
+const codeVisible = ref(false);
+
+function toggleCodeVisible() {
+  codeVisible.value = !codeVisible.value;
+}
 
 async function handleRedeem() {
   if (!props.card || isRedeeming.value) return;
@@ -113,45 +118,48 @@ async function handleRedeem() {
   }
 }
 
-async function handleMerchantRedeem() {
-  if (!props.card || isRedeeming.value) return;
-
-  const confirmed = window.confirm("请确认由商家操作：确定要核销该代金券吗？");
-  if (!confirmed) return;
-
-  isRedeeming.value = true;
-  // TODO: 后续可以替换为专门的核销API
-  const result = await redeemCard(props.card.instanceId);
-  isRedeeming.value = false;
-
-  if (result) {
-    props.card.status = 'used';
-    props.card.usedAt = new Date().toISOString();
-  }
-}
-
 function handleCopyCode() {
   if (props.card?.redemptionCode) {
     navigator.clipboard?.writeText(props.card.redemptionCode);
-    // TODO: 显示复制成功提示
+    showToast({ message: '已复制', duration: 2000, icon: 'success' });
   }
 }
 
 function handleJumpToMiniProgram() {
-  const path = props.card?.reward?.miniProgramPath || '/pages/index/index';
+  let path = props.card?.reward?.miniProgramPath || '/pages/index/index';
 
-  // TODO: 替换为真实的小程序appId
-  const miniProgramAppId = 'wx1234567890abcdef';
+  // 替换模板变量：${productCode} 和 ${redeemCode}
+  if (props.card) {
+    path = path
+      .replace('${productCode}', props.card.productCode || '')
+      .replace('${redeemCode}', props.card.redemptionCode || '');
+  }
 
-  // 微信小程序跳转
-  if (window.wx) {
-    wx.miniProgram.navigateTo({
-      url: path,
-    });
+  const miniProgramAppId = getMiniProgramAppid();
+
+  // 检测运行环境
+  const isMiniProgram = window.__wxjs_environment === 'miniprogram'
+    || /miniProgram/i.test(navigator.userAgent);
+  const isWechat = /MicroMessenger/i.test(navigator.userAgent);
+
+  if (window.wx && wx.miniProgram) {
+    if (isMiniProgram) {
+      // 场景1：小程序内 webview → 跳转同小程序的页面
+      wx.miniProgram.navigateTo({ url: path });
+    } else if (isWechat) {
+      // 场景2：微信内置浏览器 → 通过 URL Scheme 打开小程序
+      const encodedPath = encodeURIComponent(path);
+      const scheme = `weixin://dl/business/?appid=${miniProgramAppId}&path=${encodedPath}`;
+      // 尝试在新窗口打开，避免当前页面被替换为"无法访问"
+      const opened = window.open(scheme, '_blank');
+      if (!opened) {
+        // 新窗口被拦截，降级为 location.href
+        window.location.href = scheme;
+      }
+    }
   } else {
-    // H5环境下显示提示或跳转替代页面
-    console.log('跳转小程序:', miniProgramAppId, path);
-    // 可以显示一个二维码让用户微信扫码
+    // 场景3：非微信环境 → 提示用户
+    showToast({ message: '请在微信中打开', duration: 2000 });
   }
 }
 
@@ -188,7 +196,7 @@ function formatExpireTime(isoString) {
   position: relative;
   width: 90%;
   max-width: 360px;
-  max-height: 80vh;
+  max-height: 90vh;
   background: linear-gradient(180deg, #fff 0%, #f5f0e8 100%);
   border-radius: 16px;
   padding: 24px;
@@ -372,6 +380,68 @@ function formatExpireTime(isoString) {
   margin-top: 8px;
 }
 
+.view-code-btn {
+  margin-top: 12px;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #c4a574;
+  background: transparent;
+  color: #c4a574;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background 200ms ease, color 200ms ease;
+}
+
+.view-code-btn:active {
+  background: rgba(196, 165, 116, 0.1);
+}
+
+/* 代金券编码展开区：max-height 过渡，避免撑大对话框引发滚动 */
+.voucher-code-wrap {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 300ms cubic-bezier(0.16, 1, 0.3, 1),
+              margin-top 300ms ease;
+}
+
+.voucher-code-wrap.open {
+  max-height: 120px;
+  margin-top: 10px;
+  margin-bottom: 12px;
+}
+
+.voucher-code-inner {
+  padding: 10px 14px;
+  background: linear-gradient(135deg, #fff8e8 0%, #f3e6c6 100%);
+  border: 1px dashed #c4a574;
+  border-radius: 10px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.voucher-code-label {
+  display: block;
+  font-size: 11px;
+  color: #8b7355;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.voucher-code-value {
+  flex: 1;
+  font-family: 'SF Mono', 'JetBrains Mono', 'Fira Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  color: #5a3d1a;
+  word-break: break-all;
+  line-height: 1.4;
+}
+
 .redeemed-section {
   text-align: center;
 }
@@ -407,6 +477,7 @@ function formatExpireTime(isoString) {
   font-size: 12px;
   border-radius: 12px;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
 .mini-program-btn {
