@@ -142,12 +142,12 @@ function handleJumpToMiniProgram() {
     || /miniProgram/i.test(navigator.userAgent);
   const isWechat = /MicroMessenger/i.test(navigator.userAgent);
 
-  console.log(">>>>>>>>", path)
+  console.log("跳转路径：", path)
   if (window.wx && wx.miniProgram) {
     if (isMiniProgram) {
       //showToast({ message: 'path=' + path , duration: 2000 });
       // 场景1：小程序内 webview → 跳转同小程序的页面
-      wx.miniProgram.navigateTo({ url: '/' + path, success: s => {
+      wx.miniProgram.navigateTo({ url: path, success: s => {
           console.log(">>>>> 跳转成功：", s)
         }, fail: e => {
           console.log(">>>>> 跳转错误：", e)
