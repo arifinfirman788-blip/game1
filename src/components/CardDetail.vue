@@ -142,8 +142,10 @@ function handleJumpToMiniProgram() {
     || /miniProgram/i.test(navigator.userAgent);
   const isWechat = /MicroMessenger/i.test(navigator.userAgent);
 
+  console.log(">>>>>>>>", path)
   if (window.wx && wx.miniProgram) {
     if (isMiniProgram) {
+      showToast({ message: 'path=' + path , duration: 2000 });
       // 场景1：小程序内 webview → 跳转同小程序的页面
       wx.miniProgram.navigateTo({ url: path });
     } else if (isWechat) {
