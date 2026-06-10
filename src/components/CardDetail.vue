@@ -154,7 +154,7 @@ function handleJumpToMiniProgram() {
         }, complete: o => {
           console.log(">>>>> 跳转结果1：", o)
         } });
-      wx.miniProgram.navigateTo({ url: 'pages/selectScenery/Index', complete: o => {
+      wx.miniProgram.navigateTo({ url: '/pages/selectScenery/Index', complete: o => {
         console.log(">>>>> 跳转结果2：", o)
         } });
     } else if (isWechat) {
