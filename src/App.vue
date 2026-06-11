@@ -34,14 +34,9 @@
           <div class="map-page-title">黄小西带你游贵州</div>
           <!-- 右上角全局按钮区 -->
           <div class="header-right-actions" style="position: absolute; right: 12px; top: 12px; display: flex; gap: 8px; align-items: center; z-index: 10;">
-            <van-button 
-              round 
-              class="vant-round" 
-              :icon="isMusicOn ? 'music-o' : 'close'" 
-              aria-label="音乐" 
-              @click="toggleMusic" 
-              style="width: 32px; height: 32px; padding: 0;"
-            />
+            <button type="button" class="map-icon-btn setting" aria-label="音乐" @click="toggleMusic" style="position: relative; right: auto; top: auto; display: flex; align-items: center; justify-content: center;">
+              <van-icon :name="isMusicOn ? 'music-o' : 'pause-circle-o'" style="font-size: 24px; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.5);" />
+            </button>
             <button type="button" class="map-icon-btn setting" aria-label="设置" @click="openSettings" style="position: relative; right: auto; top: auto;">
               <img :src="assetManifest.map.buttons.setting" alt="" decoding="async" />
             </button>
@@ -202,14 +197,10 @@
 
       <section v-else class="play-screen">
         <header class="top-hud">
-          <div class="hud-side left">
-            <van-button 
-              round 
-              class="vant-round" 
-              :icon="isMusicOn ? 'music-o' : 'close'" 
-              aria-label="音乐"
-              @click="toggleMusic" 
-            />
+          <div class="hud-side left" style="display: flex; gap: 8px;">
+            <button type="button" class="map-icon-btn setting" aria-label="音乐" @click="toggleMusic" style="position: relative; right: auto; top: auto; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: url('./assets/map/btn-setting.png') center/contain no-repeat; border: none;">
+              <van-icon :name="isMusicOn ? 'music-o' : 'pause-circle-o'" style="font-size: 24px; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.5);" />
+            </button>
             <van-button round icon="setting-o" class="vant-round" aria-label="设置" @click="openSettings" />
           </div>
           <div class="title-plaque">黄小西带你游贵州</div>
