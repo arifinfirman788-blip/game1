@@ -392,7 +392,7 @@ import { showToast, showDialog } from "vant";
 import { blockers, chapters, LEVELS_PER_CHAPTER, pieces, REWARD_LEVELS, TOTAL_LEVELS } from "./config/levels";
 import { assetManifest } from "./config/assets";
 import { useMatch3Game } from "./composables/useMatch3Game";
-import { usePlayerProgress, setGameUser } from "./composables/usePlayerProgress";
+import { usePlayerProgress, setGameUser, setMiniProgramAppid } from "./composables/usePlayerProgress";
 import { verifyToken, setTokens, doRefreshToken, updateUrlTokens, getRefreshToken, getAccessToken } from "./api/gameApi";
 import LevelSettle from "./components/LevelSettle.vue";
 import CardInventory from "./components/CardInventory.vue";
@@ -632,8 +632,9 @@ async function initAuth() {
     }
 
     const uid = verifyResult.uid || '';
-    const phone = verifyResult.phone || '';
-    if (!uid || !phone) {
+    // V1.1.0：phone 不再从后端 token 返回；如 URL 中曾带 phone 仅作业务透传保留
+    const phone = currentUrl.searchParams.get('phone') || '';
+    if (!uid) {
       authError.value = "用户信息缺失，请重新进入游戏";
       authRetryable.value = false;
       return;
@@ -642,15 +643,16 @@ async function initAuth() {
     authError.value = "";
     authRetryable.value = false;
     const gameData = await player.loadFromBackend();
-    
-    // 开发/测试环境隔离：由于前端正在强制进行 Mock 发卡测试，
-    // 这里暂时屏蔽从后端拉取卡片直接覆盖 localStorage 的逻辑，防止出现不认识的旧卡。
-    // 如果后续后端真实逻辑完成并取消了 FORCE_MOCK，可以将下面这几行取消注释恢复。
-    /*
+
+    // V1.1.0：后端已实现 productType/productCode 完整字段透传与抽卡限制逻辑，
+    // 直接将后端的卡片列表覆盖到本地缓存，保证两端数据一致。
     if (gameData && gameData.cards) {
       window.localStorage.setItem('guizhou-card-inventory', JSON.stringify(gameData.cards));
     }
-    */
+    // 保存后端下发的第三方小程序 AppID
+    if (gameData && gameData.miniProgramAppid) {
+      setMiniProgramAppid(gameData.miniProgramAppid);
+    }
   } catch (err) {
     authError.value = err.message || "身份验证失败，无法进入游戏";
     authRetryable.value = !!urlRefreshToken;

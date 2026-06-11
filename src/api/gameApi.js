@@ -136,9 +136,10 @@ async function authRequest(url, body) {
 
 /**
  * 颁发 Token（由小程序后端调用）
+ * V1.1.0：入参去掉 phone
  */
-export async function requestToken(appId, appSecret, uid, phone) {
-  return authRequest('/game/api/auth/token', { appId, appSecret, uid, phone });
+export async function requestToken(appId, appSecret, uid) {
+  return authRequest('/game/api/auth/token', { appId, appSecret, uid });
 }
 
 /**
@@ -197,4 +198,14 @@ export async function redeemCardApi(instanceId) {
  */
 export async function queryCards() {
   return request('/game/api/card/query');
+}
+
+/**
+ * 核销卡牌（V1.1.0 新增）
+ * 通常由第三方系统在用户兑换后调用，前端在"商家核销"场景也可直接调
+ * 该接口不走 accessToken 拦截器，需提供 callbackToken
+ */
+export async function consumeCardApi(instanceId, callbackToken) {
+  // 该接口在 excludePath 中，不走 accessToken；直接用 authRequest
+  return authRequest('/game/api/card/consume', { instanceId, callbackToken });
 }
