@@ -32,9 +32,20 @@
             <img :src="assetManifest.map.buttons.back" alt="" decoding="async" />
           </button>
           <div class="map-page-title">黄小西带你游贵州</div>
-          <button type="button" class="map-icon-btn setting" aria-label="设置" @click="openSettings">
-            <img :src="assetManifest.map.buttons.setting" alt="" decoding="async" />
-          </button>
+          <!-- 右上角全局按钮区 -->
+          <div class="header-right-actions" style="position: absolute; right: 12px; top: 12px; display: flex; gap: 8px; align-items: center; z-index: 10;">
+            <van-button 
+              round 
+              class="vant-round" 
+              :icon="isMusicOn ? 'music-o' : 'close'" 
+              aria-label="音乐" 
+              @click="toggleMusic" 
+              style="width: 32px; height: 32px; padding: 0;"
+            />
+            <button type="button" class="map-icon-btn setting" aria-label="设置" @click="openSettings" style="position: relative; right: auto; top: auto;">
+              <img :src="assetManifest.map.buttons.setting" alt="" decoding="async" />
+            </button>
+          </div>
           <div class="chapter-list" aria-label="8大关">
             <van-button
               v-for="(chapter, index) in chapters"
@@ -192,6 +203,13 @@
       <section v-else class="play-screen">
         <header class="top-hud">
           <div class="hud-side left">
+            <van-button 
+              round 
+              class="vant-round" 
+              :icon="isMusicOn ? 'music-o' : 'close'" 
+              aria-label="音乐"
+              @click="toggleMusic" 
+            />
             <van-button round icon="setting-o" class="vant-round" aria-label="设置" @click="openSettings" />
           </div>
           <div class="title-plaque">黄小西带你游贵州</div>
@@ -393,6 +411,7 @@ import LevelSettle from "./components/LevelSettle.vue";
 import CardInventory from "./components/CardInventory.vue";
 import CardDetail from "./components/CardDetail.vue";
 import { useCardSystem } from "./composables/useCardSystem";
+import { useAudio } from "./composables/useAudio"; // 引入背景音乐管理
 
 const params = new URLSearchParams(window.location.search);
 const initialLevel = Number(params.get("level")) || 128;
@@ -412,6 +431,8 @@ const showCardInventory = ref(false);
 const showCardDetail = ref(false);
 
 const { clearInventory, loadCards } = useCardSystem();
+const { isMusicOn, toggleMusic, initAudio, playBgm, pauseBgm } = useAudio(); // 实例化音频
+
 const handleClearInventory = () => {
   clearInventory();
   showToast('本地卡包已清空');
@@ -677,6 +698,16 @@ onMounted(async () => {
   }
   window.addEventListener('game:auth-expired', handleAuthExpired);
   onUnmounted(() => window.removeEventListener('game:auth-expired', handleAuthExpired));
+
+  // 拦截全局点击事件，作为用户首次交互，用于触发浏览器允许音频播放
+  const handleFirstInteraction = () => {
+    initAudio();
+    if (isMusicOn.value) playBgm();
+    document.removeEventListener('click', handleFirstInteraction);
+    document.removeEventListener('touchstart', handleFirstInteraction);
+  };
+  document.addEventListener('click', handleFirstInteraction);
+  document.addEventListener('touchstart', handleFirstInteraction);
 
   // 后端初始化：验证token + 加载游戏数据
   await initAuth();
