@@ -745,21 +745,16 @@ watch(screen, (newVal) => {
   if (newVal === "map") {
     // 每次进入地图页面时，默认聚焦到用户当前解锁进度所在的那一页
     mapPage.value = maxUnlockedMapPage.value;
-    // 确保音乐对应当前地图页
-    switchBgm(mapPage.value);
+    // 确保音乐对应选关页
+    switchBgm('map');
   } else if (newVal === "game") {
-    // 进入关卡内时，保持播放对应关卡所在页面的音乐
-    const pageIndex = Math.floor((game.state.levelConfig?.globalLevel - 1) / 10);
-    switchBgm(pageIndex);
+    // 进入关卡内时，播放游戏详情页音乐
+    switchBgm('game');
+  } else if (newVal === "home") {
+    // 欢迎页
+    switchBgm('home');
   }
 }, { immediate: true });
-
-// 监听地图页码切换音乐
-watch(mapPage, (newVal) => {
-  if (screen.value === "map") {
-    switchBgm(newVal);
-  }
-});
 
 function goHome() {
   screen.value = "home";
@@ -796,6 +791,9 @@ function handleLevelComplete(result) {
   settleResult.value = { ...result, isFirstClear };
   settlePhase.value = 0;
   settleDisplayScore.value = 0;
+  
+  // 切换到胜利结算页音乐
+  switchBgm('victory');
 
   window.setTimeout(() => { settlePhase.value = 1; }, 400);
   animateScoreCounter(result.finalScore, 1200, () => {
@@ -823,6 +821,9 @@ function handleLevelFail(result) {
   settleResult.value = { ...result, stars: 0, finalScore: result.score, isLastLevel: false, nextLevel: result.level, failed: true };
   settlePhase.value = 0;
   settleDisplayScore.value = 0;
+  
+  // 切换到失败结算页音乐
+  switchBgm('fail');
 
   window.setTimeout(() => { settlePhase.value = 1; }, 300);
   animateScoreCounter(result.score, 800, () => {

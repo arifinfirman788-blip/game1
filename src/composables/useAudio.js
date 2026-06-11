@@ -2,22 +2,24 @@ import { ref, watch } from 'vue';
 
 const isMusicOn = ref(localStorage.getItem('game1_music_on') !== 'false');
 let bgmAudio = null;
-let currentBgmIndex = -1; // 记录当前正在播放的音乐索引
+let currentScene = ''; // 记录当前正在播放的场景
 
-// 定义三段音乐路径
-const bgmList = [
-  './audio/bgm1.mp3', // 第一页音乐
-  './audio/bgm2.mp3', // 第二页音乐
-  './audio/bgm3.mp3'  // 第三页音乐
-];
+// 定义五个场景的音乐路径
+const bgmList = {
+  home: './audio/bgm_home.mp3',       // 欢迎页音乐
+  map: './audio/bgm_map.mp3',         // 选关页音乐
+  game: './audio/bgm_game.mp3',       // 游戏详情页音乐
+  victory: './audio/bgm_victory.mp3', // 胜利结算页音乐
+  fail: './audio/bgm_fail.mp3'        // 失败结算页音乐
+};
 
 export function useAudio() {
-  const initAudio = (pageIndex = 0) => {
-    // 确保 pageIndex 在 0-2 之间
-    const safeIndex = Math.min(Math.max(pageIndex, 0), bgmList.length - 1);
+  const initAudio = (scene = 'home') => {
+    // 确保传入的场景是有效的，否则降级到 home 或 game
+    const safeScene = bgmList[scene] ? scene : 'home';
     
-    // 如果已经存在音频实例，且索引没变，不需要重新初始化
-    if (bgmAudio && currentBgmIndex === safeIndex) return;
+    // 如果已经存在音频实例，且场景没变，不需要重新初始化
+    if (bgmAudio && currentScene === safeScene) return;
 
     // 如果有旧的音频正在播放，先暂停
     if (bgmAudio) {
@@ -25,10 +27,10 @@ export function useAudio() {
     }
 
     // 初始化新的音频
-    bgmAudio = new Audio(bgmList[safeIndex]);
-    bgmAudio.loop = true;
+    bgmAudio = new Audio(bgmList[safeScene]);
+    bgmAudio.loop = true; // 循环播放
     bgmAudio.volume = 0.5; // 轻柔的背景音量
-    currentBgmIndex = safeIndex;
+    currentScene = safeScene;
 
     // 如果开关是打开的，初始化后自动尝试播放
     if (isMusicOn.value) {
@@ -37,7 +39,7 @@ export function useAudio() {
   };
 
   const playBgm = () => {
-    if (!bgmAudio) initAudio(0);
+    if (!bgmAudio) initAudio('home');
     if (isMusicOn.value && bgmAudio.paused) {
       // 捕获浏览器自动播放限制可能抛出的异常
       bgmAudio.play().catch(err => {
@@ -52,9 +54,9 @@ export function useAudio() {
     }
   };
 
-  const switchBgm = (pageIndex) => {
-    // 根据传入的地图页码（0, 1, 2）切换对应的音乐
-    initAudio(pageIndex);
+  const switchBgm = (scene) => {
+    // 根据传入的场景名称切换对应的音乐
+    initAudio(scene);
   };
 
   const toggleMusic = () => {
