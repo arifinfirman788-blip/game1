@@ -30,9 +30,13 @@ export const assetManifest = {
     rainbow: asset("/assets/detail/specials/rainbow.png"),
   },
   blockers: {
-    ice: "",
-    chain: "",
-    crate: "",
+    ice: "", // 依然使用 CSS 生成的样式
+    chain2: asset("/assets/detail/blockers/chain-2.png"),
+    chain1: asset("/assets/detail/blockers/chain-2.png"), // 同一张图，CSS 增加透明度/滤镜区分
+    crate2: asset("/assets/detail/blockers/crate-2.png"),
+    crate1: asset("/assets/detail/blockers/crate-1.png"),
+    iceblock2: asset("/assets/detail/blockers/iceblock-2.png"),
+    iceblock1: asset("/assets/detail/blockers/iceblock-1.png"),
   },
   guide: {
     normal: asset("/assets/detail/characters/huangxiaoxi.png"),

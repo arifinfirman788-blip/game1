@@ -82,6 +82,12 @@
         </section>
 
         <section class="map-body">
+          <div class="map-nav-arrow left" v-show="mapPage > 0" @click="mapPage--">
+            <van-icon name="arrow-left" />
+          </div>
+          <div class="map-nav-arrow right" v-show="mapPage < maxUnlockedMapPage" @click="mapPage++">
+            <van-icon name="arrow" />
+          </div>
           <div
             class="route-map"
             @pointerdown="handleMapPointerDown"
@@ -256,7 +262,12 @@
                   {{ pieceText(cell.type) }}
                   <span v-if="cell.special" class="special-mark" aria-hidden="true"></span>
                 </span>
-                <span v-if="cell.blocker" class="blocker" :class="cell.blocker">{{ blockers[cell.blocker].icon }}</span>
+                <span 
+                  v-if="cell.blocker" 
+                  class="blocker" 
+                  :class="cell.blocker"
+                  :style="blockerStyle(cell.blocker)"
+                ></span>
                 <span v-for="ring in ringsForCell(cell)" :key="ring.id" class="match-ring"></span>
                 <span
                   v-for="particle in particlesForCell(cell)"
@@ -393,8 +404,8 @@ const initialLevel = Number(params.get("level")) || 128;
 const screen = ref(params.has("level") ? "game" : params.get("screen") === "map" ? "map" : "home");
 
 // 硬编码注入开发环境使用的默认 Token
-const DEV_DEFAULT_ACCESS_TOKEN = "a645ab9432df48b8bb34e26c5d5e26ed";
-const DEV_DEFAULT_REFRESH_TOKEN = "9bf79a4b853c40c3a83fadd1a0a15123";
+const DEV_DEFAULT_ACCESS_TOKEN = "30aa350ee185422caec365d937c6744c";
+const DEV_DEFAULT_REFRESH_TOKEN = "6494118b5d8e405baf57b25c37778ea6";
 
 const gameAccessToken = params.get("accessToken") || DEV_DEFAULT_ACCESS_TOKEN;
 const gameRefreshToken = params.get("refreshToken") || DEV_DEFAULT_REFRESH_TOKEN;
@@ -701,6 +712,13 @@ watch(maxUnlockedMapPage, (maxPage) => {
     mapPage.value = maxPage;
   }
 });
+
+watch(screen, (newVal) => {
+  if (newVal === "map") {
+    // 每次进入地图页面时，默认聚焦到用户当前解锁进度所在的那一页
+    mapPage.value = maxUnlockedMapPage.value;
+  }
+}, { immediate: true });
 
 function goHome() {
   screen.value = "home";
@@ -1182,7 +1200,23 @@ function specialClass(cell) {
   };
 }
 
-function pieceEffectStyle(cell) {
+function blockerStyle(blockerId) {
+    if (!blockerId || blockerId === "ice") return {}; // 冰层用原本的CSS渐变
+    
+    // 如果是 chain-1，没有独立图片，使用 chain-2 的图片并通过 CSS 滤镜控制
+    const assetKey = blockerId.replace('-', '');
+    let imageSrc = assetManifest.blockers[assetKey];
+    if (blockerId === 'chain-1') {
+      imageSrc = assetManifest.blockers.chain2;
+    }
+    
+    if (imageSrc) {
+      return { '--blocker-image': `url("${imageSrc}")` };
+    }
+    return {};
+  }
+
+  function pieceEffectStyle(cell) {
   const key = cellKey(cell);
   const swap = game.state.effects.swapping.get(key);
   const fallDistance = game.state.effects.falling.get(key);

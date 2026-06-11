@@ -49,7 +49,7 @@ export const CARD_LEVELS = {
 export const CARD_IMAGE_POOL = [
   {
     id: 'img_001',
-    url: 'https://picsum.photos/seed/hgs/400/600', // 瀑布意境图
+    url: '/assets/home-bg-new.jpg', // 瀑布意境图
     name: '黄果树瀑布',
     description: '亚洲第一大瀑布，气势磅礴',
     level: 'blue',
@@ -58,7 +58,7 @@ export const CARD_IMAGE_POOL = [
   },
   {
     id: 'img_002',
-    url: 'https://picsum.photos/seed/lb/400/600', // 绿水意境图
+    url: '/assets/home-bg-new.jpg', // 绿水意境图
     name: '荔波小七孔',
     description: '地球腰带上的绿宝石',
     level: 'blue',
@@ -67,7 +67,7 @@ export const CARD_IMAGE_POOL = [
   },
   {
     id: 'img_003',
-    url: 'https://picsum.photos/seed/xj/400/600', // 苗寨意境图
+    url: '/assets/home-bg-new.jpg', // 苗寨意境图
     name: '西江千户苗寨',
     description: '世界上最大的苗族聚居村寨',
     level: 'purple',
@@ -76,7 +76,7 @@ export const CARD_IMAGE_POOL = [
   },
   {
     id: 'img_004',
-    url: 'https://picsum.photos/seed/zy/400/600', // 古镇意境图
+    url: '/assets/home-bg-new.jpg', // 古镇意境图
     name: '镇远古镇',
     description: '滇楚锁钥，黔东门户',
     level: 'purple',
@@ -85,7 +85,7 @@ export const CARD_IMAGE_POOL = [
   },
   {
     id: 'img_005',
-    url: 'https://picsum.photos/seed/fj/400/600', // 梵净山红云金顶意境图
+    url: '/assets/home-bg-new.jpg', // 梵净山红云金顶意境图
     name: '梵净山',
     description: '梵天净土，弥勒道场',
     level: 'gold',
@@ -94,7 +94,7 @@ export const CARD_IMAGE_POOL = [
   },
   {
     id: 'img_006',
-    url: 'https://picsum.photos/seed/cs/400/600', // 丹霞山意境图
+    url: '/assets/home-bg-new.jpg', // 丹霞山意境图
     name: '赤水丹霞',
     description: '世界自然遗产，千瀑之城',
     level: 'gold',
@@ -103,7 +103,7 @@ export const CARD_IMAGE_POOL = [
   },
   {
     id: 'img_007',
-    url: 'https://picsum.photos/seed/zyhy/400/600', // 会议建筑意境图
+    url: '/assets/home-bg-new.jpg', // 会议建筑意境图
     name: '遵义会议会址',
     description: '历史转折点',
     level: 'red',
@@ -112,7 +112,7 @@ export const CARD_IMAGE_POOL = [
   },
   {
     id: 'img_008',
-    url: 'https://picsum.photos/seed/sty/400/600', // 酸汤鱼意境图
+    url: '/assets/home-bg-new.jpg', // 酸汤鱼意境图
     name: '凯里酸汤鱼',
     description: '一口鲜酸开胃，像瀑布水汽一样爽快',
     level: 'blue',
@@ -121,7 +121,7 @@ export const CARD_IMAGE_POOL = [
   },
   {
     id: 'img_009',
-    url: 'https://picsum.photos/seed/yrf/400/600', // 羊肉粉意境图
+    url: '/assets/home-bg-new.jpg', // 羊肉粉意境图
     name: '遵义羊肉粉',
     description: '热汤滚香，米粉柔滑，赶路也要吃得踏实',
     level: 'purple',
@@ -130,7 +130,7 @@ export const CARD_IMAGE_POOL = [
   },
   {
     id: 'img_010',
-    url: 'https://picsum.photos/seed/cwm/400/600', // 肠旺面意境图
+    url: '/assets/home-bg-new.jpg', // 肠旺面意境图
     name: '肠旺面',
     description: '肥肠与血旺的完美交响',
     level: 'blue',
@@ -139,7 +139,7 @@ export const CARD_IMAGE_POOL = [
   },
   {
     id: 'img_011',
-    url: 'https://picsum.photos/seed/tht/400/600', // 溶洞意境图
+    url: '/assets/home-bg-new.jpg', // 溶洞意境图
     name: '天河潭',
     description: '水旱溶洞，奇特喀斯特景观',
     level: 'gold',

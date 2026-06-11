@@ -17,9 +17,10 @@ export const pieces = [
 ];
 
 export const blockers = {
-  ice: { icon: "❄", label: "冰块" },
-  chain: { icon: "⛓", label: "银链" },
+  ice: { icon: "❄", label: "冰层" },
+  chain: { icon: "⛓", label: "铁链" },
   crate: { icon: "", label: "木箱" },
+  iceblock: { icon: "🧊", label: "冰块" },
 };
 
 export const chapters = [
@@ -34,9 +35,10 @@ export const chapters = [
 ];
 
 export const blockerRules = [
-  { type: "ice", unlockLocalLevel: 11, base: 4, perLevels: 8, cap: 18 },
-  { type: "crate", unlockLocalLevel: 26, base: 3, perLevels: 9, cap: 15 },
-  { type: "chain", unlockLocalLevel: 41, base: 2, perLevels: 10, cap: 13 },
+  { type: "ice", unlockLocalLevel: 11, base: 4, perLevels: 5, cap: 15 },
+  { type: "chain-2", unlockLocalLevel: 21, base: 3, perLevels: 6, cap: 12 },
+  { type: "crate-2", unlockLocalLevel: 31, base: 2, perLevels: 7, cap: 10 },
+  { type: "iceblock-2", unlockLocalLevel: 41, base: 2, perLevels: 8, cap: 8 },
 ];
 
 export function clamp(value, min, max) {
@@ -71,14 +73,48 @@ export function generateLevelConfig(globalLevel) {
 }
 
 function buildBlockerPlan(localLevel, chapterIndex) {
+  if (localLevel <= 10) return [];
+
+  // 获取当前关卡已解锁的所有障碍物规则
+  const unlockedRules = blockerRules.filter(r => localLevel >= r.unlockLocalLevel);
+
+  // 决定当前关卡出现几种障碍物
+  let numTypes = 1;
+  if (localLevel >= 25) numTypes = 2; // 25关以后常规出现2种
+  if (localLevel >= 50 && localLevel % 5 === 0) numTypes = 3; // 50关以后的 Boss 关出现3种
+  if (localLevel >= 80 && localLevel % 10 === 0) numTypes = 4; // 80关以后的 大Boss 关出现4种
+
+  numTypes = Math.min(numTypes, unlockedRules.length);
+
+  // 使用 localLevel 作为种子，保证同一个关卡的障碍物组合是固定的
+  const pickedRules = [];
+  let seed = localLevel * 17 + chapterIndex * 31;
+  const tempRules = [...unlockedRules];
+
+  // 保证在刚解锁新障碍物的关卡，必定会出现该新障碍物
+  if ([11, 21, 31, 41].includes(localLevel)) {
+    const newRule = tempRules.pop();
+    pickedRules.push(newRule);
+    numTypes -= 1;
+  }
+
+  // 伪随机抽取剩余需要的障碍物种类
+  for (let i = 0; i < numTypes; i++) {
+    const index = seed % tempRules.length;
+    pickedRules.push(tempRules[index]);
+    tempRules.splice(index, 1);
+    seed = (seed * 9301 + 49297) % 233280;
+  }
+
   const chapterBonus = chapterIndex * 2;
-  return blockerRules.map((rule) => {
-    if (localLevel < rule.unlockLocalLevel) {
-      return { type: rule.type, amount: 0, unlocked: false };
-    }
+  // 当同时出现多种障碍物时，对每种障碍物的生成数量打个折扣，避免把棋盘塞满死局
+  const multiTypeDiscount = pickedRules.length > 1 ? (pickedRules.length > 2 ? 0.6 : 0.8) : 1.0;
+
+  return pickedRules.map((rule) => {
     const growth = Math.floor((localLevel - rule.unlockLocalLevel) / rule.perLevels);
-    const lateChapterPressure = Math.floor(chapterBonus / (rule.type === "chain" ? 3 : 2));
-    const amount = clamp(rule.base + growth + lateChapterPressure, 0, rule.cap);
+    const lateChapterPressure = Math.floor(chapterBonus / (rule.type.startsWith("chain") ? 3 : 2));
+    let amount = Math.floor((rule.base + growth + lateChapterPressure) * multiTypeDiscount);
+    amount = clamp(amount, 1, rule.cap);
     return { type: rule.type, amount, unlocked: true };
   });
 }
@@ -92,7 +128,8 @@ function buildGoals(blockerPlan, localLevel, difficulty) {
   goals[primaryPiece.id] = Math.max(10, 18 + Math.floor(localLevel / 4) + Math.floor(difficulty * 3) + earlyEase);
   blockerPlan.forEach(({ type, amount }) => {
     if (amount <= 0) return;
-    goals[type] = amount;
+    const baseType = type.split("-")[0];
+    goals[baseType] = (goals[baseType] || 0) + amount;
   });
   if (Object.keys(goals).length < targetGoalCount) {
     goals[secondaryPiece.id] = Math.max(8, 13 + Math.floor(localLevel / 5) + Math.floor(difficulty * 2) + earlyEase);

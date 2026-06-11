@@ -166,7 +166,7 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
         const cell = state.board[row][col];
         if (reserved.has(key) || cell.blocker) continue;
         cell.blocker = blocker;
-        if (blocker === "crate") {
+        if (blocker === "crate" || blocker.startsWith("iceblock")) {
           cell.type = null;
           cell.special = null;
         }
@@ -177,7 +177,7 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
   }
 
   function canSelect(cell) {
-    return Boolean(cell.type) && cell.blocker !== "crate" && cell.blocker !== "chain";
+    return Boolean(cell.type) && cell.blocker !== "crate" && !cell.blocker?.startsWith("iceblock") && !cell.blocker?.startsWith("chain");
   }
 
   function isAdjacent(a, b) {
@@ -329,7 +329,11 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
   }
 
   function canMatchCell(cell) {
-    return Boolean(cell?.type) && cell.blocker !== "crate" && cell.special?.kind !== "bomb" && cell.special?.kind !== "rainbow";
+    return Boolean(cell?.type) && 
+           cell.blocker !== "crate" && 
+           !cell.blocker?.startsWith("iceblock") && 
+           cell.special?.kind !== "bomb" && 
+           cell.special?.kind !== "rainbow";
   }
 
   async function resolveMatches(initialGroups, sourceCells = [], options = {}) {
@@ -550,13 +554,20 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
 
   function clearMatches(matches, combo, options = {}) {
     matches.forEach((cell) => {
-      // 1. 如果有障碍物，先消除障碍物
-      if (cell.blocker) {
-        reduceGoal(cell.blocker);
-        cell.blocker = null;
-      }
-      
-      // 2. 消除棋子类型（无论外面是不是包裹了冰块，消除后底部的棋子也必须一起被清除，然后由上方棋子掉落填充）
+        // 1. 如果有包裹型障碍物，先处理障碍物（破冰/断链）
+        if (cell.blocker) {
+          if (cell.blocker === "chain-2") {
+            cell.blocker = "chain-1";
+          } else if (cell.blocker === "chain-1") {
+            reduceGoal("chain");
+            cell.blocker = null;
+          } else if (cell.blocker === "ice") {
+            reduceGoal("ice");
+            cell.blocker = null;
+          }
+        }
+        
+        // 2. 消除棋子类型（无论外面是不是包裹了冰块，消除后底部的棋子也必须一起被清除，然后由上方棋子掉落填充）
       if (cell.type) {
         reduceGoal(cell.type);
         cell.type = null;
@@ -584,13 +595,23 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
         const col = cell.col + colDelta;
         if (row < 0 || row >= BOARD_SIZE || col < 0 || col >= BOARD_SIZE) return;
         const neighbor = state.board[row][col];
-        if (neighbor.blocker === "crate") {
-          reduceGoal("crate");
-          neighbor.blocker = null;
-          neighbor.type = null;
-          neighbor.special = null;
-          state.score += SCORE_PER_TILE;
-        }
+          if (neighbor.blocker === "crate-2") {
+            neighbor.blocker = "crate-1";
+          } else if (neighbor.blocker === "crate-1") {
+            reduceGoal("crate");
+            neighbor.blocker = null;
+            neighbor.type = null;
+            neighbor.special = null;
+            state.score += SCORE_PER_TILE;
+          } else if (neighbor.blocker === "iceblock-2") {
+            neighbor.blocker = "iceblock-1";
+          } else if (neighbor.blocker === "iceblock-1") {
+            reduceGoal("iceblock");
+            neighbor.blocker = null;
+            neighbor.type = null;
+            neighbor.special = null;
+            state.score += SCORE_PER_TILE;
+          }
       });
     });
   }
@@ -600,12 +621,12 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
     for (let col = 0; col < BOARD_SIZE; col += 1) {
       const falling = [];
       for (let row = BOARD_SIZE - 1; row >= 0; row -= 1) {
-        const cell = state.board[row][col];
-        if (cell.blocker === "crate") {
-          fillColumnSegment(col, row + 1, falling, fallHints);
-          falling.length = 0;
-          continue;
-        }
+          const cell = state.board[row][col];
+          if (cell.blocker === "crate" || cell.blocker?.startsWith("iceblock")) {
+            fillColumnSegment(col, row + 1, falling, fallHints);
+            falling.length = 0;
+            continue;
+          }
         if (cell.type) {
           falling.push({ type: cell.type, special: cell.special, fromRow: row });
           cell.type = null;
@@ -632,9 +653,9 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
     const spawnHints = new Set();
     for (let row = 0; row < BOARD_SIZE; row += 1) {
       for (let col = 0; col < BOARD_SIZE; col += 1) {
-        const cell = state.board[row][col];
-        if (!cell.type && cell.blocker !== "crate") {
-          cell.type = randomPieceId();
+          const cell = state.board[row][col];
+          if (!cell.type && cell.blocker !== "crate" && !cell.blocker?.startsWith("iceblock")) {
+            cell.type = randomPieceId();
           cell.special = null;
           spawnHints.add(`${row},${col}`);
         }
