@@ -431,7 +431,7 @@ const showCardInventory = ref(false);
 const showCardDetail = ref(false);
 
 const { clearInventory, loadCards } = useCardSystem();
-const { isMusicOn, toggleMusic, initAudio, playBgm, pauseBgm } = useAudio(); // 实例化音频
+const { isMusicOn, toggleMusic, initAudio, playBgm, pauseBgm, switchBgm } = useAudio(); // 实例化音频
 
 const handleClearInventory = () => {
   clearInventory();
@@ -745,8 +745,21 @@ watch(screen, (newVal) => {
   if (newVal === "map") {
     // 每次进入地图页面时，默认聚焦到用户当前解锁进度所在的那一页
     mapPage.value = maxUnlockedMapPage.value;
+    // 确保音乐对应当前地图页
+    switchBgm(mapPage.value);
+  } else if (newVal === "game") {
+    // 进入关卡内时，保持播放对应关卡所在页面的音乐
+    const pageIndex = Math.floor((game.state.levelConfig?.globalLevel - 1) / 10);
+    switchBgm(pageIndex);
   }
 }, { immediate: true });
+
+// 监听地图页码切换音乐
+watch(mapPage, (newVal) => {
+  if (screen.value === "map") {
+    switchBgm(newVal);
+  }
+});
 
 function goHome() {
   screen.value = "home";
