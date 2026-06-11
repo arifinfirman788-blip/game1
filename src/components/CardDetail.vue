@@ -142,17 +142,21 @@ function handleJumpToMiniProgram() {
     || /miniProgram/i.test(navigator.userAgent);
   const isWechat = /MicroMessenger/i.test(navigator.userAgent);
 
-  console.log(">>>>>>>>", path)
+  console.log("跳转路径：", path)
   if (window.wx && wx.miniProgram) {
     if (isMiniProgram) {
       //showToast({ message: 'path=' + path , duration: 2000 });
       // 场景1：小程序内 webview → 跳转同小程序的页面
-      wx.miniProgram.navigateTo({ url: path, complete: o => {
+      wx.miniProgram.navigateTo({ url: path, success: s => {
+          console.log(">>>>> 跳转成功：", s)
+        }, fail: e => {
+          console.log(">>>>> 跳转错误：", e)
+        }, complete: o => {
           console.log(">>>>> 跳转结果1：", o)
         } });
-      wx.miniProgram.navigateTo({ url: 'pages/selectScenery/Index', complete: o => {
-        console.log(">>>>> 跳转结果2：", o)
-        } });
+      // wx.miniProgram.navigateTo({ url: '/pages/selectScenery/Index', complete: o => {
+      //   console.log(">>>>> 跳转结果2：", o)
+      //   } });
     } else if (isWechat) {
       // 场景2：微信内置浏览器 → 通过 URL Scheme 打开小程序
       const encodedPath = encodeURIComponent(path);
