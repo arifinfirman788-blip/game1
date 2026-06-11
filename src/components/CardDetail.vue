@@ -137,32 +137,37 @@ function handleJumpToMiniProgram() {
 
   const miniProgramAppId = getMiniProgramAppid();
 
-  console.log('[去购买] path:', path);
-  console.log('[去购买] wx:', !!window.wx, 'wx.miniProgram:', !!(window.wx && window.wx.miniProgram));
-  console.log('[去购买] __wxjs_environment:', window.__wxjs_environment);
-  console.log('[去购买] UA:', navigator.userAgent);
-
-  // 小程序内 webview → 跳转同小程序页面
-  // 优先检测 wx.miniProgram 对象，兼容异步注入
-  if (window.wx && wx.miniProgram && wx.miniProgram.navigateTo) {
-    console.log('[去购买] 使用 navigateTo 跳转');
-    wx.miniProgram.navigateTo({ url: path });
-    return;
-  }
-
-  // 微信浏览器 → 打开小程序
+  // 检测运行环境
+  const isMiniProgram = window.__wxjs_environment === 'miniprogram'
+    || /miniProgram/i.test(navigator.userAgent);
   const isWechat = /MicroMessenger/i.test(navigator.userAgent);
-  if (isWechat) {
-    console.log('[去购买] 微信浏览器，尝试 URL Scheme');
-    const encodedPath = encodeURIComponent(path);
-    const scheme = `weixin://dl/business/?appid=${miniProgramAppId}&path=${encodedPath}`;
-    window.location.href = scheme;
-    return;
-  }
 
-  // 非微信环境
-  console.log('[去购买] 非微信环境');
-  showToast({ message: '请在微信中打开', duration: 2000 });
+  console.log(">>>>>>>>", path)
+  if (window.wx && wx.miniProgram) {
+    if (isMiniProgram) {
+      //showToast({ message: 'path=' + path , duration: 2000 });
+      // 场景1：小程序内 webview → 跳转同小程序的页面
+      wx.miniProgram.navigateTo({ url: path, complete: o => {
+          console.log(">>>>> 跳转结果1：", o)
+        } });
+      wx.miniProgram.navigateTo({ url: 'pages/selectScenery/Index', complete: o => {
+        console.log(">>>>> 跳转结果2：", o)
+        } });
+    } else if (isWechat) {
+      // 场景2：微信内置浏览器 → 通过 URL Scheme 打开小程序
+      const encodedPath = encodeURIComponent(path);
+      const scheme = `weixin://dl/business/?appid=${miniProgramAppId}&path=${encodedPath}`;
+      // 尝试在新窗口打开，避免当前页面被替换为"无法访问"
+      const opened = window.open(scheme, '_blank');
+      if (!opened) {
+        // 新窗口被拦截，降级为 location.href
+        window.location.href = scheme;
+      }
+    }
+  } else {
+    // 场景3：非微信环境 → 提示用户
+    showToast({ message: '请在微信中打开', duration: 2000 });
+  }
 }
 
 function handleClose() {
