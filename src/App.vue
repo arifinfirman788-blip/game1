@@ -34,8 +34,8 @@
           <div class="map-page-title">黄小西带你游贵州</div>
           <!-- 右上角全局按钮区 -->
           <div class="header-right-actions" style="position: absolute; right: 12px; top: 12px; z-index: 10;">
-            <button type="button" class="map-icon-btn setting" aria-label="设置" @click="openSettings">
-              <img :src="assetManifest.map.buttons.setting" alt="" decoding="async" />
+            <button type="button" class="map-icon-btn setting" aria-label="设置" @click="openSettings" style="background: none; border: none; padding: 0;">
+              <img :src="assetManifest.map.buttons.setting" alt="" decoding="async" style="width: 44px; height: 44px; display: block;" />
             </button>
           </div>
           <div class="chapter-list" aria-label="8大关">
@@ -195,7 +195,9 @@
       <section v-else class="play-screen">
         <header class="top-hud">
           <div class="hud-side left">
-            <van-button round icon="setting-o" class="vant-round" aria-label="设置" @click="openSettings" />
+            <button type="button" class="map-icon-btn setting" aria-label="设置" @click="openSettings" style="background: none; border: none; padding: 0;">
+              <img :src="assetManifest.map.buttons.setting" alt="" decoding="async" style="width: 44px; height: 44px; display: block;" />
+            </button>
           </div>
           <div class="title-plaque">黄小西带你游贵州</div>
           <div class="hud-side right">

@@ -41,10 +41,23 @@ export function useAudio() {
   const playBgm = () => {
     if (!bgmAudio) initAudio('home');
     if (isMusicOn.value && bgmAudio.paused) {
-      // 捕获浏览器自动播放限制可能抛出的异常
-      bgmAudio.play().catch(err => {
-        console.warn('自动播放被浏览器拦截，需要用户交互后播放:', err);
-      });
+      // 尝试播放
+      const playPromise = bgmAudio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(err => {
+          console.warn('自动播放被浏览器拦截，需要用户交互后播放:', err);
+          // 监听一次用户的点击/触摸交互，随后尝试播放
+          const userInteract = () => {
+            if (isMusicOn.value && bgmAudio && bgmAudio.paused) {
+              bgmAudio.play().catch(e => console.warn('再次尝试播放失败:', e));
+            }
+            document.removeEventListener('click', userInteract);
+            document.removeEventListener('touchstart', userInteract);
+          };
+          document.addEventListener('click', userInteract, { once: true });
+          document.addEventListener('touchstart', userInteract, { once: true });
+        });
+      }
     }
   };
 
