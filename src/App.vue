@@ -33,11 +33,8 @@
           </button>
           <div class="map-page-title">黄小西带你游贵州</div>
           <!-- 右上角全局按钮区 -->
-          <div class="header-right-actions" style="position: absolute; right: 12px; top: 12px; display: flex; gap: 8px; align-items: center; z-index: 10;">
-            <button type="button" class="map-icon-btn setting" aria-label="音乐" @click="toggleMusic" style="position: relative; right: auto; top: auto; display: flex; align-items: center; justify-content: center;">
-              <van-icon :name="isMusicOn ? 'music-o' : 'pause-circle-o'" style="font-size: 24px; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.5);" />
-            </button>
-            <button type="button" class="map-icon-btn setting" aria-label="设置" @click="openSettings" style="position: relative; right: auto; top: auto;">
+          <div class="header-right-actions" style="position: absolute; right: 12px; top: 12px; z-index: 10;">
+            <button type="button" class="map-icon-btn setting" aria-label="设置" @click="openSettings">
               <img :src="assetManifest.map.buttons.setting" alt="" decoding="async" />
             </button>
           </div>
@@ -197,10 +194,7 @@
 
       <section v-else class="play-screen">
         <header class="top-hud">
-          <div class="hud-side left" style="display: flex; gap: 8px;">
-            <button type="button" class="map-icon-btn setting" aria-label="音乐" @click="toggleMusic" style="position: relative; right: auto; top: auto; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: url('./assets/map/btn-setting.png') center/contain no-repeat; border: none;">
-              <van-icon :name="isMusicOn ? 'music-o' : 'pause-circle-o'" style="font-size: 24px; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.5);" />
-            </button>
+          <div class="hud-side left">
             <van-button round icon="setting-o" class="vant-round" aria-label="设置" @click="openSettings" />
           </div>
           <div class="title-plaque">黄小西带你游贵州</div>
@@ -1127,7 +1121,54 @@ function updateUrl(target) {
 }
 
 function openSettings() {
-  showDialog({ title: "设置", message: "音效、震动、账号授权等入口已经预留。" });
+  const content = document.createElement('div');
+  content.style.textAlign = 'center';
+  content.style.padding = '20px 0';
+  
+  // 创建音乐控制栏
+  const musicRow = document.createElement('div');
+  musicRow.style.display = 'flex';
+  musicRow.style.alignItems = 'center';
+  musicRow.style.justifyContent = 'space-between';
+  musicRow.style.marginBottom = '16px';
+  musicRow.style.padding = '0 20px';
+  
+  const musicLabel = document.createElement('span');
+  musicLabel.innerText = '背景音乐';
+  musicLabel.style.fontSize = '16px';
+  musicLabel.style.color = '#333';
+  
+  // 原生 Switch UI (利用 vant 的类名结构模拟或者直接绑定事件)
+  // 为了确保响应式工作正常，我们直接调用 toggleMusic
+  const toggleBtn = document.createElement('button');
+  toggleBtn.style.padding = '6px 16px';
+  toggleBtn.style.borderRadius = '20px';
+  toggleBtn.style.border = 'none';
+  toggleBtn.style.backgroundColor = isMusicOn.value ? '#85c341' : '#ccc';
+  toggleBtn.style.color = '#fff';
+  toggleBtn.innerText = isMusicOn.value ? '已开启' : '已关闭';
+  
+  toggleBtn.onclick = () => {
+    toggleMusic();
+    toggleBtn.style.backgroundColor = isMusicOn.value ? '#85c341' : '#ccc';
+    toggleBtn.innerText = isMusicOn.value ? '已开启' : '已关闭';
+  };
+  
+  musicRow.appendChild(musicLabel);
+  musicRow.appendChild(toggleBtn);
+  content.appendChild(musicRow);
+
+  // 其他预留设置项
+  const otherMsg = document.createElement('p');
+  otherMsg.innerText = '音效、震动、账号授权等入口已经预留。';
+  otherMsg.style.fontSize = '14px';
+  otherMsg.style.color = '#666';
+  content.appendChild(otherMsg);
+
+  showDialog({ 
+    title: "设置", 
+    message: () => content 
+  });
 }
 
 function openGift() {
