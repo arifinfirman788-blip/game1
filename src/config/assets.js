@@ -77,11 +77,11 @@ export const assetManifest = {
     gold: cardGoldImg,
   },
   failSettle: {
-    title: asset("/image/挑战失败副本.png"),
-    dialog: asset("/image/失败对话框副本.png"),
-    character: asset("/image/失败人物图副本.png"),
-    btnRetry: asset("/image/重新挑战副本.png"),
-    btnHome: asset("/image/返回主界面副本.png"),
+    title: asset("/image/挑战失败/挑战失败副本.png"),
+    dialog: asset("/image/挑战失败/失败对话框副本.png"),
+    character: asset("/image/挑战失败/失败人物图副本.png"),
+    btnRetry: asset("/image/挑战失败/重新挑战副本.png"),
+    btnHome: asset("/image/挑战失败/返回主界面.png"),
   },
   map: {
     background: asset("/assets/map/mobile/level-map-bg-mobile.jpg"),
