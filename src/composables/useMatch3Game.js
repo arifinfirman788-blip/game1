@@ -589,29 +589,37 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
       [0, 1],
       [0, -1],
     ];
+    // 使用 Set 避免在一次消除中多次击中同一个木箱/冰块导致它连降两级
+    const damagedBlockers = new Set();
     matches.forEach((cell) => {
       directions.forEach(([rowDelta, colDelta]) => {
         const row = cell.row + rowDelta;
         const col = cell.col + colDelta;
         if (row < 0 || row >= BOARD_SIZE || col < 0 || col >= BOARD_SIZE) return;
         const neighbor = state.board[row][col];
-          if (neighbor.blocker === "crate-2") {
-            neighbor.blocker = "crate-1";
-          } else if (neighbor.blocker === "crate-1") {
-            reduceGoal("crate");
-            neighbor.blocker = null;
-            neighbor.type = null;
-            neighbor.special = null;
-            state.score += SCORE_PER_TILE;
-          } else if (neighbor.blocker === "iceblock-2") {
-            neighbor.blocker = "iceblock-1";
-          } else if (neighbor.blocker === "iceblock-1") {
-            reduceGoal("iceblock");
-            neighbor.blocker = null;
-            neighbor.type = null;
-            neighbor.special = null;
-            state.score += SCORE_PER_TILE;
-          }
+        if (damagedBlockers.has(neighbor)) return;
+
+        if (neighbor.blocker === "crate-2") {
+          neighbor.blocker = "crate-1";
+          damagedBlockers.add(neighbor);
+        } else if (neighbor.blocker === "crate-1") {
+          reduceGoal("crate");
+          neighbor.blocker = null;
+          neighbor.type = null;
+          neighbor.special = null;
+          state.score += SCORE_PER_TILE;
+          damagedBlockers.add(neighbor);
+        } else if (neighbor.blocker === "iceblock-2") {
+          neighbor.blocker = "iceblock-1";
+          damagedBlockers.add(neighbor);
+        } else if (neighbor.blocker === "iceblock-1") {
+          reduceGoal("iceblock");
+          neighbor.blocker = null;
+          neighbor.type = null;
+          neighbor.special = null;
+          state.score += SCORE_PER_TILE;
+          damagedBlockers.add(neighbor);
+        }
       });
     });
   }
@@ -620,28 +628,38 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
     const fallHints = new Map();
     for (let col = 0; col < BOARD_SIZE; col += 1) {
       const falling = [];
+      // currentBottom 指向当前可以填充的最低的行
+      let currentBottom = BOARD_SIZE - 1;
+      
       for (let row = BOARD_SIZE - 1; row >= 0; row -= 1) {
-          const cell = state.board[row][col];
-          if (cell.blocker === "crate" || cell.blocker?.startsWith("iceblock")) {
-            fillColumnSegment(col, row + 1, falling, fallHints);
-            falling.length = 0;
-            continue;
-          }
+        const cell = state.board[row][col];
+        // 如果是阻挡型障碍物（木箱、冰块），它就像墙一样阻挡，并且它本身不下落
+        if (cell.blocker === "crate" || cell.blocker === "crate-1" || cell.blocker === "crate-2" || cell.blocker?.startsWith("iceblock")) {
+          // 把之前收集到的上方悬空棋子，填充到这个障碍物下方的区间 [currentBottom 到 row + 1]
+          fillColumnSegment(col, currentBottom, row + 1, falling, fallHints);
+          falling.length = 0; // 清空队列，准备收集障碍物上方的棋子
+          currentBottom = row - 1; // 新的底部就是障碍物的上一行
+          continue;
+        }
+        
         if (cell.type) {
           falling.push({ type: cell.type, special: cell.special, fromRow: row });
           cell.type = null;
           cell.special = null;
         }
       }
-      fillColumnSegment(col, 0, falling, fallHints);
+      // 循环结束后，填充最顶部到 currentBottom 的剩余空间
+      fillColumnSegment(col, currentBottom, 0, falling, fallHints);
     }
     return fallHints;
   }
 
-  function fillColumnSegment(col, segmentStart, falling, fallHints) {
-    for (let row = BOARD_SIZE - 1; row >= segmentStart; row -= 1) {
+  function fillColumnSegment(col, bottomRow, topRow, falling, fallHints) {
+    for (let row = bottomRow; row >= topRow; row -= 1) {
       const cell = state.board[row][col];
-      if (cell.blocker === "crate") continue;
+      // 二次保险：不覆盖阻挡型障碍物
+      if (cell.blocker === "crate" || cell.blocker === "crate-1" || cell.blocker === "crate-2" || cell.blocker?.startsWith("iceblock")) continue;
+      
       const next = falling.shift();
       cell.type = next?.type || null;
       cell.special = next?.special || null;
@@ -654,7 +672,7 @@ export function useMatch3Game(initialLevel = 128, options = {}) {
     for (let row = 0; row < BOARD_SIZE; row += 1) {
       for (let col = 0; col < BOARD_SIZE; col += 1) {
           const cell = state.board[row][col];
-          if (!cell.type && cell.blocker !== "crate" && !cell.blocker?.startsWith("iceblock")) {
+          if (!cell.type && cell.blocker !== "crate" && cell.blocker !== "crate-1" && cell.blocker !== "crate-2" && !cell.blocker?.startsWith("iceblock")) {
             cell.type = randomPieceId();
           cell.special = null;
           spawnHints.add(`${row},${col}`);

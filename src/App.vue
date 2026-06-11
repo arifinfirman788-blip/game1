@@ -336,34 +336,29 @@
           </footer>
         </template>
 
-        <!-- 失败结算：保持原有弹窗 -->
-        <aside v-if="settleResult && settleResult.failed" class="settle-overlay" :class="[`phase-${settlePhase}`, { exiting: settlePhase === 3 }]">
-          <div class="settle-card">
-            <div class="settle-header failed">
-              <span class="settle-title-icon">😔</span>
-              <h2>挑战失败</h2>
-              <p>第 {{ settleResult.level }} 关 · {{ game.state.levelConfig.chapter.name }}</p>
+        <!-- 失败结算：使用新版素材弹窗 -->
+        <aside v-if="settleResult && settleResult.failed" class="fail-settle-overlay" :class="[`phase-${settlePhase}`, { exiting: settlePhase === 3 }]">
+          <div class="fail-settle-body">
+            <div class="fail-settle-title" :class="{'anim-in': settlePhase >= 1}">
+              <img :src="assetManifest.failSettle.title" alt="挑战失败" decoding="async" />
             </div>
-
-            <div class="settle-score">
-              <p class="settle-score-label">最终得分</p>
-              <strong class="settle-score-value">{{ settleDisplayScore.toLocaleString("zh-CN") }}</strong>
-            </div>
-
-            <div class="settle-actions" v-if="settlePhase >= 2">
-              <van-button
-                block
-                round
-                type="primary"
-                class="settle-btn"
-                @click="closeSettleAndRetry"
-              >再来一次</van-button>
-              <van-button
-                block
-                round
-                class="settle-btn settle-btn-secondary"
-                @click="closeSettleAndGoMap"
-              >返回选关</van-button>
+            <div class="fail-settle-content">
+              <div class="fail-settle-character" :class="{'anim-in': settlePhase >= 1}">
+                <img :src="assetManifest.failSettle.character" alt="失败人物" decoding="async" />
+              </div>
+              <div class="fail-settle-right">
+                <div class="fail-settle-dialog" :class="{'anim-in': settlePhase >= 1}">
+                  <img :src="assetManifest.failSettle.dialog" alt="失败对话框" decoding="async" />
+                </div>
+                <div class="fail-settle-buttons" :class="{'anim-in': settlePhase >= 2}">
+                  <button class="fail-btn" @click="closeSettleAndRetry">
+                    <img :src="assetManifest.failSettle.btnRetry" alt="重新挑战" decoding="async" />
+                  </button>
+                  <button class="fail-btn" @click="closeSettleAndGoMap">
+                    <img :src="assetManifest.failSettle.btnHome" alt="返回主界面" decoding="async" />
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </aside>
@@ -1244,7 +1239,8 @@ function pieceStyle(cell) {
     style["--piece-image"] = `url("${image}")`;
   }
   if (cell.special?.kind === "glow") {
-    style["--special-glow"] = `url("${assetManifest.specials.glow}")`;
+    // 统一将周围发光的消除也替换为炸弹图标，不发光
+    style["--special-image"] = `url("${assetManifest.specials.lineBomb}")`;
   }
   if (cell.special?.kind === "rainbow") {
     style["--special-image"] = `url("${assetManifest.specials.rainbow}")`;

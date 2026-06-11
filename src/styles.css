@@ -2214,48 +2214,44 @@ button {
 }
 
 .piece.glow-special::before {
-  content: "";
-  position: absolute;
-  z-index: 0;
-  inset: -18%;
-  background-image: var(--special-glow);
-  background-size: contain;
-  background-position: center;
-  background-repeat: no-repeat;
-  pointer-events: none;
-  animation: special-glow-pulse 1.25s ease-in-out infinite alternate;
+  /* 移除发光动画和背景，统一显示为炸弹 */
+  display: none;
 }
 
 .special-mark {
   position: absolute;
   z-index: 2;
-  inset: -4%;
+  inset: -12%; /* 稍微放大一点，让它像个角标或覆盖层 */
   background-image: var(--special-image);
-  background-size: contain;
-  background-position: center;
+  background-size: 60%; /* 缩小背景图，让它作为角标附着在原棋子上 */
+  background-position: bottom right; /* 放在右下角 */
   background-repeat: no-repeat;
   pointer-events: none;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
 }
 
 .piece.line-col .special-mark {
-  transform: rotate(90deg) scale(0.92);
+  transform: none; /* 取消原有的旋转，因为角标不需要旋转 */
 }
 
-.piece.bomb-special .special-mark {
-  transform: scale(0.92);
+.piece.bomb-special .special-mark,
+.piece.glow-special .special-mark {
+  transform: none; /* 取消缩放 */
 }
 
 .piece.rainbow-special {
-  background-image: none;
+  background-image: none; /* 彩虹球特殊处理：因为没有底图，所以它依然是替换底图 */
 }
 
 .piece.rainbow-special .special-mark {
   inset: -8%;
+  background-size: contain; /* 彩虹球的图片填满 */
+  background-position: center;
+  filter: none;
 }
 
-.piece.glow-special .special-mark {
-  display: none;
-}
+/* 移除 glow-special 隐藏 special-mark 的样式，使其正常显示炸弹图标 */
+/* .piece.glow-special .special-mark { display: none; } */
 
 .asset-board .piece {
   width: 82%;
@@ -2414,6 +2410,7 @@ button {
   border-radius: 8px;
   font-size: 21px;
   pointer-events: none;
+  transition: background-image 0.35s ease-out, opacity 0.35s ease-out, filter 0.35s ease-out, transform 0.35s ease-out;
 }
 
 .blocker.ice {
